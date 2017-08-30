@@ -26,7 +26,7 @@
 
 // NOTE: The next line is line 28, and we rely on this in Prepare.js.
 const standardLibrary = `
-// This is the ArrayLang standard library. Implementations of all of these things are in
+// This is the WSL standard library. Implementations of all of these things are in
 // Intrinsics.js.
 
 // Need to bootstrap void first.

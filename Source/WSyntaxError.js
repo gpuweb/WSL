@@ -24,12 +24,12 @@
  */
 "use strict";
 
-class ALTypeError extends Error {
+class WSyntaxError extends Error {
     constructor(originString, message)
     {
-        super("Type error at " + originString + ": " + message);
+        super("Syntax error at " + originString + ": " + message);
         this.originString = originString;
-        this.typeErrorMessage = message;
+        this.syntaxErrorMessage = message;
     }
 }
 

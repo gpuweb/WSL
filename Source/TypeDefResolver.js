@@ -42,7 +42,7 @@ class TypeDefResolver extends Visitor {
                 for (let i = 0; i < node.typeArguments.length; ++i)
                     node.typeArguments[i].unify(unificationContext, node.type.typeParameters[i]);
                 if (!unificationContext.verify())
-                    throw new ALTypeError(node.origin.originString, "Type reference to a type definition violates protocol constraints");
+                    throw new WTypeError(node.origin.originString, "Type reference to a type definition violates protocol constraints");
                 
                 let newType = node.type.type.substituteToUnification(node.type.typeParameters, unificationContext);
                 newType.visit(this);

@@ -35,7 +35,7 @@ function callFunctionByRef(program, name, typeArguments, argumentList)
     });
     let func = resolveInlinedFunction(program, name, typeArguments, argumentTypes);
     if (!func)
-        throw new ALTypeError("<callFunction>", "Cannot resolve function call " + name + "<" + typeArguments + ">(" + argumentList + ")");
+        throw new WTypeError("<callFunction>", "Cannot resolve function call " + name + "<" + typeArguments + ">(" + argumentList + ")");
     for (let i = 0; i < func.parameters.length; ++i)
         func.parameters[i].ePtr.copyFrom(argumentList[i]);
     return new Evaluator(program).visitFunctionBody(func.body);
