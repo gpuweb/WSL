@@ -24,30 +24,23 @@
  */
 "use strict";
 
-class TypeDefResolver extends Visitor {
-    constructor()
+// This is a bit of a misnomer, as this represents casts as well as constructors.
+// Syntactically they are identical; a cast just takes one argument whereas a
+// constructor takes 0-n.
+class CastExpression extends CallExpression {
+    constructor(origin, returnType, typeArguments, argumentList)
     {
-        super();
-        this._visiting = new VisitingSet();
+        super(origin, CastExpression.functionName, typeArguments, argumentList);
+        this._returnType = returnType;
     }
+
+    static get functionName() { return "operator cast"; }
     
-    visitTypeRef(node)
+    get returnType() { return this._returnType; }
+    
+    toString()
     {
-        this._visiting.doVisit(node, () => {
-            super.visitTypeRef(node);
-            if (node.type instanceof TypeDef) {
-                let unificationContext = new UnificationContext(node.type.typeParameters);
-                if (node.typeArguments.length != node.type.typeParameters.length)
-                    throw new Error("argument/parameter mismatch (should have been caught earlier)");
-                for (let i = 0; i < node.typeArguments.length; ++i)
-                    node.typeArguments[i].unify(unificationContext, node.type.typeParameters[i]);
-                if (!unificationContext.verify())
-                    throw new WTypeError(node.origin.originString, "Type reference to a type definition violates protocol constraints");
-                
-                let newType = node.type.type.substituteToUnification(node.type.typeParameters, unificationContext);
-                newType.visit(this);
-                node.setTypeAndArguments(newType, []);
-            }
-        });
+        return this.returnType + "<" + this.typeArguments + ">(" + this.argumentList + ")";
     }
 }
+
