@@ -53,9 +53,25 @@ native bool operator==(int, int);
 native bool operator==(uint, uint);
 native bool operator==(bool, bool);
 
-native operator int(int);
-native operator uint(uint);
-native operator bool(bool);
+protocol Equatable {
+    bool operator==(Equatable, Equatable);
+}
+
+restricted operator<T> T()
+{
+    T defaultValue;
+    return defaultValue;
+}
+
+restricted operator<T> T(T x)
+{
+    return x;
+}
+
+operator<T:Equatable> bool(T x)
+{
+    return x != T();
+}
 
 native thread T^ operator&[]<T>(thread T[], uint);
 native threadgroup T^ operator&[]<T:primitive>(threadgroup T[], uint);
