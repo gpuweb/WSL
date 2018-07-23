@@ -665,7 +665,7 @@ Blocks and variable declarations
 """"""""""""""""""""""""""""""""
 
 The program fragments that we use to define our semantics are richer than just the syntactically correct programs. In particular, we allow annotating blocks
-(sequences of statements between braces) with an environment.
+(sequences of statements between braces) with an environment. This is useful to formalize lexical scoping.
 
 Here is how to reduce a block by one step:
 
@@ -704,6 +704,7 @@ Here is how to reduce a ``Join(s)`` statement:
 
 #. If the argument of the ``Join`` is a terminator (``break;``, ``continue;``, ``fallthrough;``, ``return e?;`` or ``trap;``) or an empty block
 
+   #. ASSERT(the control flow stack is not empty)
    #. Pop the last value from the control flow stack
    #. Replace the ``Join`` statement by its argument
 
@@ -714,13 +715,68 @@ Here is how to reduce a ``Join(s)`` statement:
 Switches
 """"""""
 
-We add another kind of statement: the ``Cases(..)`` construct that takes as argument a sequence.
+We add another kind of statement: the ``Cases(..)`` construct that takes as argument a sequence of statements.
+Informally it represents the different cases of a switch, and deals with the ``fallthrough;`` and ``break;`` statements.
+
+Here is how to reduce a switch statement by one step:
+
+#. If the expression in the switch can be reduced, reduce it by one step
+#. Else if it is a value ``val`` and there is a ``case val:`` in the switch:
+
+    #. Wrap the corresponding sequence of statements into a block (turning it into a single statement)
+    #. Do the same for each sequence of statements until the end of the switch
+    #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in the program order
+
+#. Else
+
+   #. ASSERT(the expression in the switch is a value)
+   #. ASSERT(there is a ``default:`` case in the switch)
+   #. Find the ``default`` case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)
+   #. Do the same for each sequence of statements until the end of the switch
+   #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in the program order
+
+.. todo:: define what a value is.
+
+Here is how to reduce a ``Cases`` construct by one step:
+
+#. ASSERT(the construct has at least one argument)
+#. If the first argument is the ``fallthrough;`` statement, remove it (reducing the total number of arguments by 1)
+#. Else if the first argument is the ``break;`` statement:
+
+   #. ASSERT(the control flow stack is not empty)
+   #. Pop the last value from the control flow stack
+   #. Replace the entire construct by an empty block
+
+#. Else if the first argument is another terminator statement, that cannot be reduced (i.e. ``continue;``, ``trap;``, ``return value;`` or ``return;``)
+
+   #. ASSERT(the control flow stack is not empty)
+   #. Pop the last value from the control flow stack
+   #. Replace the entire construct by its first argument
+
+#. Else reduce the first argument by one step
 
 Loops
 """""
 
+We add yet another kind of statement: the ``Loop(s, s')`` construct that takes as arguments a pair of statements.
+Informally, its first argument represent the current iteration of a loop, and its second argument is a continuation for the rest of the loop.
+
+Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, if(e) do s while(e); else {})``.
+
+.. note:: while loops and for loops are desugared into do while loops, see the Parsing section.
+
+Here is how to reduce a ``Loop(s, s')`` statement by one step:
+
+#. If ``s`` is the ``break;`` statement, replace the whole construct by the empty block: ``{}``
+#. Else if ``s`` is the empty block or the ``continue;`` statement, replace the whole construct by its second argument ``s'``
+#. Else if ``s`` is another terminator (``fallthrough;``, ``return;``, ``return rval;`` or ``trap;``), replace the whole construct by it
+#. Else reduce ``s`` by one step
+
 Barriers and uniform control flow
 """""""""""""""""""""""""""""""""
+
+There is no rule in the per-thread semantics for *control barriers*.
+Instead, there is a rule in the global semantics, saying that if all threads are at a barrier instruction, and their control-flow stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
 
 Other
 """""
