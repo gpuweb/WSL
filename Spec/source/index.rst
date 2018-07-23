@@ -6,11 +6,284 @@
 WSL Specification
 #################
 
+General
+=======
+
+A shader passes through a series of compilation steps, eventually ending up
+represented as machine code for the specific device the user is running. Any
+intermediate forms the source may take throughout this transformation are beyond
+the scope of this specification.
+
+. Note:: The WebGPU Shading Language is designed to target other high-level shading
+   languages as compilation targets.
+
+The WebGPU Shading Language is designed to be as portable as possible; therefore,
+implementations must reject any shader which does not strictly adhere to this
+specification. Optimizations must not be observable, and must not affect error reporting.
+
+WSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
+and manipulate shaders are specified in the WebGPU specification, not this document.
+
+Implementations must not support functionality beyond the mandated parts of this
+specification.
+
+WSL does not support extensions or optional behavior.
+
+Basics
+======
+
+A shader is a compilation unit which includes type definitions and function definitions.
+
+WSL is used to describe different types of shaders:
+
+#. Vertex shaders
+#. Fragment shaders
+#. Compute shaders
+
+Each shader type represents software which may execute on a specialized processor. Different
+draw calls, different shader types, or different invocations of the same shader, may execute
+on independent processors.
+
+..todo:: Describe the three shader types
+
+A WSL string passes through the following stages of processing before it is executed:
+
+#. Tokenization
+#. Parsing
+#. Validation
+
+Once a WSL string passes all the validation checks, it is then available to be used in a
+draw call or dispatch call. A WSL string contains zero or more shaders, and each shader is
+of a specific shader type. Compute shaders must only be used for dispatch calls, and vertex
+and fragment shaders must only be used in draw calls.
+
+ Pipelines
+=========
+
+WebGPU includes two pipelines: the graphics pipeline and the compute pipeline.
+
+Graphics Pipeline
+-----------------
+
+The WebGPU graphics pipeline includes five stages, two of which are programmable. The graphics
+pipeline is invoked by WebGPU draw calls.
+
+Input Assembler
+"""""""""""""""
+
+The first stage of the graphics pipeline is the input assembler. This stage is not programmable.
+This stage may do a collection of many things, including collecting primitives, determining which
+vertices are actually referenced in the draw call, extruding points/lines, expanding adjacency
+information into adjacent triangles, and more. As this stage is not programmable, the exact
+behavior of this stage is not observable. This stage is configured with the WebGPU API.
+
+Vertex Shader
+"""""""""""""
+
+After the vertices relevant to a particular draw call have been determined, they are run through
+the programmable vertex shader. A vertex shader is responsible for mapping a single input vertex
+to a single output vertex. Multiple vertex shaders may run in parallel; two arbitrary vertices
+may be mapped through the vertex shader concurrently or sequentially.
+
+An input vertex may be any assortment of information, arranged into three forms:
+
+#. Stage-in data. Each invocation of the vertex shader is associated with data from a particular
+   index in a GPU buffer. The WebGPU API is responsible for describing the association between
+   which invocation receives which index in which buffer. Stage-in data must only be of scalar,
+   vector, or matrix type.
+
+#. Resources. All invocations of the vertex shader may have access to one or more resources.
+   All invocations share the same resource; therefore, data races may occur between read-write
+   resources. Resources may be of type buffer, texture, or sampler.
+
+#. Built-ins. Some information can be made available to the shader automatically (such as the
+   invocation ID or the primitive ID).
+
+Because vertex shaders may have write-access to resources, they are not "pure" in the functional
+sense. The order of execution of multiple invocations of the vertex shader may be observable.
+Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
+units at the entire shader level or the instruction level (or any level in between). Therefore,
+when using simple loads and stores, load tearing may occur, or any such artifacts. WSL authors must
+take care to create shaders which are portable. See below for advice on how to accomplish this.
+
+.. Note:: Specific GPU instructions are not within scope of this document; therefore, races may
+   lead to surprising and interesting results.
+
+An output vertex may be any assortment of information, arranged into two forms:
+
+#. A position, in Clip Coordinates, represented by a vec4. When a vertex shader emits a position
+   in Clip Coordinates, the WebGPU runtime will divide this position by its "w" component, resulting
+   in a position in Normalized Device Coordinates. In Normalized Device Coordinates, the "x" component
+   represents horizontal distance across the screen (or other output medium), where -1 represents the
+   left edge and 1 represents the right edge. Similarly, the "y" component represents the vertical
+   distance between -1 and 1, and the "z" component represents depth, where -1 represents the minimum
+   depth and 1 represents the maximum depth.
+
+#. Other information, represented by a collection of scalar values, vector values, and matrix values.
+
+Rasterizer
+""""""""""
+
+Once the relevant vertex shaders have been run, their positions have been emitted, and those positions
+have been transformed into Normalized Device Coordinates, the rasterizer now interpolates the values
+of the other information in the output vertex. For a particular primitive, the rasterizer iterates over
+all fragments on the interior of the primitive, and computes the barycentric coordinate of that particular
+fragment with respect to the vertices of the primitive. It then computes a weighted average of the other
+vertex information using the barycentric coordinates as weights. This stage is not programmable.
+
+Fragment Shader
+"""""""""""""""
+
+After the vertex output information has been interpolated across the face of each vertex, one invocation
+of the fragment shader runs for each of these sets of interpolated values. A fragment shader is
+responsible for mapping the interpolated result of the vertex shader into a single output fragment (which
+is usually a color in the framebuffer, but may be other information such as geometry in a G-buffer or
+lighting accumulation in a lighting buffer).
+
+Similar to a vertex shader, a fragment shader input may be any assortment of information, arranged into
+three forms:
+
+#. Interpolated output from the vertex shader. These variables are matched to vertex shader variables
+   using the routine described below.
+
+#. Resources. All invocations of the fragment shader may have access to one or more resources.
+   All invocations share the same resource; therefore, data races may occur between read-write
+   resources. Resources may be of type buffer, texture, or sampler.
+
+#. Built-ins. Some information can be made available to the shader automatically (such as the
+   sample ID or the primitive ID).
+
+Because vertex shaders may have write-access to resources, they are not "pure" in the functional
+sense. The order of execution of multiple invocations of the vertex shader may be observable.
+Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
+units at the entire shader level or the instruction level (or any level in between). Therefore,
+WSL authors must take care to create shaders which are portable. See below for advice on how to
+accomplish this.
+
+.. Note:: Specific GPU instructions are not within scope of this document; therefore, races may
+   lead to surprising and interesting results.
+
+Because each invocation of the fragment shader is associated with a particuluar fragment with respect
+to the geometry of the primitive being drawn, the fragment shader can output into a particular region
+into zero or more attachments of the framebuffer. The fragment shader does not choose which region
+of the framebuffer its results get outputted into; instead, the fragment shader only gets to choose
+which values get outputted into that region.
+
+The destination region of the framebuffer may be a pixel on the screen (if the framebuffer is attached
+to a canvas element). It may also be a texel in a texture, or a particular sample or set of samples in
+a multisampled texture.
+
+The type of this output data must match the type of the framebuffer attachments being written into.
+See below for a rigorous definition of "match."
+
+Output Merger
+"""""""""""""
+
+Once the fragment shader outputs a particular value for a fragment, that value must be merged with
+whatever value the fragment already happens to hold. For example, the new color may be linearly
+blended with the existing framebuffer contents (possibly using the "w" channel of the new color to
+determine the weights).
+
+The output merger for a particular fragment is guaranteed to occur in API submission order for all
+primitives that overlap that particular fragment.
+
+.. Note:: This is in contrast to the fragment shader stage of the pipeline, which has no such
+   guarantee.
+
+Compute pipeline
+----------------
+
+The compute pipeline only has a single stage, and is invoked by WebGPU dispatch calls. The compute
+pipeline and the graphics pipeline are thus mutually exclusive; a single WebGPU call will invoke
+either the graphics pipeline or the compute pipeline, but not both.
+
+Compute shader invocations are arranged into a two-level hierarchy: invocations are grouped into
+blocks, and blocks are grouped into a single grid. Multiple invocations that share a block share
+threadgroup variables for both reading and writing.
+
+The WebGPU API describes how many invocations of the compute shader to invoke, as well as how big
+the blocks should be within the grid.
+
+The input to a compute shader may be any assortment of information, arranged into two forms:
+
+#. Resources. All invocations of the compute shader may have access to one or more resources.
+   All invocations share the same resource; therefore, data races may occur between read-write
+   resources. Resources may be of type buffer, texture, or sampler.
+
+#. Built-ins. Some information can be made available to the shader automatically (such as the
+   invocation ID within the block or the block ID within the grid).
+
+Entry Points
+------------
+
+All functions in WSL are either "entry points" or "non-entry points." An entry point is a function
+that may be associated with a particular programmable stage in a pipeline. Entry points may call
+non-entry points, non-entry points may call non-entry points, but entry points may not be called
+by any WSL function. When execution of a particular shader stage begins, the entry point associated
+with that shader stage begins, and when that entry point returns, the associated shader stage ends.
+
+Exactly one WSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
+of the same shader type must not be used together in the same draw call or dispatch call.
+Every stage of the appropriate WebGPU pipeline must be occupied by a shader in order to
+execute a draw call or dispatch call.
+
+All entry points must begin with the keyword "vertex", "fragment", or "compute", and the keyword
+describes which pipeline stage that shader is appropriate for. An entry point is only valid for one
+type of shader stage.
+
+Built-ins are identified by name. WSL does not include annotations for identifying built-ins. If
+the return of a shader should be assigned to a built-in, the author should create a struct with
+a variable named according to to the built-in, and the shader should return that struct.
+
+Arguments
+"""""""""
+
+Arguments to an entry point are more restricted than arguments to an arbitrary WSL function.
+Arguments to entry points are flattened through structs - that is, each member of any struct appearing
+in an argument to an entry point is considered independently, recursively. Each of these members
+must be appropriate for the shader stage type associated with this entry point. Multiple members
+with the same name may appear inside the flattened collection of arguments.
+
+Scalars, vectors, and matrices are considered stage-in variables or built-ins for vertex shaders. For
+fragments shaders, scalars, vectors, and matrices are considered interpolated output from the vertex
+shader, or built-ins.
+
+Resources are either the opaque texture types, opaque sampler types, or slices. Slices must hold
+scalars, vectors, matrices, or structs containing any of these types. Nested structs are allowed. The
+packing rules for data inside slices are described below.
+
+The return type of an entry point is more restricted than the return type of an arbitrary WSL function.
+The return type of entry points are flattened through structs - that is, each member of any struct
+appearing in the return type of an entry point is considered independently, recursively. Each of these
+members must be appropriate for the shader stage type associated with this entry point. Multiple members
+with the same name may appear inside the flattened collection of arguments.
+
+All of these values must be either scalars, vectors, or matrices (or structs according to the previous
+rule).
+
+Return Types
+""""""""""""
+
+
 Grammar
 =======
 
 Lexical analysis
 ----------------
+
+Shaders exist as a Unicode string, and therefore support all the code points
+Unicode supports.
+
+WSL does not include any digraphs or trigraphs. WSL is case-sensitive. It does not include any
+escape sequences.
+
+.. Note:: WSL does not include a string type, so escape characters are not present in the
+   language.
+
+WSL does not include a preprocessor step.
+
+.. Note:: Because there is no processor step, tokens such as '#if' are generally considered
+   parse errors.
 
 Before parsing, the text of a WSL program is first turned into a list of tokens, removing comments and whitespace along the way.
 Tokens are built greedily, in other words each token is as long as possible.
@@ -286,6 +559,8 @@ I am afraid it may require several steps.
 The first step would do most of the work, gathering all function signatures, as well as typedefs, etc..
 The second step would go through the resulting environment, resolving all types, in particular all typedefs (as well as connecting function parameters to the corresponding type variables, etc..)
 
+We need to give consideration to the tons of qualifiers on variables that GLSL / Metal have.
+
 Phase 2: Local typing and early validation
 ------------------------------------------
 
@@ -449,11 +724,101 @@ Execution of expressions
 Memory model
 ------------
 
+There are 4 address spaces:
+
+#. global (read-write)
+#. constant
+#. threadgroup
+#. thread
+
+How do these interact with pointers? How can you have a pointer in one address space that points to a value in another address space?
+
 Standard library
 ================
 
+Built-in Types
+--------------
+
+Built-in Scalars
+""""""""""""""""
+
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Type Name | Description                                                                    | Representable values                                                              |
++===========+================================================================================+===================================================================================+
+| void      | Must only be used as a return type from functions which don't return anything. | None                                                                              |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| bool      | A conditional type.                                                            | true or false                                                                     |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| uint8     | An unsigned 8-bit integer.                                                     | 0, 1, 2, ... 255                                                                  |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| uint32    | An unsigned 32-bit integer.                                                    | 0, 1, 2, ... 4294967295                                                           |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| uint64    | An unsigned 64-bit integer.                                                    | 0, 1, 2, ... 18446744073709551615                                                 |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| int8      | A signed 8-bit integer.                                                        | -128, -127, ... -1, 0, 1, ... 127                                                 |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| int32     | A signed 32-bit integer.                                                       | -2147483648, -2147483647, ... -1, 0, 1, ... 2147483647                            |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| int64     | A signed 64-bit integer.                                                       | -9223372036854775808, -9223372036854775807, ... -1, 0, 1, ... 9223372036854775807 |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| float32   | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| float64   | A 64-bit floating-point number.                                                | See below for details on representable values.                                    |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+
+In addition, the standard library includes some typedefs:
+
++---------------+----------------------------------------------+
+| This new type | is defined to be equal to this existing type |
++===============+==============================================+
+| int           | int32                                        |
++---------------+----------------------------------------------+
+| uint          | uint32                                       |
++---------------+----------------------------------------------+
+| float         | float32                                      |
++---------------+----------------------------------------------+
+| double        | float64                                      |
++---------------+----------------------------------------------+
+
+.. Note:: The following types are not present in WSL: dword, half, min16float, min10float, min16int, min12int, min16uint, string, short, unsigned short, size_t, ptrdiff_t
+
+Built-in aggregate types
+""""""""""""""""""""""""
+
+#. Vectors (only hold primitive types, and only 1-4 of them)
+#. Matrices
+
+Opaque types
+""""""""""""
+
+#. Samplers (in the Metal notion of Sampler)
+#. Textures (of all the various types), possibly discriminating between read-only and read-write
+#. Should we treat buffers differently than arrays? HLSL does, but Metal doesn't.
+#. Buffer blocks?
+#. Pointers
+
+Numerical Compliance
+""""""""""""""""""""
+
+Built-in Variables
+------------------
+
+Different for each shader stage
+
+Represented by magic name?
+
+Built-in Functions
+------------------
+
+Some of these functions only appear in specific shader stages.
+
+We should figure out if atomic handling goes here.
+
 Interface with JavaScript
 =========================
+
+Shaders are supplied to the Javascript WebGPU API as a single argument
+which is understood to be of type 'DOMString'.
 
 Indices and tables
 ##################
