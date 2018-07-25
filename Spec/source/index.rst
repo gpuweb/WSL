@@ -239,39 +239,32 @@ Built-ins are identified by name. WSL does not include annotations for identifyi
 the return of a shader should be assigned to a built-in, the author should create a struct with
 a variable named according to to the built-in, and the shader should return that struct.
 
-Arguments
-"""""""""
+Arguments and Return Types
+""""""""""""""""""""""""""
 
-Arguments to an entry point are more restricted than arguments to an arbitrary WSL function.
-Arguments to entry points are flattened through structs - that is, each member of any struct appearing
-in an argument to an entry point is considered independently, recursively. Each of these members
-must be appropriate for the shader stage type associated with this entry point. Multiple members
-with the same name may appear inside the flattened collection of arguments.
+Arguments return types of an entry point are more restricted than arguments to an arbitrary WSL function.
+They are flattened through structs - that is, each member of any struct appearing in an argument to an entry
+point or return type is considered independently, recursively. Arguments to entry points are not
+distinguished by position or order.
 
-Scalars, vectors, and matrices are considered stage-in variables or built-ins for vertex shaders. For
-fragments shaders, scalars, vectors, and matrices are considered interpolated output from the vertex
-shader, or built-ins.
+Multiple members with the same name may appear inside the flattened collection of arguments. However,
+if multiple members with the same name appear, the entire variable (type, qualifiers, etc.) must be
+identical. Otherwise, the entire program is in error.
 
-Resources are either the opaque texture types, opaque sampler types, or slices. Slices must hold
-scalars, vectors, matrices, or structs containing any of these types. Nested structs are allowed. The
-packing rules for data inside slices are described below.
+The items of the flattened structs can be partitioned into three buckets:
 
-The return type of an entry point is more restricted than the return type of an arbitrary WSL function.
-The return type of entry points are flattened through structs - that is, each member of any struct
-appearing in the return type of an entry point is considered independently, recursively. Each of these
-members must be appropriate for the shader stage type associated with this entry point. Multiple members
-with the same name may appear inside the flattened collection of arguments.
+#. Built-in variables. These declaractions must exactly match an item in the list below.
 
-All of these values must be either scalars, vectors, or matrices (or structs according to the previous
-rule).
+#. Resources. These must be either the opaque texture types, opaque sampler types, or slices. Slices must
+   only hold scalars, vectors, matrices, or structs containing any of these types. Nested structs are
+   allowed. The packing rules for data inside slices are described below.
 
-Return Types
-""""""""""""
+# Stage-in/out variables. These are variables of scalar, vector, or matrix type.
 
-Like arguments, return types are flattened through structs - that is, each member of any struct
-appearing in the return type of an entry point is considered independently, recursively. Each of
-these members must be appropriate for the shader stage type associated with this entry point.
-Multiple members with the same name may appear inside the flattened collection of arguments.
+Vertex shaders accept all three buckets as input, and allow only built-in variables and stage-out variables
+as output. Fragment shaders accept all three buckets as input, and allow only built-in variables and stage-
+out variables as output. Fragment shaders only accept built-in variables and resources, and do not allow
+any output.
 
 Grammar
 =======
@@ -506,7 +499,7 @@ The first production rule for typeArguments is a way to say that `>>` can be par
 Expressions
 """""""""""
 
-We accept three different kinds of expressions, in different places in the grammar.
+WHLSL accepts three different kinds of expressions, in different places in the grammar.
 
 - ``expr`` is the most generic, and includes all expressions.
 - ``maybeEffectfulExpr`` is used in places where a variable declaration would also be allowed. It forbids some expressions that are clearly effect-free, such as ``x*y`` or ``x < y``.
@@ -536,8 +529,10 @@ We accept three different kinds of expressions, in different places in the gramm
     callExpression: `Identifier` "(" (`ternaryConditional` ("," `ternaryConditional`)*)? ")"
     term: `Literal` | `Identifier` | "(" `expr` ")"
 
-We match the precedence and associativity of operators from C++, with one exception: we made relational operators non-associative,
-so that they cannot be chained. Chaining them has sufficiently surprising results that it is not a clear reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept generics.
+WHLSL matches the precedence and associativity of operators from C++, with one exception: relational operators are non-associative,
+so that they cannot be chained. Chaining them has sufficiently surprising results that it is not a clear
+reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
+generics.
 
 There is exactly one piece of syntactic sugar in the above rules: the ``!=`` operator.
 ``e0 != e1`` is equivalent with ``! (e0 == e1)``.
@@ -726,7 +721,7 @@ Barriers and uniform control flow
 Other
 """""
 
-TODO: return reduce, and effectful expr.
+.. todo:: Return reduce, and effectful expr.
 
 Execution of expressions
 ------------------------
@@ -761,19 +756,19 @@ Built-in Scalars
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | uint8     | An unsigned 8-bit integer.                                                     | 0, 1, 2, ... 255                                                                  |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| uint32    | An unsigned 32-bit integer.                                                    | 0, 1, 2, ... 4294967295                                                           |
+| uint16    | An unsigned 16-bit integer.                                                    | 0, 1, 2, ... 65535                                                                |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| uint64    | An unsigned 64-bit integer.                                                    | 0, 1, 2, ... 18446744073709551615                                                 |
+| uint32    | An unsigned 32-bit integer.                                                    | 0, 1, 2, ... 4294967295                                                           |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | int8      | A signed 8-bit integer.                                                        | -128, -127, ... -1, 0, 1, ... 127                                                 |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| int16     |  A signed 16-bit integer.                                                      | -32768, -32767, ... -1, 0, 1, ... 32767                                           |
++-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | int32     | A signed 32-bit integer.                                                       | -2147483648, -2147483647, ... -1, 0, 1, ... 2147483647                            |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| int64     | A signed 64-bit integer.                                                       | -9223372036854775808, -9223372036854775807, ... -1, 0, 1, ... 9223372036854775807 |
+| float16   | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | float32   | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
-+-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| float64   | A 64-bit floating-point number.                                                | See below for details on representable values.                                    |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 
 In addition, the standard library includes some typedefs:
@@ -785,26 +780,101 @@ In addition, the standard library includes some typedefs:
 +---------------+----------------------------------------------+
 | uint          | uint32                                       |
 +---------------+----------------------------------------------+
+| short         | int16                                        |
++---------------+----------------------------------------------+
+| ushort        | uint16                                       |
++---------------+----------------------------------------------+
+| half          | float16                                      |
++---------------+----------------------------------------------+
 | float         | float32                                      |
 +---------------+----------------------------------------------+
-| double        | float64                                      |
-+---------------+----------------------------------------------+
 
-.. Note:: The following types are not present in WSL: dword, half, min16float, min10float, min16int, min12int, min16uint, string, short, unsigned short, size_t, ptrdiff_t
+.. Note:: The following types are not present in WSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
 
 Built-in aggregate types
 """"""""""""""""""""""""
 
-#. Vectors (only hold primitive types, and only 1-4 of them)
-#. Matrices
+The following are vector types, which list the name of a scalar type and the number of elements in the
+vector.
+
+* bool2
+* bool3
+* bool4
+* ushort2
+* ushort3
+* ushort4
+* uint2
+* uint3
+* uint4
+* short2
+* short3
+* short4
+* int2
+* int3
+* int4
+* half2
+* half3
+* half4
+* float2
+* float3
+* float4
+
+The following are matrix types, which list the name of a scalar type, the number of columns, and the number
+of rows, in that order.
+
+* half2x2
+* half2x3
+* half2x4
+* half3x2
+* half3x3
+* half3x4
+* half4x2
+* half4x3
+* half4x4
+* float2x2
+* float2x3
+* float2x4
+* float3x2
+* float3x3
+* float3x4
+* float4x2
+* float4x3
+* float4x4
+
+Samplers
+""""""""
+
+Samplers may either be created inside the source of a WHLSL shader, or they may be passed into an entry
+point inside an argument. All samplers are immutable and must be declared in the "constant" address space.
+
+The type is defined as such:
+
+::
+
+    native typedef sampler;
+    enum Coordinate {
+        Normalized,
+        Pixel
+    }
+    enum AddressingMode {
+        Repeat,
+        MirroredRepeat,
+        ClampToEdge,
+        ClampToBorder
+    }
+    enum FilterMode {
+        Nearest,
+        Linear
+    }
+    native sampler createSampler(Coordinate, AddressingMode, FilterMode);
+
+.. todo:: Can you introspect samplers? How about copy?
 
 Opaque types
 """"""""""""
 
-#. Samplers (in the Metal notion of Sampler)
 #. Textures (of all the various types), possibly discriminating between read-only and read-write
 #. Should we treat buffers differently than arrays? HLSL does, but Metal doesn't.
-#. Buffer blocks?
 #. Pointers
 
 Numerical Compliance
