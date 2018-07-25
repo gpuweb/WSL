@@ -8,6 +8,7 @@ WSL Specification
 
 General
 =======
+*This section is non-normative.*
 
 A shader passes through a series of compilation steps, eventually ending up
 represented as machine code for the specific device the user is running. Any
@@ -17,20 +18,25 @@ the scope of this specification.
 . Note:: The WebGPU Shading Language is designed to target other high-level shading
    languages as compilation targets.
 
-The WebGPU Shading Language is designed to be as portable as possible; therefore,
-implementations must reject any shader which does not strictly adhere to this
-specification. Optimizations must not be observable, and must not affect error reporting.
-
 WSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
 and manipulate shaders are specified in the WebGPU specification, not this document.
-
-Implementations must not support functionality beyond the mandated parts of this
-specification.
+This document describes which programs are well-formed; the exact form of error
+reporting is not discussed in this specification.
 
 WSL does not support extensions or optional behavior.
 
+Terms in this document such as *must*, *must not*, *required*, *shall*, *shall not*,
+*should*, *should not*, *recommended*, *may*, and *optional* in normative parts of
+this document are to be interpreted as described in RFC 2119.
+
 Basics
 ======
+
+The WebGPU Shading Language is designed to be as portable as possible; therefore,
+implementations must reject any shader which does not strictly adhere to this
+specification. Optimizations must not be observable, and must not affect error reporting.
+Implementations must not support functionality beyond the mandated parts of this
+specification.
 
 A shader is a compilation unit which includes type definitions and function definitions.
 
@@ -44,8 +50,6 @@ Each shader type represents software which may execute on a specialized processo
 draw calls, different shader types, or different invocations of the same shader, may execute
 on independent processors.
 
-..todo:: Describe the three shader types
-
 A WSL string passes through the following stages of processing before it is executed:
 
 #. Tokenization
@@ -57,7 +61,7 @@ draw call or dispatch call. A WSL string contains zero or more shaders, and each
 of a specific shader type. Compute shaders must only be used for dispatch calls, and vertex
 and fragment shaders must only be used in draw calls.
 
- Pipelines
+Pipelines
 =========
 
 WebGPU includes two pipelines: the graphics pipeline and the compute pipeline.
@@ -111,7 +115,7 @@ take care to create shaders which are portable. See below for advice on how to a
 
 An output vertex may be any assortment of information, arranged into two forms:
 
-#. A position, in Clip Coordinates, represented by a vec4. When a vertex shader emits a position
+#. A position, in Clip Coordinates, represented by a float4. When a vertex shader emits a position
    in Clip Coordinates, the WebGPU runtime will divide this position by its "w" component, resulting
    in a position in Normalized Device Coordinates. In Normalized Device Coordinates, the "x" component
    represents horizontal distance across the screen (or other output medium), where -1 represents the
@@ -264,6 +268,10 @@ rule).
 Return Types
 """"""""""""
 
+Like arguments, return types are flattened through structs - that is, each member of any struct
+appearing in the return type of an entry point is considered independently, recursively. Each of
+these members must be appropriate for the shader stage type associated with this entry point.
+Multiple members with the same name may appear inside the flattened collection of arguments.
 
 Grammar
 =======
@@ -316,9 +324,9 @@ A float literal is made of the following elements in sequence:
 - a sequence of 0 or more digits (in [0-9])
 - a ``.`` character
 - a sequence of 0 or more digits (in [0-9]). This sequence must instead have 1 or more elements, if the last sequence was empty.
-- optionally a ``f`` or ``d`` character
+- optionally a ``f`` character
 
-In regexp form: '-'? ([0-9]+ '.' [0-9]* | [0-9]* '.' [0-9]+) [fd]?
+In regexp form: '-'? ([0-9]+ '.' [0-9]* | [0-9]* '.' [0-9]+) f?
 
 Keywords and punctuation
 """"""""""""""""""""""""
@@ -358,8 +366,7 @@ Similarily, the following elements of punctuation are valid tokens:
 Identifiers and operator names
 """"""""""""""""""""""""""""""
 
-An identifier is any sequence of alphanumeric characters or underscores, that does not start by a digit, that is not a single underscore (the single underscore is reserved for future extension), and that is not a reserved keyword.
-TODO: decide if we only accept [_a-zA-Z][_a-zA-Z0-9], or whether we also accept unicode characters.
+An identifier is any sequence of characters or underscores, that does not start by a digit, that is not a single underscore (the single underscore is reserved for future extension), and that is not a reserved keyword.
 
 Operator names can be either of the 4 following possibilities:
 
@@ -375,9 +382,7 @@ Whitespace and comments
 
 Any of the following characters are considered whitespace, and ignored after this phase: space, tabulation (``\t``), carriage return (``\r``), new line(``\n``).
 
-.. todo:: do we want to also allow other unicode whitespace characters?
-
-We also allow two kinds of comments, that are treated like whitespace (i.e. ignored during parsing).
+WHLSL also allows two kinds of comments. These are treated like whitespace (i.e. ignored during parsing).
 The first kind is a line comment, that starts with the string ``//`` and continues until the next end of line character.
 The second kind is a multi-line comment, that starts with the string ``/*`` and ends as soon as the string ``*/`` is read.
 
@@ -396,7 +401,8 @@ A valid file is made of a sequence of 0 or more top-level declarations, followed
 .. productionlist::
     topLevelDecl: ";" | `typedef` | `structDef` | `enumDef` | `funcDef`
 
-.. todo:: We may want to also allow variable declarations at the top-level if it can easily be supported by all of our targets.
+.. todo:: We may want to also allow variable declarations at the top-level if it can easily be supported by all of our targets. (Myles: We can emulate it an all the targets, but the targets themselves only allow constant variables
+    at global scope. We should follow suit.)
 .. todo:: Decide whether we put native/restricted in the spec or not.
 
 .. productionlist::
@@ -437,7 +443,7 @@ Statements
     ifStmt: "if" "(" `expr` ")" `stmt`
     ifElseStmt: "if" "(" `expr` ")" `stmt` "else" `stmt`
 
-.. todo:: should I forbid assignments (without parentheses) inside the conditions of if/while to avoid the common mistaking of "=" for "==" ? 
+.. todo:: should I forbid assignments (without parentheses) inside the conditions of if/while to avoid the common mistaking of "=" for "==" ? (Myles: Let's say "yes, forbid it" for now, and we can change it if people complain)
 
 The first of these two productions is merely syntactic sugar for the second:
 
@@ -494,6 +500,8 @@ Putting the address space before the identifier is just syntactic sugar for havi
     typeArgument: `constepxr` | `type`
 
 The first production rule for typeArguments is a way to say that `>>` can be parsed as two `>` closing delimiters, in the case of nested typeArguments.
+
+.. todo:: Now that we are disallowing the general use of type arguments, do we need the >> processing?
 
 Expressions
 """""""""""
@@ -621,6 +629,8 @@ Typing expressions
 
 Phase 3: Monomorphisation and late validation
 ---------------------------------------------
+
+.. todo:: We shouldn't need to monomorphize
 
 - monomorphisation itself
 - resolving function calls (probably done as part of monomorphisation)
