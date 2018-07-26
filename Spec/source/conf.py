@@ -143,10 +143,11 @@ except NameError:
     imgmath_latex_preamble = ""
 with open('WSL_macros.tex') as f:
     macros = f.read()
-# Sphinx's pipeline to compile macros appears to choke with undecipherable error messages when there are multi-line macros in the tex.
-# So we hunt for the two patterns that ott uses for generating multi-line macros, and make them fit on one line.
-macros.replace("%\n","")
-macros.replace("{\n","{")
+macros = macros.replace('%\n', '')
+macros = macros.replace('{\n', '{')
+macros = macros.replace(r'\newcommand{\ottdrule}[4][]{{\displaystyle\frac{\begin{array}{l}#2\end{array}}{#3}\quad\ottdrulename{#4}}}', r'\newcommand{\ottdrule}[2]{{\displaystyle\frac{\begin{array}{l}#1\end{array}}{#2}}}')
+import re
+macros = re.sub(r'\\newcommand{(\\[a-zA-Z]*)}\[1\]{\\ottdrule\[#1\]{(.*)}{(.*)}{{\\ottdrulename{(.*)}}{}}}', r'\\newcommand{\1}[1]{\\ottdrule{\2}{\3} & \\ottdrulename{\4}}', macros)
 # used when building latex and pdf versions
 latex_elements['preamble'] += macros
 # used when building html version

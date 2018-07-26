@@ -689,7 +689,7 @@ Here is how to reduce a block by one step:
 .. math::
     :nowrap:
 
-    \begin{gather*}
+    \begin{align*}
         \ottdruleblockXXannotate{}\\
         \ottdruleblockXXnextXXstmt{}\\
         \ottdruleblockXXterminator{}\\
@@ -697,7 +697,7 @@ Here is how to reduce a block by one step:
         \ottdruleblockXXvdeclXXcomplete{}\\
         \ottdruleblockXXvdecl{}\\
         \ottdruleblockXXreduce{}
-    \end{gather*}
+    \end{align*}
 
 Branches
 """"""""
