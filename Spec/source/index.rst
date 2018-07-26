@@ -239,6 +239,8 @@ Built-ins are identified by name. WSL does not include annotations for identifyi
 the return of a shader should be assigned to a built-in, the author should create a struct with
 a variable named according to to the built-in, and the shader should return that struct.
 
+Vertex and fragment entry points must transitively never refer to the ``threadgroup`` memory space.
+
 Arguments and Return Types
 """"""""""""""""""""""""""
 
@@ -257,7 +259,8 @@ The items of the flattened structs can be partitioned into three buckets:
 
 #. Resources. These must be either the opaque texture types, opaque sampler types, or slices. Slices must
    only hold scalars, vectors, matrices, or structs containing any of these types. Nested structs are
-   allowed. The packing rules for data inside slices are described below.
+   allowed. The packing rules for data inside slices are described below. All resources must be in the
+   ``device`` or ``constant`` memory space.
 
 # Stage-in/out variables. These are variables of scalar, vector, or matrix type.
 
@@ -621,6 +624,7 @@ Typing expressions
 - check that switch statements treat all cases
 - check that every case in a switch statement ends in a terminator (fallthrough/break/return/continue/trap)
 - check that literals fit into the type they are stored into (optional?)
+- check that all new variables are in the ``thread`` or ``threadgroup`` address space
 
 Phase 3: Monomorphisation and late validation
 ---------------------------------------------
@@ -795,87 +799,121 @@ Built-in aggregate types
 """"""""""""""""""""""""
 
 The following are vector types, which list the name of a scalar type and the number of elements in the
-vector.
+vector. Each item below includes two types, which are synonyms for each other.
 
-* bool2
-* bool3
-* bool4
-* ushort2
-* ushort3
-* ushort4
-* uint2
-* uint3
-* uint4
-* short2
-* short3
-* short4
-* int2
-* int3
-* int4
-* half2
-* half3
-* half4
-* float2
-* float3
-* float4
+* bool2, or vector<bool, 2>
+* bool3, or vector<bool, 3>
+* bool4, or vector<bool, 4>
+* ushort2, or vector<ushort, 2>
+* ushort3, or vector<ushort, 3>
+* ushort4, or vector<ushort, 4>
+* uint2, or vector<uint, 2>
+* uint3, or vector<uint, 3>
+* uint4, or vector<uint, 4>
+* short2, or vector<short, 2>
+* short3, or vector<short, 3>
+* short4, or vector<short, 4>
+* int2, or vector<int, 2>
+* int3, or vector<int, 3>
+* int4, or vector<int, 4>
+* half2, or vector<half, 2>
+* half3, or vector<half, 3>
+* half4, or vector<half, 4>
+* float2, or vector<float, 2>
+* float3, or vector<float, 3>
+* float4, or vector<float, 4>
 
 The following are matrix types, which list the name of a scalar type, the number of columns, and the number
-of rows, in that order.
+of rows, in that order. Each item below includes two types, which are synonyms for each other.
 
-* half2x2
-* half2x3
-* half2x4
-* half3x2
-* half3x3
-* half3x4
-* half4x2
-* half4x3
-* half4x4
-* float2x2
-* float2x3
-* float2x4
-* float3x2
-* float3x3
-* float3x4
-* float4x2
-* float4x3
-* float4x4
+* half1x1, or matrix<half, 1, 1>
+* half1x2, or matrix<half, 1, 2>
+* half1x3, or matrix<half, 1, 3>
+* half1x4, or matrix<half, 1, 4>
+* half2x1, or matrix<half, 2, 1>
+* half2x2, or matrix<half, 2, 2>
+* half2x3, or matrix<half, 2, 3>
+* half2x4, or matrix<half, 2, 4>
+* half3x1, or matrix<half, 3, 1>
+* half3x2, or matrix<half, 3, 2>
+* half3x3, or matrix<half, 3, 3>
+* half3x4, or matrix<half, 3, 4>
+* half4x1, or matrix<half, 4, 1>
+* half4x2, or matrix<half, 4, 2>
+* half4x3, or matrix<half, 4, 3>
+* half4x4, or matrix<half, 4, 4>
+* float1x1, or matrix<half, 1, 1>
+* float1x2, or matrix<half, 1, 2>
+* float1x3, or matrix<half, 1, 3>
+* float1x4, or matrix<half, 1, 4>
+* float2x1, or matrix<half, 2, 1>
+* float2x2, or matrix<half, 2, 2>
+* float2x3, or matrix<half, 2, 3>
+* float2x4, or matrix<half, 2, 4>
+* float3x1, or matrix<half, 3, 1>
+* float3x2, or matrix<half, 3, 2>
+* float3x3, or matrix<half, 3, 3>
+* float3x4, or matrix<half, 3, 4>
+* float4x1, or matrix<half, 4, 1>
+* float4x2, or matrix<half, 4, 2>
+* float4x3, or matrix<half, 4, 3>
+* float4x4, or matrix<half, 4, 4>
 
 Samplers
 """"""""
 
-Samplers may either be created inside the source of a WHLSL shader, or they may be passed into an entry
-point inside an argument. All samplers are immutable and must be declared in the "constant" address space.
+Samplers must only be passed into an entry point inside an argument. All samplers are immutable and must be
+declared in the "constant" address space. There is no constructor for samplers; it is impossible to create
+or destory one in WHLSL. The type is defined as ``native typedef sampler;``. Samplers are are impossible to
+introspect. Arrays must not contain samplers anywhere inside them. Functions that return samplers must only
+have one return point. Ternary expressions must not return references.
 
-The type is defined as such:
+Textures
+""""""""
 
-::
+The following types represent textures:
 
-    native typedef sampler;
-    enum Coordinate {
-        Normalized,
-        Pixel
-    }
-    enum AddressingMode {
-        Repeat,
-        MirroredRepeat,
-        ClampToEdge,
-        ClampToBorder
-    }
-    enum FilterMode {
-        Nearest,
-        Linear
-    }
-    native sampler createSampler(Coordinate, AddressingMode, FilterMode);
+* Texture1D<T>
+* RWTexture1D<T>
+* Texture1DArray<T>
+* RWTexture1DArray<T>
+* Texture2D<T>
+* RWTexture2D<T>
+* Texture2DArray<T>
+* RWTexture2DArray<T>
+* Texture3D<T>
+* RWTexture3D<T>
+* TextureCube<T>
+* TextureCubeArray<T>
+* TextureDepth2D<S>
+* TextureDepth2DArray<S>
+* TextureDepthCube<S>
+* TextureDepthCubeArray<S>
 
-.. todo:: Can you introspect samplers? How about copy?
+.. todo:: Texture2DMS<T>, TextureDepth2DMS<float>
 
-Opaque types
-""""""""""""
+Each of the above types accepts a "type argument". The "T" types above may be any scalar or vector type.
+The "S" types above may be float, float1, float2, float3, or float4.
 
-#. Textures (of all the various types), possibly discriminating between read-only and read-write
-#. Should we treat buffers differently than arrays? HLSL does, but Metal doesn't.
-#. Pointers
+If the type argument, including the ``<>`` characters is missing, is is assumed to be ``float4``.
+
+Textures must only be passed into an entry point inside an argument. Therefore, textures must only be declared
+in either the ``constant`` or ``device`` address space. A texture declared in the ``constant`` address space
+must never be modified. There is no constructor for textures; it is impossible to create or destroy one in WHLSL.
+Arrays must not contain textures anywhere inside them. Functions that return textures must only have one return
+point. Ternary expressions must not return references.
+
+Pointers
+""""""""
+
+Pointers may be passed into an entry point inside an argument or created inside a function using the "&"
+operator. No data arrived at via a ``constant`` pointer may be modified. ``device``, ``constant``, and
+``threadgroup`` pointers must not point to data that may have pointers in it. Arrays must not contain pointers
+anywhere inside them. Functions that return pointers must only have one return point. Ternary expressions must
+not return pointers. Every construction of a pointer must be initialized upon declaration and never reassigned.
+
+Array References
+""""""""""""""""
 
 Numerical Compliance
 """"""""""""""""""""
