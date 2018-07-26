@@ -40,7 +40,8 @@ release = u''
 # ones.
 extensions = [
     'sphinx.ext.todo',
-    'sphinx.ext.mathjax',
+    #'sphinx.ext.mathjax',
+    'sphinx.ext.imgmath',
     'sphinx.ext.ifconfig',
 ]
 
@@ -120,7 +121,7 @@ latex_elements = {
 
     # Additional stuff for the LaTeX preamble.
     #
-    # 'preamble': '',
+    'preamble': '',
 
     # Latex figure (float) alignment
     #
@@ -134,6 +135,22 @@ latex_documents = [
     (master_doc, 'WSL.tex', u'WSL Documentation',
      u'Robin Morisset, Filip Pizlo, Myles C. Maxfield', 'manual'),
 ]
+
+# All of this section let us use ott-generated macros for the rules.
+try:
+    imgmath_latex_preamble  # check whether this is already defined
+except NameError:
+    imgmath_latex_preamble = ""
+with open('WSL_macros.tex') as f:
+    macros = f.read()
+# Sphinx's pipeline to compile macros appears to choke with undecipherable error messages when there are multi-line macros in the tex.
+# So we hunt for the two patterns that ott uses for generating multi-line macros, and make them fit on one line.
+macros.replace("%\n","")
+macros.replace("{\n","{")
+# used when building latex and pdf versions
+latex_elements['preamble'] += macros
+# used when building html version
+imgmath_latex_preamble += macros
 
 
 # -- Options for manual page output ------------------------------------------

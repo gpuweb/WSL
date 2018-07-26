@@ -686,6 +686,19 @@ Here is how to reduce a block by one step:
 
 .. todo:: Specify this "default value for the type". It should be very simple (null for ptrs/refs, false for booleans, 0/0. for ints/floats, and the natural extension for arrays/structs).
 
+.. math::
+    :nowrap:
+
+    \begin{gather*}
+        \ottdruleblockXXannotate{}\\
+        \ottdruleblockXXnextXXstmt{}\\
+        \ottdruleblockXXterminator{}\\
+        \ottdruleblockXXvdeclXXreduce{}\\
+        \ottdruleblockXXvdeclXXcomplete{}\\
+        \ottdruleblockXXvdecl{}\\
+        \ottdruleblockXXreduce{}
+    \end{gather*}
+
 Branches
 """"""""
 

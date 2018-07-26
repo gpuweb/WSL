@@ -753,11 +753,11 @@ R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on stateme
     Rout |- {R tval x : sid; s1..sn} -> {R' s1..sn} ; sid <- rv;
 
     R[x -> LVal(sid)] |- e -> e';;
-    ------------------------------------------------------------ :: block_vdecl_init_reduce
+    ------------------------------------------------------------ :: block_vdecl_reduce
     Rout |- {R tval x : sid = e; s1..sn} -> {R tval x : sid = e'; s1..sn} ;;
 
     R' = R[x -> LVal(sid)]
-    ------------------------------------------------------------ :: block_vdecl_init_complete
+    ------------------------------------------------------------ :: block_vdecl_complete
     Rout |- {R tval x : sid = rv; s1..sn} -> {R' s1..sn} ; sid <- rv;
 
     R |- e -> e' ; E ; S
