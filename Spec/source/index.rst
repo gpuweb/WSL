@@ -827,40 +827,22 @@ Built-in Scalars
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | bool      | A conditional type.                                                            | true or false                                                                     |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| uint8     | An unsigned 8-bit integer.                                                     | 0, 1, 2, ... 255                                                                  |
+| uchar     | An unsigned 8-bit integer.                                                     | 0, 1, 2, ... 255                                                                  |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| uint16    | An unsigned 16-bit integer.                                                    | 0, 1, 2, ... 65535                                                                |
+| ushort    | An unsigned 16-bit integer.                                                    | 0, 1, 2, ... 65535                                                                |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| uint32    | An unsigned 32-bit integer.                                                    | 0, 1, 2, ... 4294967295                                                           |
+| uint      | An unsigned 32-bit integer.                                                    | 0, 1, 2, ... 4294967295                                                           |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| int8      | A signed 8-bit integer.                                                        | -128, -127, ... -1, 0, 1, ... 127                                                 |
+| char      | A signed 8-bit integer.                                                        | -128, -127, ... -1, 0, 1, ... 127                                                 |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| int16     |  A signed 16-bit integer.                                                      | -32768, -32767, ... -1, 0, 1, ... 32767                                           |
+| short     |  A signed 16-bit integer.                                                      | -32768, -32767, ... -1, 0, 1, ... 32767                                           |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| int32     | A signed 32-bit integer.                                                       | -2147483648, -2147483647, ... -1, 0, 1, ... 2147483647                            |
+| int       | A signed 32-bit integer.                                                       | -2147483648, -2147483647, ... -1, 0, 1, ... 2147483647                            |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| float16   | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
+| half      | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| float32   | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
+| float     | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-
-In addition, the standard library includes some typedefs:
-
-+---------------+----------------------------------------------+
-| This new type | is defined to be equal to this existing type |
-+===============+==============================================+
-| int           | int32                                        |
-+---------------+----------------------------------------------+
-| uint          | uint32                                       |
-+---------------+----------------------------------------------+
-| short         | int16                                        |
-+---------------+----------------------------------------------+
-| ushort        | uint16                                       |
-+---------------+----------------------------------------------+
-| half          | float16                                      |
-+---------------+----------------------------------------------+
-| float         | float32                                      |
-+---------------+----------------------------------------------+
 
 .. Note:: The following types are not present in WSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
 
@@ -874,6 +856,10 @@ vector. Each item below includes two types, which are synonyms for each other.
 * bool2, or vector<bool, 2>
 * bool3, or vector<bool, 3>
 * bool4, or vector<bool, 4>
+* uchar1, or vector<uchar, 1>
+* uchar2, or vector<uchar, 2>
+* uchar3, or vector<uchar, 3>
+* uchar4, or vector<uchar, 4>
 * ushort1, or vector<ushort, 1>
 * ushort2, or vector<ushort, 2>
 * ushort3, or vector<ushort, 3>
@@ -882,6 +868,10 @@ vector. Each item below includes two types, which are synonyms for each other.
 * uint2, or vector<uint, 2>
 * uint3, or vector<uint, 3>
 * uint4, or vector<uint, 4>
+* char1, or vector<char, 1>
+* char2, or vector<char, 2>
+* char3, or vector<char, 3>
+* char4, or vector<char, 4>
 * short1, or vector<short, 1>
 * short2, or vector<short, 2>
 * short3, or vector<short, 3>
@@ -934,6 +924,8 @@ of rows, in that order. Each item below includes two types, which are synonyms f
 * float4x2, or matrix<float, 4, 2>
 * float4x3, or matrix<float, 4, 3>
 * float4x4, or matrix<float, 4, 4>
+
+.. todo:: Should we have int or bool matrices?
 
 Samplers
 """"""""
