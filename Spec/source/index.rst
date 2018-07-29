@@ -846,6 +846,12 @@ Built-in Scalars
 
 .. Note:: The following types are not present in WSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
 
+Built-in Atomic Types
+"""""""""""""""""""""
+
+#. atomic_int
+#. atomic_uint
+
 Built-in aggregate types
 """"""""""""""""""""""""
 
