@@ -870,24 +870,31 @@ Built-in aggregate types
 The following are vector types, which list the name of a scalar type and the number of elements in the
 vector. Each item below includes two types, which are synonyms for each other.
 
+* bool1, or vector<bool, 1>
 * bool2, or vector<bool, 2>
 * bool3, or vector<bool, 3>
 * bool4, or vector<bool, 4>
+* ushort1, or vector<ushort, 1>
 * ushort2, or vector<ushort, 2>
 * ushort3, or vector<ushort, 3>
 * ushort4, or vector<ushort, 4>
+* uint1, or vector<uint, 1>
 * uint2, or vector<uint, 2>
 * uint3, or vector<uint, 3>
 * uint4, or vector<uint, 4>
+* short1, or vector<short, 1>
 * short2, or vector<short, 2>
 * short3, or vector<short, 3>
 * short4, or vector<short, 4>
+* int1, or vector<int, 1>
 * int2, or vector<int, 2>
 * int3, or vector<int, 3>
 * int4, or vector<int, 4>
+* half1, or vector<half, 1>
 * half2, or vector<half, 2>
 * half3, or vector<half, 3>
 * half4, or vector<half, 4>
+* float1, or vector<float, 1>
 * float2, or vector<float, 2>
 * float3, or vector<float, 3>
 * float4, or vector<float, 4>
@@ -911,22 +918,22 @@ of rows, in that order. Each item below includes two types, which are synonyms f
 * half4x2, or matrix<half, 4, 2>
 * half4x3, or matrix<half, 4, 3>
 * half4x4, or matrix<half, 4, 4>
-* float1x1, or matrix<half, 1, 1>
-* float1x2, or matrix<half, 1, 2>
-* float1x3, or matrix<half, 1, 3>
-* float1x4, or matrix<half, 1, 4>
-* float2x1, or matrix<half, 2, 1>
-* float2x2, or matrix<half, 2, 2>
-* float2x3, or matrix<half, 2, 3>
-* float2x4, or matrix<half, 2, 4>
-* float3x1, or matrix<half, 3, 1>
-* float3x2, or matrix<half, 3, 2>
-* float3x3, or matrix<half, 3, 3>
-* float3x4, or matrix<half, 3, 4>
-* float4x1, or matrix<half, 4, 1>
-* float4x2, or matrix<half, 4, 2>
-* float4x3, or matrix<half, 4, 3>
-* float4x4, or matrix<half, 4, 4>
+* float1x1, or matrix<float, 1, 1>
+* float1x2, or matrix<float, 1, 2>
+* float1x3, or matrix<float, 1, 3>
+* float1x4, or matrix<float, 1, 4>
+* float2x1, or matrix<float, 2, 1>
+* float2x2, or matrix<float, 2, 2>
+* float2x3, or matrix<float, 2, 3>
+* float2x4, or matrix<float, 2, 4>
+* float3x1, or matrix<float, 3, 1>
+* float3x2, or matrix<float, 3, 2>
+* float3x3, or matrix<float, 3, 3>
+* float3x4, or matrix<float, 3, 4>
+* float4x1, or matrix<float, 4, 1>
+* float4x2, or matrix<float, 4, 2>
+* float4x3, or matrix<float, 4, 3>
+* float4x4, or matrix<float, 4, 4>
 
 Samplers
 """"""""
