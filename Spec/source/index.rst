@@ -858,39 +858,30 @@ Built-in aggregate types
 The following are vector types, which list the name of a scalar type and the number of elements in the
 vector. Each item below includes two types, which are synonyms for each other.
 
-* bool1, or vector<bool, 1>
 * bool2, or vector<bool, 2>
 * bool3, or vector<bool, 3>
 * bool4, or vector<bool, 4>
-* uchar1, or vector<uchar, 1>
 * uchar2, or vector<uchar, 2>
 * uchar3, or vector<uchar, 3>
 * uchar4, or vector<uchar, 4>
-* ushort1, or vector<ushort, 1>
 * ushort2, or vector<ushort, 2>
 * ushort3, or vector<ushort, 3>
 * ushort4, or vector<ushort, 4>
-* uint1, or vector<uint, 1>
 * uint2, or vector<uint, 2>
 * uint3, or vector<uint, 3>
 * uint4, or vector<uint, 4>
-* char1, or vector<char, 1>
 * char2, or vector<char, 2>
 * char3, or vector<char, 3>
 * char4, or vector<char, 4>
-* short1, or vector<short, 1>
 * short2, or vector<short, 2>
 * short3, or vector<short, 3>
 * short4, or vector<short, 4>
-* int1, or vector<int, 1>
 * int2, or vector<int, 2>
 * int3, or vector<int, 3>
 * int4, or vector<int, 4>
-* half1, or vector<half, 1>
 * half2, or vector<half, 2>
 * half3, or vector<half, 3>
 * half4, or vector<half, 4>
-* float1, or vector<float, 1>
 * float2, or vector<float, 2>
 * float3, or vector<float, 3>
 * float4, or vector<float, 4>
@@ -898,35 +889,21 @@ vector. Each item below includes two types, which are synonyms for each other.
 The following are matrix types, which list the name of a scalar type, the number of columns, and the number
 of rows, in that order. Each item below includes two types, which are synonyms for each other.
 
-* half1x1, or matrix<half, 1, 1>
-* half1x2, or matrix<half, 1, 2>
-* half1x3, or matrix<half, 1, 3>
-* half1x4, or matrix<half, 1, 4>
-* half2x1, or matrix<half, 2, 1>
 * half2x2, or matrix<half, 2, 2>
 * half2x3, or matrix<half, 2, 3>
 * half2x4, or matrix<half, 2, 4>
-* half3x1, or matrix<half, 3, 1>
 * half3x2, or matrix<half, 3, 2>
 * half3x3, or matrix<half, 3, 3>
 * half3x4, or matrix<half, 3, 4>
-* half4x1, or matrix<half, 4, 1>
 * half4x2, or matrix<half, 4, 2>
 * half4x3, or matrix<half, 4, 3>
 * half4x4, or matrix<half, 4, 4>
-* float1x1, or matrix<float, 1, 1>
-* float1x2, or matrix<float, 1, 2>
-* float1x3, or matrix<float, 1, 3>
-* float1x4, or matrix<float, 1, 4>
-* float2x1, or matrix<float, 2, 1>
 * float2x2, or matrix<float, 2, 2>
 * float2x3, or matrix<float, 2, 3>
 * float2x4, or matrix<float, 2, 4>
-* float3x1, or matrix<float, 3, 1>
 * float3x2, or matrix<float, 3, 2>
 * float3x3, or matrix<float, 3, 3>
 * float3x4, or matrix<float, 3, 4>
-* float4x1, or matrix<float, 4, 1>
 * float4x2, or matrix<float, 4, 2>
 * float4x3, or matrix<float, 4, 3>
 * float4x4, or matrix<float, 4, 4>
@@ -958,16 +935,16 @@ The following types represent textures:
 * Texture3D<T>
 * RWTexture3D<T>
 * TextureCube<T>
-* TextureCubeArray<T>
 * TextureDepth2D<S>
+* RWTextureDepth2D<S>
 * TextureDepth2DArray<S>
+* RWTextureDepth2DArray<S>
 * TextureDepthCube<S>
-* TextureDepthCubeArray<S>
 
 .. todo:: Texture2DMS<T>, TextureDepth2DMS<float>
 
-Each of the above types accepts a "type argument". The "T" types above may be any scalar or vector type.
-The "S" types above may be float, float1, float2, float3, or float4.
+Each of the above types accepts a "type argument". The "T" types above may be any scalar or vector integral or floating point type.
+The "S" types above may be float or half.
 
 If the type argument, including the ``<>`` characters is missing, is is assumed to be ``float4``.
 
