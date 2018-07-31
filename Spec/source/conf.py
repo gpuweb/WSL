@@ -79,6 +79,7 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 #
 html_theme = 'nature'
+# html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -143,11 +144,14 @@ except NameError:
     imgmath_latex_preamble = ""
 with open('WSL_macros.tex') as f:
     macros = f.read()
+# The following horror is for aligning inference rules and their names..
 macros = macros.replace('%\n', '')
 macros = macros.replace('{\n', '{')
 macros = macros.replace(r'\newcommand{\ottdrule}[4][]{{\displaystyle\frac{\begin{array}{l}#2\end{array}}{#3}\quad\ottdrulename{#4}}}', r'\newcommand{\ottdrule}[2]{{\displaystyle\frac{\begin{array}{l}#1\end{array}}{#2}}}')
 import re
-macros = re.sub(r'\\newcommand{(\\[a-zA-Z]*)}\[1\]{\\ottdrule\[#1\]{(.*)}{(.*)}{{\\ottdrulename{(.*)}}{}}}', r'\\newcommand{\1}[1]{\\ottdrule{\2}{\3} & \\ottdrulename{\4}}', macros)
+macros = re.sub(r'\\newcommand{(\\[a-zA-Z]*)}\[1\]{\\ottdrule\[#1\]{(.*)}{(.*)}{{\\ottdrulename{(.*)}}{}}}', r'\\newcommand{\1}[1]{\\ottdrule{\2}{\3} & \\quad\\ottdrulename{\4}}', macros)
+# Finally, let's add some extra spacing between inference rules
+macros += "\\addtolength{\\jot}{1em}\n"
 # used when building latex and pdf versions
 latex_elements['preamble'] += macros
 # used when building html version

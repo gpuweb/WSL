@@ -647,7 +647,7 @@ Definitions
 We split the semantics in two parts: a per-thread execution semantics that does not know anything about concurrency or the memory, and a global set of rules for
 loads, stores, barriers and the like.
 
-The per-thread semantics is a fairly classic small-step operational semantics, meaning that it describes what a list of possible transitions that the program can
+The per-thread semantics is a fairly classic small-step operational semantics, meaning that it describes a list of possible transitions that the program can
 take in one step.
 The per-thread state is made of a few element:
 
@@ -713,6 +713,18 @@ Here is how to reduce a branch (if-then-else construct, remember that if-then is
 
 #. Else reduce that expression
 
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleifXXtrue{}\\
+        \ottdruleifXXfalse{}\\
+        \ottdruleifXXreduce{}
+    \end{align*}
+
+.. todo::
+    Find a way to reduce the size of the rules
+
 Here is how to reduce a ``Join(s)`` statement:
 
 #. If the argument of the ``Join`` is a terminator (``break;``, ``continue;``, ``fallthrough;``, ``return e?;`` or ``trap;``) or an empty block
@@ -722,6 +734,14 @@ Here is how to reduce a ``Join(s)`` statement:
    #. Replace the ``Join`` statement by its argument
 
 #. Else reduce its argument
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulejoinXXelim{}\\
+        \ottdrulejoinXXreduce{}
+    \end{align*}
 
 .. note:: Popping the last value from the control flow stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.
 
@@ -734,7 +754,7 @@ Informally it represents the different cases of a switch, and deals with the ``f
 Here is how to reduce a switch statement by one step:
 
 #. If the expression in the switch can be reduced, reduce it by one step
-#. Else if it is a value ``val`` and there is a ``case val:`` in the switch:
+#. Else if it is an integer or enum value ``val`` and there is a ``case val:`` in the switch:
 
     #. Wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
@@ -742,13 +762,20 @@ Here is how to reduce a switch statement by one step:
 
 #. Else
 
-   #. ASSERT(the expression in the switch is a value)
+   #. ASSERT(the expression in the switch is an integer or enum value)
    #. ASSERT(there is a ``default:`` case in the switch)
    #. Find the ``default`` case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)
    #. Do the same for each sequence of statements until the end of the switch
-   #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in the program order
+   #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
 
-.. todo:: define what a value is.
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleswitchXXreduce{}\\
+        \ottdruleswitchXXcaseXXfound{}\\
+        \ottdruleswitchXXdefault{}
+    \end{align*}
 
 Here is how to reduce a ``Cases`` construct by one step:
 
@@ -768,6 +795,16 @@ Here is how to reduce a ``Cases`` construct by one step:
 
 #. Else reduce the first argument by one step
 
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulecasesXXfallthrough{}\\
+        \ottdrulecasesXXbreak{}\\
+        \ottdrulecasesXXotherXXterminator{}\\
+        \ottdrulecasesXXreduce{}
+    \end{align*}
+
 Loops
 """""
 
@@ -775,6 +812,13 @@ We add yet another kind of statement: the ``Loop(s, s')`` construct that takes a
 Informally, its first argument represent the current iteration of a loop, and its second argument is a continuation for the rest of the loop.
 
 Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, if(e) do s while(e); else {})``.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruledoXXwhileXXloop{}
+    \end{align*}
 
 .. note:: while loops and for loops are desugared into do while loops, see the Parsing section.
 
@@ -785,19 +829,66 @@ Here is how to reduce a ``Loop(s, s')`` statement by one step:
 #. Else if ``s`` is another terminator (``fallthrough;``, ``return;``, ``return rval;`` or ``trap;``), replace the whole construct by it
 #. Else reduce ``s`` by one step
 
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleloopXXbreak{}\\
+        \ottdruleloopXXnextXXiteration{}\\
+        \ottdruleloopXXotherXXterminator{}\\
+        \ottdruleloopXXreduce{}
+    \end{align*}
+
+.. note::
+    These operations do not need to explicitly modify the control-flow stack, because each iteration of a loop executes an ``if`` statement that does it.
+
 Barriers and uniform control flow
 """""""""""""""""""""""""""""""""
 
 There is no rule in the per-thread semantics for *control barriers*.
-Instead, there is a rule in the global semantics, saying that if all threads are at a barrier instruction, and their control-flow stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
+Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction, and their control-flow stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
 
 Other
 """""
 
-.. todo:: Return reduce, and effectful expr.
+If a statement is just an expression (``effectfulExpr`` in the grammar), it is either discarded (if it is a value) or reduced by one step (otherwise).
+
+If a statement is a return followed by an expression, and the expression can be reduced, then the statement can as well by reducing the expression.
+
+.. todo::
+    Atomics (load/store/fence aka memory barrier).
 
 Execution of expressions
 ------------------------
+
+Operations affecting control-flow
+"""""""""""""""""""""""""""""""""
+
+Just like we added ``Join``, ``Cases`` and ``Loop`` construct to deal with control-flow affecting statements, we add a ``JoinExpr`` construct to deal with control-flow affecting expressions.
+``JoinExpr`` takes as argument an expression and return an expression.
+
+There are three kinds of expressions that can cause a divergence in control-flow: the boolean and (that short-circuits), the boolean or (that also short-circuits), and ternary conditions.
+
+Pointers and references
+"""""""""""""""""""""""
+
+- taking them
+- dereferencing them
+- arrays
+
+Variables and assignment
+""""""""""""""""""""""""
+
+Calls
+"""""
+
+Other
+"""""
+
+- comma
+- parens
+- not
+- other operators from the standard library?
 
 Memory model
 ------------
@@ -809,7 +900,10 @@ There are 4 address spaces:
 #. threadgroup
 #. thread
 
-How do these interact with pointers? How can you have a pointer in one address space that points to a value in another address space?
+.. todo::
+    How do these interact with pointers? How can you have a pointer in one address space that points to a value in another address space?
+    talk about fences (aka memory barriers).
+    talk about atomics, races, etc..
 
 Standard library
 ================
