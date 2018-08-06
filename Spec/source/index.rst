@@ -899,13 +899,94 @@ If a statement is a return followed by an expression, and the expression can be 
 Execution of expressions
 ------------------------
 
+.. todo::
+    Define the notion of value, also define the extra (non-syntactic) elements we add to expressions (Ptr, Ref, array literals, struct literals, LVal, etc..)
+
 Operations affecting control-flow
 """""""""""""""""""""""""""""""""
 
 Just like we added ``Join``, ``Cases`` and ``Loop`` construct to deal with control-flow affecting statements, we add a ``JoinExpr`` construct to deal with control-flow affecting expressions.
-``JoinExpr`` takes as argument an expression and return an expression.
+``JoinExpr`` takes as argument an expression and return an expression. Its only use is (informally) as a marker that the control-flow stack will have to be popped to access its content.
 
-There are three kinds of expressions that can cause a divergence in control-flow: the boolean and (that short-circuits), the boolean or (that also short-circuits), and ternary conditions.
+There are three kinds of expressions that can cause a divergence in control-flow: the boolean and (i.e. ``&&``, that short-circuits), the boolean or (i.e. ``||``, that also short-circuits), and ternary conditions.
+
+To reduce a boolean and by one step:
+
+#. If its first operand can be reduced, reduce it
+#. Else if its first operand is ``false``, replace the whole operation by ``false``.
+#. Else
+
+    #. ASSERT(its first operand is ``true``)
+    #. Push ``true`` on the control-flow stack.
+    #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleandXXreduce{}\\
+        \ottdruleandXXfalse{}\\
+        \ottdruleandXXtrue{}
+    \end{align*}
+
+
+Very similarily, to reduce a boolean or by one step:
+
+#. If its first operand can be reduced, reduce it
+#. Else if its first operand is ``true``, replace the whole operation by ``true``.
+#. Else
+
+    #. ASSERT(its first operand is ``false``)
+    #. Push ``false`` on the control-flow stack.
+    #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleorXXreduce{}\\
+        \ottdruleorXXtrue{}\\
+        \ottdruleorXXfalse{}
+    \end{align*}
+
+
+To reduce a ternary condition by one step:
+
+#. If its first operand can be reduced, reduce it
+#. Else if its first operand is ``true``
+
+    #. Push ``true`` on the control-flow stack.
+    #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct
+
+#. Else
+
+    #. ASSERT(its first operand is ``false``)
+    #. Push ``false`` on the control-flow stack.
+    #. Replace the whole operation by its third operand wrapped in a ``JoinExpr`` construct.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleternaryXXreduce{}\\
+        \ottdruleternaryXXtrue{}\\
+        \ottdruleternaryXXfalse{}
+    \end{align*}
+
+
+To reduce a ``JoinExpr`` by one step:
+
+#. If its operand is not a lvalue, and can be reduced, then reduce it by one step
+#. Else pop one element from the control stack, and replace the whole expression by the operand.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulejoinXXexprXXreduce{}\\
+        \ottdrulejoinXXexprXXelim{}
+    \end{align*}
+
 
 Pointers and references
 """""""""""""""""""""""
@@ -1047,9 +1128,12 @@ Samplers
 
 Samplers must only be passed into an entry point inside an argument. All samplers are immutable and must be
 declared in the "constant" address space. There is no constructor for samplers; it is impossible to create
-or destory one in WHLSL. The type is defined as ``native typedef sampler;``. Samplers are are impossible to
+or destory one in WHLSL. The type is defined as ``native typedef sampler;``. Samplers are impossible to
 introspect. Arrays must not contain samplers anywhere inside them. Functions that return samplers must only
 have one return point. Ternary expressions must not return references.
+
+.. todo::
+    Robin: I have not put the ``native typedef`` syntax in the grammar or the semantics so far, should I?
 
 Textures
 """"""""
@@ -1086,6 +1170,13 @@ must never be modified. There is no constructor for textures; it is impossible t
 Arrays must not contain textures anywhere inside them. Functions that return textures must only have one return
 point. Ternary expressions must not return references.
 
+.. todo::
+    "Therefore": it is not clear to me how it is a consequence (Robin).
+    "Ternary expressions must not return references": What kind of references are you referring to? If it is array references, I don't think it is the right place to mention this (but thank you for the reminder to put it in the validation section).
+    Similarily, most of these constraints should probably be either duplicated in or moved to the validation section, I will take care of it.
+
+    They are not copyable, ie they are references.
+
 Pointers
 """"""""
 
@@ -1094,6 +1185,12 @@ operator. No data arrived at via a ``constant`` pointer may be modified. ``devic
 ``threadgroup`` pointers must not point to data that may have pointers in it. Arrays must not contain pointers
 anywhere inside them. Functions that return pointers must only have one return point. Ternary expressions must
 not return pointers. Every construction of a pointer must be initialized upon declaration and never reassigned.
+
+.. todo::
+    "No data arrived at via a ``constant`` pointer may be modified": this phrasing sounds a bit unclear to me.
+    In particular (from my understanding), it is not the pointer itself that is constant, it is just a pointer to the constant address space.
+    What I am trying to say is that data pointed to by a ``constant`` pointer cannot be modified at all, even if accessed in some other way, because all ways of accessing it will find it is in the ``constant`` address space.
+    (at least that is the way I've understood it so far).
 
 Array References
 """"""""""""""""

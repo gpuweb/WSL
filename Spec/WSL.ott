@@ -370,13 +370,11 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- e : bool
     G |- s : B
     G |- s' : B'
-    Return Ptr(tval, as) not in B
-    Return Ptr(tval, as) not in B'
-    Return Ref(tval, as) not in B
-    Return Ref(tval, as) not in B'
+    B'' = B + B'
+    Return Ptr(tval, as) not in B''
+    Return Ref(tval, as) not in B''
     ------------------------------ :: if
-    G |- if (e) s else s' : B + B'
-    % The last 4 premises are useful for compiling to SpirV
+    G |- if (e) s else s' : B''
 
     G |- e : bool
     G |- s : B
@@ -512,8 +510,10 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} by
     G |- e && e' : bool
 
     G |- e0 : bool
-    G |- e1 : t
-    G |- e2 : t
+    G |- e1 : tval
+    G |- e2 : tval
+    tval != Ptr(tval', as)
+    tval != Ref(tval', as)
     --------------------- :: ternary
     G |- e0 ? e1 : e2 : t
 
@@ -524,6 +524,8 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} by
     G |- e : LVal(tval, as)
     G |- e' : tval
     as != constant
+    tval != Ptr(tval', as')
+    tval != Ref(tval', as')
     ----------------------- :: assignment
     G |- e = e' : tval
 
