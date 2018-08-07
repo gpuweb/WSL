@@ -1084,9 +1084,70 @@ Numerical Compliance
 Built-in Variables
 ------------------
 
-Different for each shader stage
+Built-in variables are represented by using semantics. For example, ``uint theInstanceID : SV_InstanceID``.
 
-Represented by magic name?
+The following built-in variables, as identified by their semantics, are available inside arguments to vertex
+shaders:
+
++---------------+------+
+| Semantic Name | Type |
++===============+======+
+| SV_InstanceID | uint |
++---------------+------+
+| SV_VertexID   | uint |
++---------------+------+
+
+The following built-in variables, as identified by their semantics, are available inside the return value of
+a vertex shader:
+
++---------------+--------+
+| Semantic Name | Type   |
++===============+========+
+| PSIZE         | float  |
++---------------+--------+
+| SV_Position   | float4 |
++---------------+--------+
+
+The following built-in variables, as identified by their semantics, are available inside arguments to fragment
+shaders:
+
++------------------+--------+
+| Semantic Name    | Type   |
++==================+========+
+| SV_IsFrontFace   | float4 |
++------------------+--------+
+| SV_SampleIndex   | bool   |
++------------------+--------+
+| SV_InnerCoverage | uint   |
++------------------+--------+
+
+The following built-in variables, as identified by their semantics, are available inside the return value of
+a fragment shader:
+
++----------------+--------+
+| Semantic Name  | Type   |
++================+========+
+| COLOR[n]       | float4 |
++----------------+--------+
+| DEPTH          | bool   |
++----------------+--------+
+| SV_Coverage    | uint   |
++----------------+--------+
+
+The following built-in variables, as identified by their semantics, are available inside arguments to compute
+shaders:
+
++---------------------+-------+
+| Semantic Name       | Type  |
++=====================+=======+
+| SV_DispatchThreadID | uint3 |
++---------------------+-------+
+| SV_GroupID          | uint3 |
++---------------------+-------+
+| SV_GroupIndex       | uint  |
++---------------------+-------+
+| SV_GroupThreadID    | uint3 |
++---------------------+-------+
 
 Built-in Functions
 ------------------
