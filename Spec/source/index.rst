@@ -89,7 +89,7 @@ the programmable vertex shader. A vertex shader is responsible for mapping a sin
 to a single output vertex. Multiple vertex shaders may run in parallel; two arbitrary vertices
 may be mapped through the vertex shader concurrently or sequentially.
 
-An input vertex may be any assortment of information, arranged into three forms:
+An input vertex may be any assortment of information, arranged into four forms:
 
 #. Stage-in data. Each invocation of the vertex shader is associated with data from a particular
    index in a GPU buffer. The WebGPU API is responsible for describing the association between
@@ -101,7 +101,10 @@ An input vertex may be any assortment of information, arranged into three forms:
    resources. Resources may be of type buffer, texture, or sampler.
 
 #. Built-ins. Some information can be made available to the shader automatically (such as the
-   invocation ID or the primitive ID).
+   vertex ID or the instance ID).
+
+#. Specialization constants. These are scalar variables for which the WebGPU API specifies a value
+   before the shader may be used.
 
 Because vertex shaders may have write-access to resources, they are not "pure" in the functional
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
@@ -145,7 +148,7 @@ is usually a color in the framebuffer, but may be other information such as geom
 lighting accumulation in a lighting buffer).
 
 Similar to a vertex shader, a fragment shader input may be any assortment of information, arranged into
-three forms:
+four forms:
 
 #. Interpolated output from the vertex shader. These variables are matched to vertex shader variables
    using the routine described below.
@@ -156,6 +159,9 @@ three forms:
 
 #. Built-ins. Some information can be made available to the shader automatically (such as the
    sample ID or the primitive ID).
+
+#. Specialization constants. These are scalar variables for which the WebGPU API specifies a value
+   before the shader may be used.
 
 Because vertex shaders may have write-access to resources, they are not "pure" in the functional
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
@@ -208,7 +214,7 @@ threadgroup variables for both reading and writing.
 The WebGPU API describes how many invocations of the compute shader to invoke, as well as how big
 the blocks should be within the grid.
 
-The input to a compute shader may be any assortment of information, arranged into two forms:
+The input to a compute shader may be any assortment of information, arranged into three forms:
 
 #. Resources. All invocations of the compute shader may have access to one or more resources.
    All invocations share the same resource; therefore, data races may occur between read-write
@@ -216,6 +222,9 @@ The input to a compute shader may be any assortment of information, arranged int
 
 #. Built-ins. Some information can be made available to the shader automatically (such as the
    invocation ID within the block or the block ID within the grid).
+
+#. Specialization constants. These are scalar variables for which the WebGPU API specifies a value
+   before the shader may be used.
 
 Entry Points
 ------------
@@ -255,22 +264,27 @@ identical. Otherwise, the entire program is in error.
 
 The items of the flattened structs can be partitioned into a number of buckets:
 
-#. Built-in variables. These declaractions must exactly match an item in the list below.
+#. Built-in variables. These declaractions use the appropriate built-in semantic from the list below,
+   and must use the appropriate type for that semantic.
 
 #. Resources. These must be either the opaque texture types, opaque sampler types, or slices. Slices must
    only hold scalars, vectors, matrices, or structs containing any of these types. Nested structs are
    allowed. The packing rules for data inside slices are described below. All resources must be in the
-   ``device`` or ``constant`` memory space.
+   ``device`` or ``constant`` memory space, and use the appropriate semantic as described below.
 
-#. Stage-in/out variables. These are variables of scalar, vector, or matrix type.
+#. Stage-in/out variables. These are variables of scalar, vector, or matrix type. Stage-in variables in
+   a vertex shader must use the semantic `` : attribute(n)`` where n is a nonnegative integer. Stage-out
+   variables in a vertex shader and stage-in variables in a fragment shader must also use the semantic
+   `` : attribute(n)``. Stage-out variables in a vertex shader are matched with stage-in variables in a
+   fragment shader by semantic. After these stage-in/stage-out varaibles match, their qualified type must
+   also match. After discovering all these matches, any other left-over variables are simply zero-filled.
 
-#. Specialization constants. These are scalar variables which must be specified by the WebGPU before the
-   shader is allowed to execute. These variables must be qualified with the ``specialized`` qualifier.
+#. Specialization constants. These are scalar variables which must be specified by the WebGPU API before
+   the shader is allowed to execute. These variables must use the ``specialized`` semantic.
 
-Vertex shaders accept all three buckets as input, and allow only built-in variables and stage-out variables
-as output. Fragment shaders accept all three buckets as input, and allow only built-in variables and stage-
-out variables as output. Fragment shaders only accept built-in variables and resources, and do not allow
-any output.
+Vertex shaders accept all four buckets as input, and allow only built-in variables and stage-out variables
+as output. Fragment shaders accept all four buckets as input, and allow only built-in variables as output.
+Compute shaders only accept built-in variables and resources, and do not allow any output.
 
 Vertex shader stage-out variables and fragment-shader stage-in variables may be qualified with any of the
 following qualifiers: ``nointerpolation``, ``noperspective``, ``centroid``, or ``sample``. ``nointerpolation``
@@ -283,6 +297,13 @@ and instead use simple linear interpolation. ``centroid`` configures the rasteri
 in the centroid of all the samples within the geometry, rather than the center of the pixel. ``sample``
 configures the fragment shader to run multiple times per pixel, with the interpolation point at each
 individual sample.
+
+The value used for variables qualified with the ``nointerpolation`` qualifier is the value produced by
+one vertex shader invocation per primitive, known as the "provoking vertex." When drawing points, the
+provoking vertex is the vertex associated with that point (since points only have a single vertex).
+When drawing lines, the provoking vertex is the initial vertex (rather than the final vertex). When
+drawing triangles, the provoking vertex is also the initial vertex. Strips and fans are not supported
+by WHLSL.
 
 Grammar
 =======
@@ -1085,6 +1106,7 @@ Built-in Variables
 ------------------
 
 Built-in variables are represented by using semantics. For example, ``uint theInstanceID : SV_InstanceID``.
+Variables with these semantics must have the type associated with that semantic.
 
 The following built-in variables, as identified by their semantics, are available inside arguments to vertex
 shaders:
@@ -1129,7 +1151,7 @@ a fragment shader:
 +================+========+
 | COLOR[n]       | float4 |
 +----------------+--------+
-| DEPTH          | bool   |
+| DEPTH          | float  |
 +----------------+--------+
 | SV_Coverage    | uint   |
 +----------------+--------+
