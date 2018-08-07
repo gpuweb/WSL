@@ -253,7 +253,7 @@ Multiple members with the same name may appear inside the flattened collection o
 if multiple members with the same name appear, the entire variable (type, qualifiers, etc.) must be
 identical. Otherwise, the entire program is in error.
 
-The items of the flattened structs can be partitioned into three buckets:
+The items of the flattened structs can be partitioned into a number of buckets:
 
 #. Built-in variables. These declaractions must exactly match an item in the list below.
 
@@ -262,12 +262,27 @@ The items of the flattened structs can be partitioned into three buckets:
    allowed. The packing rules for data inside slices are described below. All resources must be in the
    ``device`` or ``constant`` memory space.
 
-# Stage-in/out variables. These are variables of scalar, vector, or matrix type.
+#. Stage-in/out variables. These are variables of scalar, vector, or matrix type.
+
+#. Specialization constants. These are scalar variables which must be specified by the WebGPU before the
+   shader is allowed to execute. These variables must be qualified with the ``specialized`` qualifier.
 
 Vertex shaders accept all three buckets as input, and allow only built-in variables and stage-out variables
 as output. Fragment shaders accept all three buckets as input, and allow only built-in variables and stage-
 out variables as output. Fragment shaders only accept built-in variables and resources, and do not allow
 any output.
+
+Vertex shader stage-out variables and fragment-shader stage-in variables may be qualified with any of the
+following qualifiers: ``nointerpolation``, ``noperspective``, ``centroid``, or ``sample``. ``nointerpolation``
+and ``noperspective`` must not both be specified on the same variable. ``centroid`` and ``sample`` must not
+both be specified on the same variable.
+
+``nointerpolation`` configures the rasterizer to not interpolate the value of this variable across the
+geometry. ``noperspective`` configures the rasterize to not use perspective-correct interpolation,
+and instead use simple linear interpolation. ``centroid`` configures the rasterizer to use a position
+in the centroid of all the samples within the geometry, rather than the center of the pixel. ``sample``
+configures the fragment shader to run multiple times per pixel, with the interpolation point at each
+individual sample.
 
 Grammar
 =======
@@ -1059,6 +1074,9 @@ not return pointers. Every construction of a pointer must be initialized upon de
 
 Array References
 """"""""""""""""
+
+Uniform Qualifier
+"""""""""""""""""
 
 Numerical Compliance
 """"""""""""""""""""
