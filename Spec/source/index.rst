@@ -305,6 +305,8 @@ When drawing lines, the provoking vertex is the initial vertex (rather than the 
 drawing triangles, the provoking vertex is also the initial vertex. Strips and fans are not supported
 by WHLSL.
 
+When not in the context of arguments or return values of entry points, semantics are ignored.
+
 Grammar
 =======
 
