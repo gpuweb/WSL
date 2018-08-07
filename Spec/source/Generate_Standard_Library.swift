@@ -301,7 +301,7 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
     print("    result.w = x.y;")
     print("    return result;")
     print("}")
-    print("operator \(type)4(\(type)2 x, \(type)2 y")
+    print("operator \(type)4(\(type)2 x, \(type)2 y)")
     print("    \(type)4 result;")
     print("    result.x = x.x;")
     print("    result.y = x.y;")
@@ -397,6 +397,95 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
         }
     }
 }
+
+func computeSwizzle(components: [Int], maxValue: Int, maxLength: Int) -> [[Int]] {
+    if components.count == maxLength {
+        return [components]
+    } else {
+        var result = [[Int]]()
+        for i in 0 ..< maxValue {
+            result += computeSwizzle(components: components + [i], maxValue: maxValue, maxLength: maxLength)
+        }
+        return result
+    }
+}
+
+func component(value: Int) -> String {
+    switch value {
+        case 0:
+            return "x"
+        case 1:
+            return "y"
+        case 2:
+            return "z"
+        case 3:
+            return "w"
+        default:
+            fatalError()
+    }
+}
+
+func uniqueLength(swizzle: [Int]) -> Int {
+    var has0 = false
+    var has1 = false
+    var has2 = false
+    var has3 = false
+    for v in swizzle {
+        switch v {
+            case 0:
+                has0 = true
+            case 1:
+                has1 = true
+            case 2:
+                has2 = true
+            case 3:
+                has3 = true
+            default:
+                fatalError()
+        }
+    }
+    var result = 0
+    if has0 {
+        result += 1
+    }
+    if has1 {
+        result += 1
+    }
+    if has2 {
+        result += 1
+    }
+    if has3 {
+        result += 1
+    }
+    return result
+}
+
+for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
+    for size in 2 ... 4 {
+        for maxValue in 2 ... 4 {
+            for swizzle in computeSwizzle(components: [], maxValue: maxValue, maxLength: size) {
+                let swizzleName = swizzle.map(component).joined()
+                print("\(type)\(size) operator.\(swizzleName)(\(type)\(maxValue) v) {")
+                print("    \(type)\(size) result;")
+                for i in 0 ..< size {
+                    print("    result.\(component(value: i)) = v.\(component(value: swizzle[i]));")
+                }
+                print("    return result;")
+                print("}")
+                if uniqueLength(swizzle: swizzle) == size {
+                    print("\(type)\(maxValue) operator.\(swizzleName)=(\(type)\(maxValue) v, \(type)\(size) c) {")
+                    print("    \(type)\(maxValue) result = v;")
+                    for i in 0 ..< size {
+                        print("    result.\(component(value: swizzle[i])) = c.\(component(value: i));")
+                    }
+                    print("    return result;")
+                    print("}")
+                }
+            }
+        }
+    }
+}
+print()
 
 // These functions are unary floating-point scalar functions,
 // which can also be applied to vectors and matrices component-wise.
