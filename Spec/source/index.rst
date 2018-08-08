@@ -929,7 +929,6 @@ To reduce a boolean and by one step:
         \ottdruleandXXtrue{}
     \end{align*}
 
-
 Very similarily, to reduce a boolean or by one step:
 
 #. If its first operand can be reduced, reduce it
@@ -948,7 +947,6 @@ Very similarily, to reduce a boolean or by one step:
         \ottdruleorXXtrue{}\\
         \ottdruleorXXfalse{}
     \end{align*}
-
 
 To reduce a ternary condition by one step:
 
@@ -973,7 +971,6 @@ To reduce a ternary condition by one step:
         \ottdruleternaryXXfalse{}
     \end{align*}
 
-
 To reduce a ``JoinExpr`` by one step:
 
 #. If its operand is not a lvalue, and can be reduced, then reduce it by one step
@@ -987,27 +984,128 @@ To reduce a ``JoinExpr`` by one step:
         \ottdrulejoinXXexprXXelim{}
     \end{align*}
 
-
 Pointers and references
 """""""""""""""""""""""
+WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
+Array references are actually bounds-checked fat-pointers.
 
-- taking them
-- dereferencing them
-- arrays
+The ``&`` and ``*`` operators simply convert between left-values and pointers.
+In particular, to reduce ``& e``:
+
+#. If ``e`` is an lvalue, replace the whole expression by a pointer to the same address.
+#. Else reduce ``e``.
+
+Symmetrically, to reduce ``* e``:
+
+#. If ``e`` is a pointer, replace the whole expression by a lvalue to the same address
+#. Else reduce ``e``.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruletakeXXptrXXlval{}\\
+        \ottdruletakeXXptrXXreduce{}\\
+        \ottdrulederefXXptr{}\\
+        \ottdrulederefXXreduce{}\\
+    \end{align*}
+
+The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
+There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
+
+.. todo::
+    Finish writing the related formal rules, and explicitely deal with arrays
 
 Variables and assignment
 """"""""""""""""""""""""
 
+A variable name can be reduced in one step into whatever that name binds in the current environment.
+This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.
+
+An lvalue can then be reduced by emitting a load to the corresponding address, and replacing it by whatever value is loaded.
+
+.. todo::
+    make the size of the load explicit?
+
+To reduce an assignment ``e1 = e2``:
+
+#. If ``e1`` is not a lvalue, and can be reduced, reduce it.
+#. Else if ``e2`` can be reduced, reduce it.
+#. Else
+
+   #. Emit a store to the address of the lvalue, of the value on the right of the equal.
+   #. Replace the entire expression by the value on the right of the equal.
+
+.. todo::
+    Make the size of the store explicit.
+    Maybe also make it clearer that value == cannot be reduced, and how to convert from values into bits.
+
 Calls
 """""
+
+Overloaded function calls have already been resolved to point to a specific function during the validation phase.
+
+Like we added ``Loop`` or ``JoinExpr``, we add a special construct ``Call`` that takes as argument a statement and return an expression.
+Informally, it is a way to transform a return statement into the corresponding value.
+
+To reduce a function call by one step:
+
+#. If there is at least an argument that can be reduced, reduce the left-most argument that can be reduced.
+#. Else:
+
+    #. ASSERT(the number of arguments and parameters to the function match)
+    #. Create a new environment from the current environment
+    #. For each parameter of the function, from left to right:
+           
+        #. Lookup the address of that parameter
+        #. Emit a store of the value of the corresponding argument to that address
+        #. Modify the new environment to have a binding from that parameter name to that address
+
+    #. Make a block statement from the body of the function, annotated with this new environment
+    #. Wrap that block in the ``Call`` construct
+    #. Replace the entire expression by that construct.
+
+.. note::
+    Contrary to C/C++, execution order is fully specified: it is always left-to-right.
+
+.. note::
+    The new environment binds the parameter names to the argument values, regardless of whether there was already a binding for that name.
+    This allows shadowing global variables.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulecallXXreduce{}\\
+        \ottdrulecallXXresolve{}
+    \end{align*}
+
+To reduce a ``Call`` construct by one step:
+
+#. If its argument can be reduce, reduce it
+#. Else if its argument is ``return;`` or an empty block, replace it by a special ``Void`` value. Nothing can be done with such a value, except discarding it (see Effectful Expression).
+#. Else if its argument is ``return val;`` for some value ``val``, then replace it by this value.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulecallXXconstructXXreduce{}\\
+        \ottdrulecallXXreturnXXvoid{}\\
+        \ottdrulecallXXendXXfunction{}\\
+        \ottdrulecallXXreturn{}
+    \end{align*}
 
 Other
 """""
 
-- comma
-- parens
-- not
-- other operators from the standard library?
+Parentheses have no effect at runtime (beyond their effect during parser).
+
+The comma operator very simply reduces its first operand as long as it can, then drop it and is replaced by its second operand.
+
+.. todo::
+    Decide on whether the ! operator deserves a mention, or should just be special syntax for a standard library function.
+    It really does not do anything surprising or interesting.
 
 Memory model
 ------------
