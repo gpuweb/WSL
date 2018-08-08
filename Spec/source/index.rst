@@ -1335,7 +1335,7 @@ shaders:
 +==================+========+
 | SV_IsFrontFace   | float4 |
 +------------------+--------+
-| SV_SampleIndex   | bool   |
+| SV_SampleIndex   | uint   |
 +------------------+--------+
 | SV_InnerCoverage | uint   |
 +------------------+--------+
@@ -1346,9 +1346,9 @@ a fragment shader:
 +----------------+--------+
 | Semantic Name  | Type   |
 +================+========+
-| COLOR[n]       | float4 |
+| SV_Target[n]   | float4 |
 +----------------+--------+
-| DEPTH          | float  |
+| SV_Depth       | float  |
 +----------------+--------+
 | SV_Coverage    | uint   |
 +----------------+--------+
