@@ -7,16 +7,31 @@ for type in ["void", "bool", "uchar", "ushort", "uint", "char", "short", "int", 
     print("native typedef \(type);")
 }
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
-    for size in 2 ... 4 {
-        print("native typedef \(type)\(size);")
+        print("struct \(type)2 {")
+        print("    \(type) x;")
+        print("    \(type) y;")
+        print("}")
+        print("struct \(type)3 {")
+        print("    \(type) x;")
+        print("    \(type) y;")
+        print("    \(type) z;")
+        print("}")
+        print("struct \(type)4 {")
+        print("    \(type) x;")
+        print("    \(type) y;")
+        print("    \(type) z;")
+        print("    \(type) w;")
+        print("}")
+
+    /*for size in 2 ... 4 {
         print("typedef vector<\(type), \(size)> = \(type)\(size);")
-    }
+    }*/
 }
 for type in ["half", "float"] {
     for i in 2 ... 4 {
         for j in 2 ... 4 {
             print("native typedef \(type)\(i)x\(j);")
-            print("typedef matrix<\(type), \(i), \(j)> = \(type)\(i)x\(j);")
+            //print("typedef matrix<\(type), \(i), \(j)> = \(type)\(i)x\(j);")
         }
     }
 }
@@ -37,9 +52,19 @@ print()
 
 for type1 in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for type2 in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
-        print("native operator \(type1)(\(type2));")
+        if (type1 == type2) {
+            print("operator \(type1)(\(type2) x) {")
+            print("    return x;")
+            print("}")
+        } else {
+            print("native operator \(type1)(\(type2));")
+        }
     }
 }
+
+print("operator bool(bool x) {")
+print("    return x;")
+print("}")
 
 print("native operator int(atomic_int);")
 print("native operator uint(atomic_uint);")
@@ -48,18 +73,12 @@ print("native bool operator==(bool, bool);")
 
 print("bool operator&(bool a, bool b)")
 print("{")
-print("    if (a)")
-print("        return b;")
-print("    return false;")
+print("    return a && b;")
 print("}")
 
 print("bool operator|(bool a, bool b)")
 print("{")
-print("    if (a)")
-print("        return true;")
-print("    if (b)")
-print("        return true;")
-print("    return false;")
+print("    return a || b;")
 print("}")
 
 print("bool operator^(bool a, bool b)")
@@ -117,7 +136,7 @@ for type in ["uchar", "ushort"] {
     print("\(type) operator^(\(type) a, \(type) b) {")
     print("    return \(type)(uint(a) ^ uint(b));")
     print("}")
-    print("\(type) operator~(\(type) a, \(type) b) {")
+    print("\(type) operator~(\(type) a) {")
     print("    return \(type)(~uint(a));")
     print("}")
     print("bool operator==(\(type) a, \(type) b) {")
@@ -136,16 +155,16 @@ for type in ["uchar", "ushort"] {
     print("    return uint(a) >= uint(b);")
     print("}")
 }
-print("uchar operator<<(uchar a, uchar b) {")
+print("uchar operator<<(uchar a, uint b) {")
 print("    return uchar(uint(a) << (b & 255));")
 print("}")
-print("ushort operator<<(ushort a, ushort b) {")
+print("ushort operator<<(ushort a, uint b) {")
 print("    return ushort(uint(a) << (b & 65535));")
 print("}")
-print("uchar operator>>(uchar a, uchar b) {")
+print("uchar operator>>(uchar a, uint b) {")
 print("    return uchar(uint(a) >> (b & 255));")
 print("}")
-print("ushort operator>>(ushort a, ushort b) {")
+print("ushort operator>>(ushort a, uint b) {")
 print("    return ushort(uint(a) >> (b & 65535));")
 print("}")
 
@@ -171,7 +190,7 @@ for type in ["char", "short"] {
     print("\(type) operator^(\(type) a, \(type) b) {")
     print("    return \(type)(int(a) ^ int(b));")
     print("}")
-    print("\(type) operator~(\(type) a, \(type) b) {")
+    print("\(type) operator~(\(type) a) {")
     print("    return \(type)(~int(a));")
     print("}")
     print("bool operator==(\(type) a, \(type) b) {")
@@ -190,16 +209,16 @@ for type in ["char", "short"] {
     print("    return int(a) <= int(b);")
     print("}")
 }
-print("char operator<<(char a, uchar b) {")
+print("char operator<<(char a, uint b) {")
 print("    return char(int(a) << (b & 255));")
 print("}")
-print("short operator<<(short a, ushort b) {")
-print("    return ushort(int(a) << (b & 65535));")
+print("short operator<<(short a, uint b) {")
+print("    return short(int(a) << (b & 65535));")
 print("}")
-print("char operator>>(char a, uchar b) {")
+print("char operator>>(char a, uint b) {")
 print("    return char(int(a) >> (b & 255));")
 print("}")
-print("short operator>>(short a, ushort b) {")
+print("short operator>>(short a, uint b) {")
 print("    return short(int(a) >> (b & 65535));")
 print("}")
 
@@ -269,7 +288,7 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
     print("    result.z = y.y;")
     print("    return result;")
     print("}")
-    print("operator \(type)4(\(type) x, \(type) y, \(type) z, \(type)w) {")
+    print("operator \(type)4(\(type) x, \(type) y, \(type) z, \(type) w) {")
     print("    \(type)4 result;")
     print("    result.x = x;")
     print("    result.y = y;")
@@ -293,15 +312,15 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
     print("    result.w = z;")
     print("    return result;")
     print("}")
-    print("operator \(type)4(\(type) x, \(type) y, \(type) z2) {")
+    print("operator \(type)4(\(type) x, \(type) y, \(type)2 z) {")
     print("    \(type)4 result;")
     print("    result.x = x;")
     print("    result.y = y;")
     print("    result.z = z.x;")
-    print("    result.w = x.y;")
+    print("    result.w = z.y;")
     print("    return result;")
     print("}")
-    print("operator \(type)4(\(type)2 x, \(type)2 y)")
+    print("operator \(type)4(\(type)2 x, \(type)2 y) {")
     print("    \(type)4 result;")
     print("    result.x = x.x;")
     print("    result.y = x.y;")
@@ -337,28 +356,23 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
 }
 
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
-    print("bool operator==(\(type)2 a, \(type)2 b)")
-    print("{")
+    print("bool operator==(\(type)2 a, \(type)2 b) {")
     print("    return a.x == b.x && a.y == b.y;")
     print("}")
-    print("bool operator==(\(type)3 a, \(type)3 b)")
-    print("{")
+    print("bool operator==(\(type)3 a, \(type)3 b) {")
     print("    return a.x == b.x && a.y == b.y && a.z == b.z;")
     print("}")
-    print("bool operator==(\(type)4 a, \(type)4 b)")
-    print("{")
+    print("bool operator==(\(type)4 a, \(type)4 b) {")
     print("    return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;")
     print("}")
-    print("thread T* operator&[]<T>(thread \(type)2* foo, uint index)")
-    print("{")
+    print("thread T* operator&[](thread \(type)2* foo, uint index) {")
     print("    if (index == 0)")
     print("        return &foo->x;")
     print("    if (index == 1)")
     print("        return &foo->y;")
     print("    trap;")
     print("}")
-    print("thread T* operator&[]<T>(thread \(type)3* foo, uint index)")
-    print("{")
+    print("thread T* operator&[](thread \(type)3* foo, uint index) {")
     print("    if (index == 0)")
     print("        return &foo->x;")
     print("    if (index == 1)")
@@ -367,8 +381,7 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
     print("        return &foo->z;")
     print("    trap;")
     print("}")
-    print("thread T* operator&[]<T>(thread \(type)4* foo, uint index)")
-    print("{")
+    print("thread T* operator&[](thread \(type)4* foo, uint index) {")
     print("    if (index == 0)")
     print("        return &foo->x;")
     print("    if (index == 1)")
@@ -384,8 +397,7 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for i in 2 ... 4 {
         for j in 2 ... 4 {
-            print("bool operator==(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b)")
-            print("{")
+            print("bool operator==(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b) {")
             print("    return")
             for m in 0 ..< i {
                 for n in 0 ..< j {
