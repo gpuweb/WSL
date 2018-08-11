@@ -1401,6 +1401,10 @@ for resultType in ["int", "uint", "float"] {
             print("\(resultType) as\(resultType)(\(type) x) {")
             print("    return x;")
             print("}")
+        } else if resultType == "int" && type == "uint" || resultType == "uint" && type == "int" {
+            print("\(resultType) as\(resultType)(\(type) x) {")
+            print("    return \(resultType)(x);")
+            print("}")
         } else {
             print("native \(resultType) as\(resultType)(\(type));")
         }
