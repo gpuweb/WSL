@@ -1121,25 +1121,25 @@ for function in ["count_bits", "reversebits"] {
 }
 
 print("uchar firstbithigh(uchar x) {")
-print("    return (x & (1 << 7)) != 0 ? 0 :")
-for i in 1 ..< 7 {
-    print("          ((x & (1 << \(7 - i))) != 0 ? \(i) :")
+for i in 0 ... 7 {
+    print("    if ((x & (1 << \(7 - i))) != 0)")
+    print("        return \(i);")
 }
-print("          ((x & (1 << 0)) != 0 ? 7 : 8)))))));")
+print("    return 8;")
 print("}")
 print("ushort firstbithigh(ushort x) {")
-print("    return (x & (1 << 15)) != 0 ? 0 :")
-for i in 1 ..< 15 {
-    print("          ((x & (1 << \(15 - i))) != 0 ? \(i) :")
+for i in 0 ... 15 {
+    print("    if ((x & (1 << \(15 - i))) != 0)")
+    print("        return \(i);")
 }
-print("          ((x & (1 << 0)) != 0 ? 15 : 16)))))))))))))));")
+    print("    return 16;")
 print("}")
 print("uint firstbithigh(uint x) {")
-print("    return (x & (1 << 31)) != 0 ? 0 :")
-for i in 1 ..< 31 {
-    print("          ((x & (1 << \(31 - i))) != 0 ? \(i) :")
+for i in 0 ... 31 {
+    print("    if ((x & (1 << \(31 - i))) != 0)")
+    print("        return \(i);")
 }
-print("          ((x & (1 << 0)) != 0 ? 31 : 32)))))))))))))))))))))))))))))));")
+print("    return 32;")
 print("}")
 print("char firstbithigh(char x) {")
 print("    return firstbithigh(uchar(x));")
@@ -1151,25 +1151,25 @@ print("int firstbithigh(int x) {")
 print("    return firstbithigh(uint(x));")
 print("}")
 print("uchar firstbitlow(uchar x) {")
-print("    return (x & (1 << 0)) != 0 ? 7 :")
-for i in 1 ..< 7 {
-    print("          ((x & (1 << \(i))) != 0 ? \(7 - i) :")
+for i in 0 ... 7 {
+    print("    if ((x & (1 << \(i))) != 0)")
+    print("        return \(7 - i);")
 }
-print("          ((x & (1 << 7)) != 0 ? 0 : 8)))))));")
+print("    return 8;")
 print("}")
 print("ushort firstbitlow(ushort x) {")
-print("    return (x & (1 << 0)) != 0 ? 15 :")
-for i in 1 ..< 15 {
-    print("          ((x & (1 << \(i))) != 0 ? \(15 - i) :")
+for i in 0 ... 15 {
+    print("    if ((x & (1 << \(i))) != 0)")
+    print("        return \(15 - i);")
 }
-print("          ((x & (1 << 15)) != 0 ? 0 : 16)))))))))))))));")
+print("    return 16;")
 print("}")
 print("uint firstbitlow(uint x) {")
-print("    return (x & (1 << 0)) != 0 ? 31 :")
-for i in 1 ..< 31 {
-    print("          ((x & (1 << \(i))) != 0 ? \(31 - i) :")
+for i in 0 ... 31 {
+    print("    if ((x & (1 << \(i))) != 0)")
+    print("        return \(31 - i);")
 }
-print("          ((x & (1 << 31)) != 0 ? 0 : 32)))))))))))))))))))))))))))))));")
+print("    return 32;")
 print("}")
 print("char firstbitlow(char x) {")
 print("    return firstbitlow(uchar(x));")
