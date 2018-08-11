@@ -507,7 +507,7 @@ func uniqueLength(swizzle: [Int]) -> Int {
     }
     return result
 }
-/*
+
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for size in 2 ... 4 {
         for maxValue in 2 ... 4 {
@@ -532,7 +532,7 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
             }
         }
     }
-}*/
+}
 print()
 
 // These functions are unary floating-point scalar functions,
@@ -798,7 +798,7 @@ for type in ["half", "float"] {
         print("\(type)\(size) atan2(\(type)\(size) x, \(type)\(size) y) {");
         print("    \(type)\(size) result;")
         for i in 0 ..< size {
-            print("    result[\(i)] = atan2(x[\(i)], y[\(i)];")
+            print("    result[\(i)] = atan2(x[\(i)], y[\(i)]);")
         }
         print("    return result;")
         print("}")
@@ -859,17 +859,19 @@ for function in [("all", "true", "&&"), ("any", "false", "||")] {
             print("    return result;")
             print("}")
         }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("bool \(function.0)(\(type)\(i)x\(j) x) {");
-                print("    bool result = \(function.1);")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result = result \(function.2) (x[\(m)][\(n)] != 0);")
+        if type == "half" || type == "float" {
+            for i in 2 ... 4 {
+                for j in 2 ... 4 {
+                    print("bool \(function.0)(\(type)\(i)x\(j) x) {");
+                    print("    bool result = \(function.1);")
+                    for m in 0 ..< i {
+                        for n in 0 ..< j {
+                            print("    result = result \(function.2) (x[\(m)][\(n)] != 0);")
+                        }
                     }
+                    print("    return result;")
+                    print("}")
                 }
-                print("    return result;")
-                print("}")
             }
         }
     }
@@ -898,17 +900,19 @@ for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"]
         print("    return result;")
         print("}")
     }
-    for i in 2 ... 4 {
-        for j in 2 ... 4 {
-            print("\(type)\(i)x\(j) abs(\(type)\(i)x\(j) x) {");
-            print("    \(type)\(i)x\(j) result;")
-            for m in 0 ..< i {
-                for n in 0 ..< j {
-                    print("    result[\(m)][\(n)] = abs(x[\(m)][\(n)]);")
+    if type == "half" || type == "float" {
+        for i in 2 ... 4 {
+            for j in 2 ... 4 {
+                print("\(type)\(i)x\(j) abs(\(type)\(i)x\(j) x) {");
+                print("    \(type)\(i)x\(j) result;")
+                for m in 0 ..< i {
+                    for n in 0 ..< j {
+                        print("    result[\(m)][\(n)] = abs(x[\(m)][\(n)]);")
+                    }
                 }
+                print("    return result;")
+                print("}")
             }
-            print("    return result;")
-            print("}")
         }
     }
 }
@@ -938,17 +942,19 @@ for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"]
         print("    return result;")
         print("}")
     }
-    for i in 2 ... 4 {
-        for j in 2 ... 4 {
-            print("\(type)\(i)x\(j) sign(\(type)\(i)x\(j) x) {");
-            print("    \(type)\(i)x\(j) result;")
-            for m in 0 ..< i {
-                for n in 0 ..< j {
-                    print("    result[\(m)][\(n)] = sign(x[\(m)][\(n)]);")
+    if type == "half" || type == "float" {
+        for i in 2 ... 4 {
+            for j in 2 ... 4 {
+                print("\(type)\(i)x\(j) sign(\(type)\(i)x\(j) x) {");
+                print("    \(type)\(i)x\(j) result;")
+                for m in 0 ..< i {
+                    for n in 0 ..< j {
+                        print("    result[\(m)][\(n)] = sign(x[\(m)][\(n)]);")
+                    }
                 }
+                print("    return result;")
+                print("}")
             }
-            print("    return result;")
-            print("}")
         }
     }
 }
@@ -971,17 +977,19 @@ for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"]
             print("    return result;")
             print("}")
         }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y) {");
-                print("    \(type)\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)]);")
+        if type == "half" || type == "float" {
+            for i in 2 ... 4 {
+                for j in 2 ... 4 {
+                    print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y) {");
+                    print("    \(type)\(i)x\(j) result;")
+                    for m in 0 ..< i {
+                        for n in 0 ..< j {
+                            print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)]);")
+                        }
                     }
+                    print("    return result;")
+                    print("}")
                 }
-                print("    return result;")
-                print("}")
             }
         }
     }
@@ -1112,19 +1120,6 @@ for function in ["count_bits", "reversebits"] {
             print("    return result;")
             print("}")
         }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x) {");
-                print("    \(type)\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)]);")
-                    }
-                }
-                print("    return result;")
-                print("}")
-            }
-        }
     }
     print()
 }
@@ -1199,19 +1194,6 @@ for function in ["firstbithigh", "firstbitlow"] {
             }
             print("    return result;")
             print("}")
-        }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x) {");
-                print("    \(type)\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)]);")
-                    }
-                }
-                print("    return result;")
-                print("}")
-            }
         }
     }
 }
@@ -1441,22 +1423,24 @@ for resultType in ["int", "uint", "float"] {
                 print("}")
             }
         }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                if type == resultType {
-                    print("\(resultType)\(i)x\(j) as\(resultType)(\(type)\(i)x\(j) x) {")
-                    print("    return x;")
-                    print("}")
-                } else {
-                    print("\(resultType)\(i)x\(j) as\(resultType)(\(type)\(i)x\(j) x) {");
-                    print("    \(resultType)\(i)x\(j) result;")
-                    for m in 0 ..< i {
-                        for n in 0 ..< j {
-                            print("    result[\(m)][\(n)] = as\(resultType)(x[\(m)][\(n)]);")
+        if resultType == "float" && type == "float" {
+            for i in 2 ... 4 {
+                for j in 2 ... 4 {
+                    if type == resultType {
+                        print("\(resultType)\(i)x\(j) as\(resultType)(\(type)\(i)x\(j) x) {")
+                        print("    return x;")
+                        print("}")
+                    } else {
+                        print("\(resultType)\(i)x\(j) as\(resultType)(\(type)\(i)x\(j) x) {");
+                        print("    \(resultType)\(i)x\(j) result;")
+                        for m in 0 ..< i {
+                            for n in 0 ..< j {
+                                print("    result[\(m)][\(n)] = as\(resultType)(x[\(m)][\(n)]);")
+                            }
                         }
+                        print("    return result;")
+                        print("}")
                     }
-                    print("    return result;")
-                    print("}")
                 }
             }
         }
