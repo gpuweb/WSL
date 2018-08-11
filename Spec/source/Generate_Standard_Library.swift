@@ -75,25 +75,21 @@ print("native operator uint(atomic_uint);")
 
 print("native bool operator==(bool, bool);")
 
-print("bool operator&(bool a, bool b)")
-print("{")
+print("bool operator&(bool a, bool b) {")
 print("    return a && b;")
 print("}")
 
-print("bool operator|(bool a, bool b)")
-print("{")
+print("bool operator|(bool a, bool b) {")
 print("    return a || b;")
 print("}")
 
-print("bool operator^(bool a, bool b)")
-print("{")
+print("bool operator^(bool a, bool b) {")
 print("    if (a)")
 print("        return !b;")
 print("    return b;")
 print("}")
 
-print("bool operator~(bool value)")
-print("{")
+print("bool operator~(bool value) {")
 print("    return !value;")
 print("}")
 
