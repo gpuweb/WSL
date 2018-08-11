@@ -507,7 +507,7 @@ func uniqueLength(swizzle: [Int]) -> Int {
     }
     return result
 }
-
+/*
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for size in 2 ... 4 {
         for maxValue in 2 ... 4 {
@@ -532,114 +532,150 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
             }
         }
     }
-}
+}*/
 print()
 
 // These functions are unary floating-point scalar functions,
 // which can also be applied to vectors and matrices component-wise.
-for type in ["half", "float"] {
-    let nativeFunctions = ["cos", "sin", "tan", "acos", "asin", "atan", "cosh", "sinh", "tanh", "ceil", "exp", "exp2", "floor", "frac", "log", "log2", "log10", "round", "sqrt", "trunc", "ddx", "ddy"]
-    let nonNativeFunctions = ["degrees", "radians", "rcp", "rsqrt", "saturate", "ddx_coarse", "ddx_fine", "ddy_coarse", "ddy_fine", "fwidth"]
+do {
+    let nativeFunctions = ["cos", "sin", "tan", "acos", "asin", "atan", "cosh", "sinh", "tanh", "ceil", "exp", "floor", "log", "round", "trunc", "ddx", "ddy"]
+    let nonNativeFunctions = ["sqrt", "log2", "log10", "frac", "exp2", "degrees", "radians", "rcp", "rsqrt", "saturate", "ddx_coarse", "ddx_fine", "ddy_coarse", "ddy_fine", "fwidth"]
 
     for function in nativeFunctions {
-        print("native \(type) \(function)(\(type));")
+        print("native float \(function)(float);")
+        print("half \(function)(half x) {")
+        print("    return half(\(function)(float(x)));")
+        print("}")
     }
-    print("\(type) degrees(\(type) x) {");
-    print("    return x * 180 / PI;")
-    print("}")
-    print("\(type) radians(\(type) x) {");
-    print("    return x * PI / 180;")
-    print("}")
-    print("\(type) rcp(\(type) x) {");
-    print("    return 1 / x;")
-    print("}")
-    print("\(type) rsqrt(\(type) x) {");
-    print("    return 1 / sqrt(x);")
-    print("}")
-    print("\(type) saturate(\(type) x) {");
-    print("    return clamp(x, 0, 1);")
-    print("}")
-    print("\(type) ddx_coarse(\(type) x) {");
-    print("    return ddx(x);")
-    print("}")
-    print("\(type) ddx_fine(\(type) x) {");
-    print("    return ddx(x);")
-    print("}")
-    print("\(type) ddy_coarse(\(type) x) {");
-    print("    return ddy(x);")
-    print("}")
-    print("\(type) ddy_fine(\(type) x) {");
-    print("    return ddy(x);")
-    print("}")
-    print("\(type) fwidth(\(type) x) {");
-    print("    return abs(ddx(x)) + abs(ddy(x));")
-    print("}")
 
-    for function in nativeFunctions + nonNativeFunctions {
-        for size in 2 ... 4 {
-            print("\(type)\(size) \(function)(\(type)\(size) x) {");
-            print("    \(type)\(size) result;")
-            for i in 0 ..< size {
-                print("    result[\(i)] = \(function)(x[\(i)]);")
-            }
-            print("    return result;")
-            print("}")
-        }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x) {");
-                print("    \(type)\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)]);")
-                    }
+    for type in ["half", "float"] {
+        print("\(type) sqrt(\(type) x) {");
+        print("    return pow(x, 0.5);")
+        print("}")
+        print("\(type) log2(\(type) x) {");
+        print("    return log(x) / log(2);")
+        print("}")
+        print("\(type) log10(\(type) x) {");
+        print("    return log(x) / log(10);")
+        print("}")
+        print("\(type) frac(\(type) x) {");
+        print("    return x - floor(x);")
+        print("}")
+        print("\(type) exp2(\(type) x) {");
+        print("    return exp(x * log(2));")
+        print("}")
+        print("\(type) degrees(\(type) x) {");
+        print("    return x * 180 / PI;")
+        print("}")
+        print("\(type) radians(\(type) x) {");
+        print("    return x * PI / 180;")
+        print("}")
+        print("\(type) rcp(\(type) x) {");
+        print("    return 1 / x;")
+        print("}")
+        print("\(type) rsqrt(\(type) x) {");
+        print("    return 1 / sqrt(x);")
+        print("}")
+        print("\(type) saturate(\(type) x) {");
+        print("    return clamp(x, 0, 1);")
+        print("}")
+        print("\(type) ddx_coarse(\(type) x) {");
+        print("    return ddx(x);")
+        print("}")
+        print("\(type) ddx_fine(\(type) x) {");
+        print("    return ddx(x);")
+        print("}")
+        print("\(type) ddy_coarse(\(type) x) {");
+        print("    return ddy(x);")
+        print("}")
+        print("\(type) ddy_fine(\(type) x) {");
+        print("    return ddy(x);")
+        print("}")
+        print("\(type) fwidth(\(type) x) {");
+        print("    return abs(ddx(x)) + abs(ddy(x));")
+        print("}")
+
+        for function in nativeFunctions + nonNativeFunctions {
+            for size in 2 ... 4 {
+                print("\(type)\(size) \(function)(\(type)\(size) x) {");
+                print("    \(type)\(size) result;")
+                for i in 0 ..< size {
+                    print("    result[\(i)] = \(function)(x[\(i)]);")
                 }
                 print("    return result;")
                 print("}")
             }
+            for i in 2 ... 4 {
+                for j in 2 ... 4 {
+                    print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x) {");
+                    print("    \(type)\(i)x\(j) result;")
+                    for m in 0 ..< i {
+                        for n in 0 ..< j {
+                            print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)]);")
+                        }
+                    }
+                    print("    return result;")
+                    print("}")
+                }
+            }
         }
+        print()
     }
-    print()
 }
 
 // These functions are binary floating-point scalar functions,
 // which can also be applied to vectors and matrices component-wise.
-for type in ["half", "float"] {
-    let nativeFunctions = ["pow", "ldexp", "fmod", "frexp"]
-    let nonNativeFunctions = ["step"]
+do {
+    let nativeFunctions = ["pow"]
 
     for function in nativeFunctions {
-        print("native \(type) \(function)(\(type), \(type));")
+        print("native float \(function)(float, float);")
+        print("half \(function)(half x, half y) {")
+        print("    return half(\(function)(float(x), float(y)));")
+        print("}")
     }
-    print("\(type) step(\(type) y, \(type) x) {");
-    print("    return x >= y ? 1 : 0;")
-    print("}")
 
-    for function in nativeFunctions + nonNativeFunctions {
-        for size in 2 ... 4 {
-            print("\(type)\(size) \(function)(\(type)\(size) x, \(type)\(size) y) {");
-            print("    \(type)\(size) result;")
-            for i in 0 ..< size {
-                print("    result[\(i)] = \(function)(x[\(i)], y[\(i)]);")
-            }
-            print("    return result;")
-            print("}")
-        }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y) {");
-                print("    \(type)\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)]);")
-                    }
+    for type in ["half", "float"] {
+        let nonNativeFunctions = ["step", "ldexp", "fmod"]
+
+        print("\(type) step(\(type) y, \(type) x) {");
+        print("    return x >= y ? 1 : 0;")
+        print("}")
+        print("\(type) ldexp(\(type) x, \(type) e) {");
+        print("    return x * pow(2, e);")
+        print("}")
+        print("\(type) fmod(\(type) x, \(type) y) {");
+        print("    uint whole = uint(x / y);")
+        print("    \(type) multiple = \(type)(whole) * y;")
+        print("    return x - multiple;")
+        print("}")
+
+        for function in nativeFunctions + nonNativeFunctions {
+            for size in 2 ... 4 {
+                print("\(type)\(size) \(function)(\(type)\(size) x, \(type)\(size) y) {");
+                print("    \(type)\(size) result;")
+                for i in 0 ..< size {
+                    print("    result[\(i)] = \(function)(x[\(i)], y[\(i)]);")
                 }
                 print("    return result;")
                 print("}")
             }
+            for i in 2 ... 4 {
+                for j in 2 ... 4 {
+                    print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y) {");
+                    print("    \(type)\(i)x\(j) result;")
+                    for m in 0 ..< i {
+                        for n in 0 ..< j {
+                            print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)]);")
+                        }
+                    }
+                    print("    return result;")
+                    print("}")
+                }
+            }
         }
+        print()
     }
-    print()
 }
 
 // These functions are ternary floating-point scalar functions,
@@ -688,48 +724,58 @@ for type in ["half", "float"] {
     print()
 }
 
+print("native bool isnormal(half);")
+print("native bool isnormal(float);")
 for type in ["half", "float"] {
-    let nativeFunctions = ["isfinite", "isinf", "isnan", "isnormal"]
+    for size in 2 ... 4 {
+        print("bool\(size) isnormal(\(type)\(size) x) {");
+        print("    bool\(size) result;")
+        for i in 0 ..< size {
+            print("    result[\(i)] = isnormal(x[\(i)]);")
+        }
+        print("    return result;")
+        print("}")
+    }
+    print()
+}
+
+do {
+    let nativeFunctions = ["isfinite", "isinf", "isnan"]
 
     for function in nativeFunctions {
-        print("native bool \(function)(\(type));")
+        print("native bool \(function)(float);")
+        print("bool \(function)(half x) {")
+        print("    return \(function)(float(x));")
+        print("}")
     }
 
-    for function in nativeFunctions {
-        for size in 2 ... 4 {
-            print("bool\(size) \(function)(\(type)\(size) x) {");
-            print("    bool\(size) result;")
-            for i in 0 ..< size {
-                print("    result[\(i)] = \(function)(x[\(i)]);")
-            }
-            print("    return result;")
-            print("}")
-        }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("bool\(i)x\(j) \(function)(\(type)\(i)x\(j) x) {");
-                print("    bool\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)]);")
-                    }
+    for type in ["half", "float"] {
+        for function in nativeFunctions {
+            for size in 2 ... 4 {
+                print("bool\(size) \(function)(\(type)\(size) x) {");
+                print("    bool\(size) result;")
+                for i in 0 ..< size {
+                    print("    result[\(i)] = \(function)(x[\(i)]);")
                 }
                 print("    return result;")
                 print("}")
             }
         }
+        print()
     }
-    print()
 }
 
 for type in ["half", "float"] {
-    let nativeFunctions = ["isordered", "isunordered"]
+    let nonNativeFunctions = ["isordered", "isunordered"]
 
-    for function in nativeFunctions {
-        print("native bool \(function)(\(type), \(type));")
-    }
+    print("bool isordered(\(type) x, \(type) y) {")
+    print("    return (x == x) && (y == y);")
+    print("}")
+    print("bool isunordered(\(type) x, \(type) y) {")
+    print("    return isnan(x) || isnan(y);")
+    print("}")
 
-    for function in nativeFunctions {
+    for function in nonNativeFunctions {
         for size in 2 ... 4 {
             print("bool\(size) \(function)(\(type)\(size) x, \(type)\(size) y) {");
             print("    bool\(size) result;")
@@ -739,25 +785,15 @@ for type in ["half", "float"] {
             print("    return result;")
             print("}")
         }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("bool\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y) {");
-                print("    bool\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)]);")
-                    }
-                }
-                print("    return result;")
-                print("}")
-            }
-        }
     }
     print()
 }
 
+print("native float atan2(float, float);")
+print("half atan2(half x, half y) {")
+print("    return half(atan2(float(x), float(y)));")
+print("}")
 for type in ["half", "float"] {
-    print("native \(type) atan2(\(type), \(type));")
     for size in 2 ... 4 {
         print("\(type)\(size) atan2(\(type)\(size) x, \(type)\(size) y) {");
         print("    \(type)\(size) result;")
@@ -969,25 +1005,31 @@ for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"]
             print("    return result;")
             print("}")
         }
-        for i in 2 ... 4 {
-            for j in 2 ... 4 {
-                print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y, \(type)\(i)x\(j) z) {");
-                print("    \(type)\(i)x\(j) result;")
-                for m in 0 ..< i {
-                    for n in 0 ..< j {
-                        print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)], z[\(m)][\(n)]);")
+        if type == "half" || type == "float" {
+            for i in 2 ... 4 {
+                for j in 2 ... 4 {
+                    print("\(type)\(i)x\(j) \(function)(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y, \(type)\(i)x\(j) z) {");
+                    print("    \(type)\(i)x\(j) result;")
+                    for m in 0 ..< i {
+                        for n in 0 ..< j {
+                            print("    result[\(m)][\(n)] = \(function)(x[\(m)][\(n)], y[\(m)][\(n)], z[\(m)][\(n)]);")
+                        }
                     }
+                    print("    return result;")
+                    print("}")
                 }
-                print("    return result;")
-                print("}")
             }
         }
     }
     print()
 }
 
-for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
-    print("native \(type) modf(\(type), thread \(type)*);")
+for type in ["half", "float"] {
+    print("\(type) modf(\(type) x, thread \(type)* ip) {")
+    print("    uint result = uint(x);")
+    print("    *ip = x - \(type)(result);")
+    print("    return \(type)(result);")
+    print("}")
 
     for size in 2 ... 4 {
         print("\(type)\(size) modf(\(type)\(size) x, thread \(type)\(size)* y) {");
@@ -1422,8 +1464,8 @@ for resultType in ["int", "uint", "float"] {
 }
 print()
 
-print("native float f16tof32(uint value);")
-print("native uint f32tof16(float value);")
+print("native float f16tof32(uint);")
+print("native uint f32tof16(float);")
 for size in 2 ... 4 {
     print("float\(size) f16tof32(uint\(size) x) {")
     print("    float\(size) result;")
@@ -1440,10 +1482,6 @@ for size in 2 ... 4 {
     print("    return result;")
     print("}")
 }
-print()
-
-print("native uint4 msad4(uint, uint2, uint4);")
-print("native uint4 D3DCOLORtoUBYTE4(float4);")
 print()
 
 print("native void AllMemoryBarrierWithGroupSync();")
