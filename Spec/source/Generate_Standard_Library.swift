@@ -252,13 +252,183 @@ print("}")
 print("bool operator<=(half a, half b) {")
 print("    return float(a) <= float(b);")
 print("}")
-print("bool operator<(half a, half b) {")
+print("bool operator>(half a, half b) {")
 print("    return float(a) < float(b);")
 print("}")
-print("bool operator<=(half a, half b) {")
+print("bool operator>=(half a, half b) {")
 print("    return float(a) <= float(b);")
 print("}")
+print("char operator-(char x) {")
+print("    return char(-int(x));")
+print("}")
+print("short operator-(short x) {")
+print("    return short(-int(x));")
+print("}")
+print("half operator-(half x) {")
+print("    return half(-float(x));")
+print("}")
+print("native int operator-(int);")
+print("native float operator-(float);")
 print()
+
+for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
+    for size in 2 ... 4 {
+        print("\(type)\(size) operator+(\(type)\(size) a, \(type)\(size) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a[\(m)] + b[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator-(\(type)\(size) a, \(type)\(size) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a[\(m)] - b[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator*(\(type)\(size) a, \(type)\(size) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a[\(m)] * b[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator*(\(type)\(size) a, \(type) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a[\(m)] * b;")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator*(\(type) a, \(type)\(size) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a * b[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator/(\(type)\(size) a, \(type)\(size) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a[\(m)] / b[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator/(\(type)\(size) a, \(type) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a[\(m)] / b;")
+        }
+        print("    return result;")
+        print("}")
+        print("\(type)\(size) operator/(\(type) a, \(type)\(size) b) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = a / b[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+    }
+}
+for type in ["char", "short", "int", "half", "float"] {
+    for size in 2 ... 4 {
+        print("\(type)\(size) operator-(\(type)\(size) a) {")
+        print("    \(type)\(size) result;")
+        for m in 0 ..< size {
+            print("    result[\(m)] = -a[\(m)];")
+        }
+        print("    return result;")
+        print("}")
+    }
+}
+for type in ["half", "float"] {
+    for i in 2 ... 4 {
+        for j in 2 ... 4 {
+            print("\(type)\(i)x\(j) operator+(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a[\(m)][\(n)] + b[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator-(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a[\(m)][\(n)] - b[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator-(\(type)\(i)x\(j) a) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = -a[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator*(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a[\(m)][\(n)] * b[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator*(\(type)\(i)x\(j) a, \(type) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a[\(m)][\(n)] * b;")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator*(\(type) a, \(type)\(i)x\(j) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a * b[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator/(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a[\(m)][\(n)] / b[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator/(\(type)\(i)x\(j) a, \(type) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a[\(m)][\(n)] / b;")
+                }
+            }
+            print("    return result;")
+            print("}")
+            print("\(type)\(i)x\(j) operator/(\(type) a, \(type)\(i)x\(j) b) {")
+            print("    \(type)\(i)x\(j) result;")
+            for m in 0 ..< i {
+                for n in 0 ..< j {
+                    print("    result[\(m)][\(n)] = a / b[\(m)][\(n)];")
+                }
+            }
+            print("    return result;")
+            print("}")
+        }
+    }
+}
 
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     print("operator \(type)2(\(type) x, \(type) y) {")
@@ -561,10 +731,10 @@ do {
         print("    return exp(x * log(2));")
         print("}")
         print("\(type) degrees(\(type) x) {");
-        print("    return x * 180 / PI;")
+        print("    return x * 180 / 3.14159;")
         print("}")
         print("\(type) radians(\(type) x) {");
-        print("    return x * PI / 180;")
+        print("    return x * 3.14159 / 180;")
         print("}")
         print("\(type) rcp(\(type) x) {");
         print("    return 1 / x;")
@@ -842,7 +1012,19 @@ for type in ["half", "float"] {
 print()
 
 for function in [("all", "true", "&&"), ("any", "false", "||")] {
-    for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
+    print("bool \(function.0)(bool x) {");
+    print("    return x;")
+    print("}")
+    for size in 2 ... 4 {
+        print("bool \(function.0)(bool\(size) x) {")
+        print("    bool result = \(function.1);")
+        for i in 0 ..< size {
+            print("    result = result \(function.2) (x[\(i)]);")
+        }
+        print("    return result;")
+        print("}")
+    }
+    for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
         print("bool \(function.0)(\(type) x) {");
         print("    return x != 0;")
         print("}")
@@ -962,6 +1144,9 @@ for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"]
     print("\(type) min(\(type) x, \(type) y) {");
     print("    return x > y ? y : x;")
     print("}")
+    print("\(type) max(\(type) x, \(type) y) {");
+    print("    return x > y ? x : y;")
+    print("}")
 
     for function in nonNativeFunctions {
         for size in 2 ... 4 {
@@ -1046,7 +1231,7 @@ for type in ["half", "float"] {
     }
     for i in 2 ... 4 {
         for j in 2 ... 4 {
-            print("\(type)\(i)x\(j) modf(\(type)\(i)x\(j) x, \(type)\(i)x\(j) y) {");
+            print("\(type)\(i)x\(j) modf(\(type)\(i)x\(j) x, thread \(type)\(i)x\(j)* y) {");
             print("    \(type)\(i)x\(j) result;")
             for m in 0 ..< i {
                 for n in 0 ..< j {
@@ -1061,130 +1246,139 @@ for type in ["half", "float"] {
 }
 
 print("uchar count_bits(uchar x) {")
-print("    return ((x | (1 << 0)) == 0 ? 0 : 1) +")
+print("    return uchar(((x | uchar(1 << 0)) == 0 ? 0 : 1) +")
 for i in 1 ..< 7 {
-    print("           ((x | (1 << \(i))) == 0 ? 0 : 1) +")
+    print("           ((x | uchar(1 << \(i))) == 0 ? 0 : 1) +")
 }
-print("           ((x | (1 << 7)) == 0 ? 0 : 1);")
+print("           ((x | uchar(1 << 7)) == 0 ? 0 : 1));")
 print("}")
 print("uchar count_bits(ushort x) {")
-print("    return ((x | (1 << 0)) == 0 ? 0 : 1) +")
+print("    return uchar(((x | ushort(1 << 0)) == 0 ? 0 : 1) +")
 for i in 1 ..< 15 {
-    print("           ((x | (1 << \(i))) == 0 ? 0 : 1) +")
+    print("           ((x | ushort(1 << \(i))) == 0 ? 0 : 1) +")
 }
-print("           ((x | (1 << 15)) == 0 ? 0 : 1);")
+print("           ((x | ushort(1 << 15)) == 0 ? 0 : 1));")
 print("}")
 print("uchar count_bits(uint x) {")
-print("    return ((x | (1 << 0)) == 0 ? 0 : 1) +")
+print("    return uchar(((x | uint(1 << 0)) == 0 ? 0 : 1) +")
 for i in 1 ..< 31 {
-    print("           ((x | (1 << \(i))) == 0 ? 0 : 1) +")
+    print("           ((x | uint(1 << \(i))) == 0 ? 0 : 1) +")
 }
-print("           ((x | (1 << 31)) == 0 ? 0 : 1);")
+print("           ((x | uint(1 << 31)) == 0 ? 0 : 1));")
 print("}")
 print("uchar reversebits(uchar x) {")
-print("    return ((x & (1 << 0)) << 7) | ")
+print("    return uchar(((x & uchar(1 << 0)) << 7) | ")
 for i in 1 ..< 7 {
     let offset = 7 - 2 * i
-    print("           ((x & (1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
+    print("           ((x & uchar(1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
 }
-print("           ((x & (1 << 7)) >> 7);")
+print("           ((x & uchar(1 << 7)) >> 7));")
 print("}")
 print("ushort reversebits(ushort x) {")
-print("    return ((x & (1 << 0)) << 15) | ")
+print("    return ushort(((x & ushort(1 << 0)) << 15) | ")
 for i in 1 ..< 15 {
     let offset = 15 - 2 * i
-    print("           ((x & (1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
+    print("           ((x & ushort(1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
 }
-print("           ((x & (1 << 15)) >> 15);")
+print("           ((x & ushort(1 << 15)) >> 15));")
 print("}")
 print("uint reversebits(uint x) {")
-print("    return ((x & (1 << 0)) << 31) | ")
+print("    return uint(((x & uint(1 << 0)) << 31) | ")
 for i in 1 ..< 31 {
     let offset = 31 - 2 * i
-    print("           ((x & (1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
+    print("           ((x & uint(1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
 }
-print("           ((x & (1 << 31)) >> 31);")
+print("           ((x & uint(1 << 31)) >> 31));")
 print("}")
-for function in ["count_bits", "reversebits"] {
-    for type in ["uchar", "ushort", "uint"] {
-        for size in 2 ... 4 {
-            print("\(type)\(size) \(function)(\(type)\(size) x) {");
-            print("    \(type)\(size) result;")
-            for i in 0 ..< size {
-                print("    result[\(i)] = \(function)(x[\(i)]);")
-            }
-            print("    return result;")
-            print("}")
+for type in ["uchar", "ushort", "uint"] {
+    for size in 2 ... 4 {
+        print("uchar\(size) count_bits(\(type)\(size) x) {");
+        print("    uchar\(size) result;")
+        for i in 0 ..< size {
+            print("    result[\(i)] = count_bits(x[\(i)]);")
         }
+        print("    return result;")
+        print("}")
     }
-    print()
 }
+for type in ["uchar", "ushort", "uint"] {
+    for size in 2 ... 4 {
+        print("\(type)\(size) reversebits(\(type)\(size) x) {");
+        print("    \(type)\(size) result;")
+        for i in 0 ..< size {
+            print("    result[\(i)] = reversebits(x[\(i)]);")
+        }
+        print("    return result;")
+        print("}")
+    }
+}
+print()
 
-print("uchar firstbithigh(uchar x) {")
+print("uint firstbithigh(uchar x) {")
 for i in 0 ... 7 {
-    print("    if ((x & (1 << \(7 - i))) != 0)")
+    print("    if ((x & uchar(1 << \(7 - i))) != 0)")
     print("        return \(i);")
 }
 print("    return 8;")
 print("}")
-print("ushort firstbithigh(ushort x) {")
+print("uint firstbithigh(ushort x) {")
 for i in 0 ... 15 {
-    print("    if ((x & (1 << \(15 - i))) != 0)")
+    print("    if ((x & ushort(1 << \(15 - i))) != 0)")
     print("        return \(i);")
 }
     print("    return 16;")
 print("}")
 print("uint firstbithigh(uint x) {")
 for i in 0 ... 31 {
-    print("    if ((x & (1 << \(31 - i))) != 0)")
+    print("    if ((x & uint(1 << \(31 - i))) != 0)")
     print("        return \(i);")
 }
 print("    return 32;")
 print("}")
-print("char firstbithigh(char x) {")
+print("uint firstbithigh(char x) {")
 print("    return firstbithigh(uchar(x));")
 print("}")
-print("short firstbithigh(short x) {")
+print("uint firstbithigh(short x) {")
 print("    return firstbithigh(ushort(x));")
 print("}")
-print("int firstbithigh(int x) {")
+print("uint firstbithigh(int x) {")
 print("    return firstbithigh(uint(x));")
 print("}")
-print("uchar firstbitlow(uchar x) {")
+print("uint firstbitlow(uchar x) {")
 for i in 0 ... 7 {
-    print("    if ((x & (1 << \(i))) != 0)")
+    print("    if ((x & uchar(1 << \(i))) != 0)")
     print("        return \(7 - i);")
 }
 print("    return 8;")
 print("}")
-print("ushort firstbitlow(ushort x) {")
+print("uint firstbitlow(ushort x) {")
 for i in 0 ... 15 {
-    print("    if ((x & (1 << \(i))) != 0)")
+    print("    if ((x & ushort(1 << \(i))) != 0)")
     print("        return \(15 - i);")
 }
 print("    return 16;")
 print("}")
 print("uint firstbitlow(uint x) {")
 for i in 0 ... 31 {
-    print("    if ((x & (1 << \(i))) != 0)")
+    print("    if ((x & uint(1 << \(i))) != 0)")
     print("        return \(31 - i);")
 }
 print("    return 32;")
 print("}")
-print("char firstbitlow(char x) {")
+print("uint firstbitlow(char x) {")
 print("    return firstbitlow(uchar(x));")
 print("}")
-print("short firstbitlow(short x) {")
+print("uint firstbitlow(short x) {")
 print("    return firstbitlow(ushort(x));")
 print("}")
-print("int firstbitlow(int x) {")
+print("uint firstbitlow(int x) {")
 print("    return firstbitlow(uint(x));")
 print("}")
 for function in ["firstbithigh", "firstbitlow"] {
     for type in ["uchar", "ushort", "uint", "char", "short", "int"] {
         for size in 2 ... 4 {
-            print("\(type)\(size) \(function)(\(type)\(size) x) {");
-            print("    \(type)\(size) result;")
+            print("uint\(size) \(function)(\(type)\(size) x) {");
+            print("    uint\(size) result;")
             for i in 0 ..< size {
                 print("    result[\(i)] = \(function)(x[\(i)]);")
             }
@@ -1579,7 +1773,7 @@ for type in ["half", "float"] {
     }
 }
 print()
-
+/*
 for type in ["uint", "int"] {
     for function in ["Add", "And", "Exchange", "Max", "Min", "Or", "Xor"] {
         print("native void Interlocked\(function)(thread atomic_\(type)*, \(type), thread \(type)*);")
@@ -1587,7 +1781,6 @@ for type in ["uint", "int"] {
     print("native void InterlockedCompareExchange(thread atomic_\(type)*, \(type), \(type), thread \(type)*);")
 }
 print()
-
 
 for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for length in ["", "2", "3", "4"] {
@@ -1805,4 +1998,4 @@ for type in ["half", "float"] {
     print("native void Store(RWTextureDepth2DArray<\(type)>, \(type), uint3 location);")
     print()
 }
-
+*/
