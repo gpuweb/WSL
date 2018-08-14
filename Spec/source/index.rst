@@ -595,61 +595,154 @@ it can be done just by wrapping the expression in parentheses (see the last alte
 Validation
 ===========
 
+In this section we describe how to determine if a program is valid or not.
+If a program is invalid, a compliant implementation must reject it with an appropriate error message, and not attempt to execute it.
+If a program is valid, we describe its semantics later in this document.
+
+The validation process happens in two phases. First we gather the top-level declarations into a global environment and do some global checks on it.
+Then each declaration can be further validated independently, without referring to any other declaration. This local validation includes typing.
+
+Along the way, the program is annotated with information that will be used in the execution semantics. For example function overloads are resolved, typedefs are resolved, etc..
+
 Phase 1: Gathering declarations
 -------------------------------
 
-the goal is to build the global typing environment, as well as the global execution environment.
-I am afraid it may require several steps.
-The first step would do most of the work, gathering all function signatures, as well as typedefs, etc..
-The second step would go through the resulting environment, resolving all types, in particular all typedefs (as well as connecting function parameters to the corresponding type variables, etc..)
+In this first step all top-level declarations are gathered into a global environment.
+Each struct name, enum name, typedef name and global variable name must be unique, and not used in a function name.
 
-We need to give consideration to the tons of qualifiers on variables that GLSL / Metal have.
+.. note::
+    Function names do not have to be unique, as we have overloading.
 
-Phase 2: Local typing and early validation
-------------------------------------------
+After this, we build a relation "depends on", as the smallest relation such that:
 
-Notations and definitions
-"""""""""""""""""""""""""
+#. A typedef that is defined as equal to a structure or another typedef "depends on" this structure or typedef.
+#. A structure "depends on" a typedef or structure if it has a member with the same name.
 
-- Definition of the typing environment
-- Definition of the type hierarchy
-- Definition of the type evaluation judgement
+If this relation is cyclic, then the program is invalid.
 
-Validating top-level declarations
-"""""""""""""""""""""""""""""""""
+Then for each typedef it must be resolved, meaning that each mention of it is replaced by its definition.
 
-Typedefs and structs:
+.. note::
+    This last step is guaranteed to terminate thanks to the acyclicity check before it.
 
-- checking no recursive types (both structs and typedefs.. maybe as part of the computation of the size of each type)
-  No, the computation of the size of each type will necessarily happen during monomorphisation
-  And we cannot defer this check until then, because we will need to eliminate all typedefs during the local typing phase.
+Phase 2: Validation, excluding typing
+-------------------------------------
 
-Structs:
+From this point onwards each declaration can be validated independently, only referring to the global environment.
 
-- checking that structs have distinct names for different fields, and that the type of their fields are well-defined (and non-void)
+.. todo::
+    Is this true? Don't we need the size of types for annotating array accesses?
+    Maybe it could be added to the global environment instead, and accessed directly in the semantics?
 
-Enums:
+Structs
+"""""""
 
-- check that enums do not have duplicate values, and have one zero-valued element.
-- check that enums have an integer base type (not another enum in particular).
-- check that every value given to an enum element fits in the base type.
+Each field of a struct must have a name distinct from the names of the other fields of that struct.
 
-Protocols:
+No member of a struct can have the special type ``void``.
 
-- check that each signature inside a protocol refers to the protocol name (aka type variable).
-- check that the extension relation on protocols is sane (at the very least acyclic, maybe also no incompatible signatures for the same function name).
+Enums
+"""""
 
-Functions:
+If an enum has an explicit base type, it must be one of uchar, ushort, uint, char, short or int. Otherwise, its base type is int by default.
 
-- check that operator.field, operator.field=, operator[] and operator[]= are not defined for pointer types, nor declared for pointer types in a protocol.
-- check that operator.field= is only defined if operator.field is as well, and that they agree on their return type in that case.
-- check that operator[]= is only defined if operator[] is as well, and that they agree on their return type in that case.
-- check that all of the type parameters of each operator declaration/definition are inferrable from their arguments (and from its return type in the case of cast operators).
-- check that no argument is of type void
-- finally, check that the function body can only end with a return of the right type, or with Nothing if it is a void function
+Each element of an enum is given a value with the following algorithm:
+
+#. If it is the first element and does not have an explicit value, then its value is 0.
+#. Else if it has an explicit value, then its value the one given by the programmer.
+#. Else its value is 1 + the value of the previous element.
+
+These values must follow these rules or the program is invalid:
+
+#. No two elements can have the same value.
+#. One element must have the value 0.
+#. All elements must have a value that is representable by the enum base type.
+
+Functions
+"""""""""
+
+If a function is called ``operator.field`` for some name ``field``:
+
+#. It must have a single argument
+#. That argument cannot be a pointer, array reference or array.
+
+If a function is called ``operator.field=`` for some name ``field``
+
+#. It must have exactly two arguments
+#. Its first argument cannot be a pointer, array reference or array
+#. There must be a function called ``operator.field`` in the global environment, such that:
+
+    #. Its argument has the same type as the first argument of this one
+    #. Its return type is the same as the type of the second argument of this one
+
+.. note::
+    We currently do not restrict in any way the return type of these functions, following Test.js.
+    Do we want to?
+
+If a function is called ``operator[]``:
+
+#. It must have two argument
+#. Its first argument cannot be a pointer, array reference or array.
+#. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+
+If a function is called ``operator[]=``:
+
+#. It must have exactly three arguments
+#. Its first argument cannot be a pointer, array reference or array
+#. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+#. There must be a function called ``operator[]`` in the global environment, such that:
+
+    #. Its first argument has the same type as the first argument of this one
+    #. Its return type is the same as the type of the third argument of this one
+
+.. todo::
+    We currently do not restrict in any way the return type of these functions, following Test.js.
+    Do we want to?
+
+No argument of a function can be of type ``void`` (which is a type that can only appear as the return type of a function).
+
+Additionally the body of each function must be well-typed, with the following condition:
+
+#. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}``.
+#. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}``
+
+We define these notions (well-typed, behaviours) in the next section.
+
+Typing of functions
+-------------------
+
+In this section we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau".
+
+A typing environment is a mapping from identifiers to types.
+
+A type can either be:
+
+- A left-value type with an associated right-value type and an address space
+- A right-value type, which can be any of the following:
+    
+    - A basic type such as ``bool`` or ``uint``
+    - ``void``
+    - An array with an associated right-value type
+    - A pointer with an associated right-value type and an address space
+    - An array reference with an associated right-value type and an address space
+
+.. todo::
+    My terminology is rather terrible. I should try to find better names and rewrite this part.
+
+A behaviour is any of the following:
+
+- Return of a right-value type
+- Break
+- Continue
+- Fallthrough
+- Nothing
+
+We use these "behaviours" to check the effect of statements on the control flow. 
 
 Typing statements
 """""""""""""""""
+
+
 
 Typing expressions
 """"""""""""""""""
