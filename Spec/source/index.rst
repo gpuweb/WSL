@@ -625,8 +625,8 @@ Then for each typedef it must be resolved, meaning that each mention of it is re
 .. note::
     This last step is guaranteed to terminate thanks to the acyclicity check before it.
 
-Phase 2: Validation, excluding typing
--------------------------------------
+Phase 2: Local validation, excluding typing
+-------------------------------------------
 
 From this point onwards each declaration can be validated independently, only referring to the global environment.
 
@@ -701,19 +701,22 @@ If a function is called ``operator[]=``:
 
 No argument of a function can be of type ``void`` (which is a type that can only appear as the return type of a function).
 
-Additionally the body of each function must be well-typed, with the following condition:
+Additionally the body of each function must be well-typed in the global environment, with the following condition:
 
 #. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}``.
 #. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}``
 
 We define these notions (well-typed, behaviours) in the next section.
 
-Typing of functions
--------------------
+Phase 3: Typing of functions
+----------------------------
 
 In this section we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau".
 
 A typing environment is a mapping from identifiers to types.
+
+.. todo::
+    Deal more explicitely with the rest of the global environment (structs/functions/enums).
 
 A type can either be:
 
@@ -742,7 +745,72 @@ We use these "behaviours" to check the effect of statements on the control flow.
 Typing statements
 """""""""""""""""
 
+To check a if-then-else statement:
 
+#. Check that the condition is a well-typed expression of type ``bool``
+#. Check that the then branch is a well-typed statement, whose behaviours we will call B
+#. Check that the else branch is a well-typed statement, whose behaviours we will call B'
+#. Check that neither B nor B' contain a return of a pointer type, or of an array reference type
+#. Then the if-then-else statement is well-typed, and its behaviours is the union of B and B'
+
+To check a do-while statement:
+
+#. Check that the condition is a well-typed expression of type ``bool``
+#. Check that the body of the loop is a well-typed statement, whose behaviours we will call B
+#. Check that B does not contain a return of a pointer type, or of an array reference type
+#. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
+#. Then the do-while statement is well-typed, and its behaviours is this new set
+
+To check a switch statement:
+
+#. Check that the expression being switched on is well-typed
+#. Check that this type is either an integer type (``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``) or an enum type
+#. Check that each value ``v`` in a ``case v`` in this switch is well-typed with the same type
+#. Check that no two such cases have the same value
+#. If there is a default, check that there is at least one value in that type which is not covered by the cases
+#. Else check that for all values in that type, there is one case that covers it
+#. Check that the body of each case (and default) are well-typed.
+#. Make a set of behaviours that is the union of the behaviours of all of these bodies.
+#. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type.
+#. Remove Break and Fallthrough from this set (if they are in it) and add Nothing
+#. Then the switch statement is well-typed, and its behaviours is this last set.
+
+The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.
+
+The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T, and its behaviours is then {Return T}.
+
+The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
+
+To check a block:
+
+#. If it is empty, it is well-typed and its behaviours is always {Nothing}
+#. Else if it starts by a variable declaration:
+
+    #. Check that there is no other statement in that block is a variable declaration sharing the same name.
+    #. Check that the given address space is either ``thread`` or ``threadgroup``
+    #. If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.
+    #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space.
+    #. If there is an initializing expression, check that it is well-typed in this new environment, and that its type match the type of the variable
+    #. Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours B.
+    #. Then the block is well-typed and has the same set of behaviours B.
+
+#. Else if this block contains a single statement, check that this statement is well-typed. If it is, then so is this block, and it has the same set of behaviours
+#. Else
+   
+    #. Check that this block's first statement is well-typed
+    #. Check that its set of behaviours B contains Nothing.
+    #. Remove Nothing from it.
+    #. Check that it does not contain Fallthrough
+    #. Check that the rest of the block, removing the first statement, is well-typed with a set of behaviours B'
+    #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
+
+.. todo::
+    Add checks that types are well-formed
+
+Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed, and its set of behaviours is then {Nothing}.
+
+.. todo::
+    Insert the formal rules.
 
 Typing expressions
 """"""""""""""""""

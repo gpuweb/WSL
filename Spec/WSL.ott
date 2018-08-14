@@ -393,8 +393,8 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     Nothing not in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
-    --------------------------------------------------------------------------- :: switch
-    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : B \ {Break, Fallthrough}
+    --------------------------------------------------------------------------------------- :: switch
+    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Nothing}
 
     --------------------- :: break
     G |- break; : {Break}
@@ -420,6 +420,7 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
 
     G[x -> Nothing] |- tx : tval
     tval != Ptr(tval', as)
+    tval != Ref(tval', as)
     G[x -> LVal(tval, thread)] |- {s0 .. sn} : B
     s0 != tx' x; /\../\ sn != tx' x;
     s0 != tx' x = e'; /\../\ sn != tx' x = e';
