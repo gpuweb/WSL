@@ -8,7 +8,7 @@ LineComment: '//'~[\r\n]* -> skip ;
 LongComment: '/*'.*?'*/' -> skip ;
 
 // Note: we forbid leading 0s in decimal integers. to bikeshed.
-fragment CoreDecimalIntLiteral: [1-9] [0-9]* ;
+fragment CoreDecimalIntLiteral: '0' | ([1-9] [0-9]*);
 // Note: we allow a leading '-' but not a leading '+' in all kind of numeric literals. to bikeshed.
 fragment DecimalIntLiteral: '-'? CoreDecimalIntLiteral ;
 fragment DecimalUIntLiteral: CoreDecimalIntLiteral 'u' ;
