@@ -27,7 +27,6 @@ FloatLiteral: '-'? CoreFloatLiteral [fd]? ;
 
 // One rule per keyword, to prevent them from being recognized as identifiers
 STRUCT: 'struct';
-PROTOCOL: 'protocol';
 TYPEDEF: 'typedef';
 ENUM: 'enum';
 OPERATOR: 'operator';
@@ -65,6 +64,7 @@ RESTRICTED: 'restricted';
 
 UNDERSCORE: '_';
 AUTO: 'auto';
+PROTOCOL: 'protocol';
 // Note: these are currently not used by the grammar, but I would like to make them reserved keywords for future expansion of the language. to bikeshed
 
 fragment ValidIdentifier: [a-zA-Z_] [a-zA-Z0-9_]* ;
@@ -90,12 +90,11 @@ topLevelDecl
     | enumDef
     | funcDef
     | nativeFuncDecl
-    | nativeTypeDecl
-    | protocolDecl ;
+    | nativeTypeDecl;
 
-typeDef: TYPEDEF Identifier typeParameters '=' type ';' ;
+typeDef: TYPEDEF Identifier '=' type ';' ;
 
-structDef: STRUCT Identifier typeParameters '{' structElement* '}' ;
+structDef: STRUCT Identifier '{' structElement* '}' ;
 structElement: type Identifier ';' ;
 
 enumDef: ENUM Identifier (':' type)? '{' enumMember (',' enumMember)* '}' ;
@@ -105,8 +104,8 @@ enumMember: Identifier ('=' constexpr)? ;
 funcDef: RESTRICTED? funcDecl block;
 funcDecl
     : (VERTEX | FRAGMENT) type Identifier parameters
-    | type (Identifier | OperatorName) typeParameters parameters
-    | OPERATOR typeParameters type parameters ;
+    | type (Identifier | OperatorName) parameters
+    | OPERATOR type parameters ;
 // Note: the return type is moved in a different place for operator casts, as a hint that it plays a role in overload resolution. to bikeshed
 parameters
     : '(' ')'
@@ -114,22 +113,7 @@ parameters
 parameter: type Identifier? ;
 
 nativeFuncDecl: RESTRICTED? NATIVE funcDecl ';' ;
-nativeTypeDecl: NATIVE TYPEDEF Identifier typeParameters ';' ;
-
-protocolDecl: PROTOCOL Identifier (':' protocolRef (',' protocolRef)*)? '{' (funcDecl ';')* '}' ;
-// Note: I forbid empty extensions lists in protocol declarations, while the original js parser allowed them. to bikeshed
-protocolRef: Identifier ;
-
-/*
- * Parser: Types 
- */
-typeParameters
-    : '<' typeParameter (',' typeParameter)* '>'
-    | ('<' '>')?;
-// Note: contrary to C++ for example, we allow '<>' and consider it equivalent to having no type parameters at all. to bikeshed
-typeParameter
-    : type Identifier
-    | Identifier (':' protocolRef ('+' protocolRef)*)? ;
+nativeTypeDecl: NATIVE TYPEDEF Identifier typeArguments ';' ;
 
 type
     : addressSpace Identifier typeArguments typeSuffixAbbreviated+
