@@ -4,7 +4,7 @@ grammar WSL;
  * Lexer
  */
 Whitespace: [ \t\r\n]+ -> skip ;
-LineComment: '//'[^\r\n] -> skip ;
+LineComment: '//'~[\r\n]* -> skip ;
 LongComment: '/*'.*?'*/' -> skip ;
 
 // Note: we forbid leading 0s in decimal integers. to bikeshed.
