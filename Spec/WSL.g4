@@ -214,7 +214,7 @@ possibleTernaryConditional
     : possibleLogicalBinop '?' expr ':' possibleTernaryConditional
     | possiblePrefix assignOperator possibleTernaryConditional
     | possibleLogicalBinop ;
-possibleLogicalBinop: possibleRelationalBinop (logicalBinop possibleRelationallBinop)*;
+possibleLogicalBinop: possibleRelationalBinop (logicalBinop possibleRelationalBinop)*;
 logicalBinop: '||' | '&&' | '|' | '^' | '&' ;
 // Note: the list above may need some manipulation to get the proper left-to-right associativity
 possibleRelationalBinop: possibleShift (relationalBinop possibleShift)?;
