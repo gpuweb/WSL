@@ -515,8 +515,8 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} by
     G |- e2 : tval
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
-    --------------------- :: ternary
-    G |- e0 ? e1 : e2 : t
+    ------------------------ :: ternary
+    G |- e0 ? e1 : e2 : tval
 
     G |- e : bool
     -------------- :: not

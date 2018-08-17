@@ -610,6 +610,10 @@ Phase 1: Gathering declarations
 In this first step all top-level declarations are gathered into a global environment.
 Each struct name, enum name, typedef name and global variable name must be unique, and not used in a function name.
 
+.. todo::
+    Make this global environment more explicit.
+    It is probably several different mappings: One for global variable -> type, one for type -> definition and one for function -> signatures (plural, because overloading).
+
 .. note::
     Function names do not have to be unique, as we have overloading.
 
@@ -633,6 +637,7 @@ From this point onwards each declaration can be validated independently, only re
 .. todo::
     Is this true? Don't we need the size of types for annotating array accesses?
     Maybe it could be added to the global environment instead, and accessed directly in the semantics?
+    We also need to annotate each variable declaration with a fresh identifier.
 
 Structs
 """""""
@@ -701,12 +706,15 @@ If a function is called ``operator[]=``:
 
 No argument of a function can be of type ``void`` (which is a type that can only appear as the return type of a function).
 
-Additionally the body of each function must be well-typed in the global environment, with the following condition:
+Additionally, there is a type check:
 
+#. Make a new typing environment from the global environment
+#. For each parameter of the function, from left to right, add a mapping to this typing environment, associating this parameter name to the corresponding type
+#. Check that the function body is well-typed in this typing environment (treating it as a block of statements)
 #. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}``.
 #. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}``
 
-We define these notions (well-typed, behaviours) in the next section.
+We define these notions (typing environment, well-typed, behaviours) in the next section.
 
 Phase 3: Typing of functions
 ----------------------------
@@ -725,7 +733,7 @@ A type can either be:
     
     - A basic type such as ``bool`` or ``uint``
     - ``void``
-    - An array with an associated right-value type
+    - An array with an associated right-value type and a size (a number of elements)
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
 
@@ -745,7 +753,7 @@ We use these "behaviours" to check the effect of statements on the control flow.
 Typing statements
 """""""""""""""""
 
-To check a if-then-else statement:
+To check an if-then-else statement:
 
 #. Check that the condition is a well-typed expression of type ``bool``
 #. Check that the then branch is a well-typed statement, whose behaviours we will call B
@@ -805,6 +813,9 @@ To check a block:
     #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
 
 .. todo::
+    Add annotation to all variable declarations/function parameters to uniquely attribute a cell in the store to each of them.
+
+.. todo::
     Add checks that types are well-formed
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed, and its set of behaviours is then {Nothing}.
@@ -812,18 +823,50 @@ Finally a statement that consists of a single expression (followed by a semicolo
 .. todo::
     Insert the formal rules.
 
+.. todo::
+    Check that I have not forgotten some kind of statement.
+
 Typing expressions
 """"""""""""""""""
 
-- typing rules (this and everything that follows can be managed by just a pair of judgements that type stmts/exprs)
-- checking returns
-- check that every variable declaration is in a block or at the top-level
-- check that no variable declaration shadows another one at the same scope
-- check that no variable is declared of type void
-- check that switch statements treat all cases
-- check that every case in a switch statement ends in a terminator (fallthrough/break/return/continue/trap)
-- check that literals fit into the type they are stored into (optional?)
-- check that all new variables are in the ``thread`` or ``threadgroup`` address space
+Literals are always well-typed, and are of any type that can contain them (depending on which is required for validation to succeed).
+``true`` and ``false`` are always boolean.
+
+``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed)``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed)..
+
+.. todo::
+    Find a way to express that parentheses do the expected (trivial) thing.
+
+A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the type of its second operand.
+
+.. todo::
+    I don't mention || and && here explicitely because they can be overloaded. Find a clean way to say it.
+
+To check that a ternary conditional is well-typed:
+
+#. Check that its condition is well-typed and of type bool
+#. Check that both of its branches are well-typed
+#. Check that the types of its branches are the same
+#. Check that this same type is neither a pointer type nor an array reference type.
+#. Then it is well-typed, and of that type.
+
+To check that an assignment is well-typed:
+
+#. Check that the expression on the right side of the ``=`` is well-typed with a right-value type "tval"
+#. Check that "tval" is neither a pointer type nor an array reference type
+#. Check that the expression on the left side is well-typed with a left-value type
+#. Check that the right-value type associated with this left-value type is "tval"
+#. Check that the address space associated with this left-value type is not ``constant``
+#. Then the assignment is well-typed, and its type is "tval"
+
+A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
+
+If an expression is well-typed and its type is an left-value type, it can also be treated as if it were of the associated right-value type.
+
+An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed and of a left-value type (respectively of a pointer type).
+The associated right-value types and address spaces are left unchanged by these two operators.
+
+
 
 Phase 3: Monomorphisation and late validation
 ---------------------------------------------
