@@ -7,26 +7,12 @@ for type in ["void", "bool", "uchar", "ushort", "uint", "char", "short", "int", 
     print("native typedef \(type);")
 }
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
-        print("struct \(type)2 {")
-        print("    \(type) x;")
-        print("    \(type) y;")
-        print("}")
-        print("struct \(type)3 {")
-        print("    \(type) x;")
-        print("    \(type) y;")
-        print("    \(type) z;")
-        print("}")
-        print("struct \(type)4 {")
-        print("    \(type) x;")
-        print("    \(type) y;")
-        print("    \(type) z;")
-        print("    \(type) w;")
-        print("}")
-
-    /*for size in 2 ... 4 {
-        print("typedef vector<\(type), \(size)> = \(type)\(size);")
-    }*/
+    for size in 2 ... 4 {
+        print("native typedef vector<\(type), \(size)>;")
+        print("native typedef \(type)\(size) = vector<\(type), \(size)>;")
+    }
 }
+
 for type in ["half", "float"] {
     for i in 2 ... 4 {
         for j in 2 ... 4 {
