@@ -608,14 +608,13 @@ Phase 1: Gathering declarations
 -------------------------------
 
 In this first step all top-level declarations are gathered into a global environment.
-Each struct name, enum name, typedef name and global variable name must be unique, and not used in a function name.
+More precisely they are gathered in three different mappings:
 
-.. todo::
-    Make this global environment more explicit.
-    It is probably several different mappings: One for global variable -> type, one for type -> definition and one for function -> signatures (plural, because overloading).
+- A mapping from identifiers to types (typedefs, enums and structs)
+- A mapping from identifiers to declarations of global variables
+- A mapping from identifiers to sets of function declarations.
 
-.. note::
-    Function names do not have to be unique, as we have overloading.
+Each struct name, enum name, typedef name and global variable name must be unique, but function names do not have to be, as we support overloading.
 
 After this, we build a relation "depends on", as the smallest relation such that:
 
@@ -813,9 +812,6 @@ To check a block:
     #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
 
 .. todo::
-    Add annotation to all variable declarations/function parameters to uniquely attribute a cell in the store to each of them.
-
-.. todo::
     Add checks that types are well-formed
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed, and its set of behaviours is then {Nothing}.
@@ -866,7 +862,41 @@ If an expression is well-typed and its type is an left-value type, it can also b
 An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed and of a left-value type (respectively of a pointer type).
 The associated right-value types and address spaces are left unchanged by these two operators.
 
+To check that a function call is well-typed:
 
+#. Check that each argument is well-typed
+#. Make a set of all the functions in the global environment that share the same name and number of parameters
+#. For each function in that set:
+
+    #. Check that each argument can be given a type that match the type of the parameter
+    #. Otherwise, remove the function from the set
+
+#. Check that the set now contains a single function
+#. Then the function call is well-typed, and its type is the return type of that function
+
+.. note::
+    Our overloading resolution is only this simple because this version of the language does not have generics.
+
+Phase 4. Annotations for execution
+----------------------------------
+
+Every variable declaration, and every function parameter must be associated with a unique memory location.
+
+Each control barrier must be annotated with a unique barrier identifier.
+
+Every variable declaration that does not have an initializing value, must get an initializing value that is the default value for its type.
+These default values are computed as follows:
+
+- The default value for integer types is ``0``
+- The default value for floating point types is ``0.0``
+- The default value for booleans is ``false``
+- The default value for enums is the element of the enum whose associated integer values is 0
+- The default value for pointers and array references is ``null``
+- The default value for an array is an array of the right size filled with the default values for its element type
+- The default value for a structure type is a structure whose elements are all given their respective default values
+
+.. todo::
+    Sizes to deal with loads/arrays/@/...
 
 Phase 3: Monomorphisation and late validation
 ---------------------------------------------
