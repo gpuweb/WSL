@@ -9,19 +9,16 @@ for type in ["void", "bool", "uchar", "ushort", "uint", "char", "short", "int", 
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for size in 2 ... 4 {
         print("native typedef vector<\(type), \(size)>;")
-        print("native typedef \(type)\(size) = vector<\(type), \(size)>;")
+        print("typedef \(type)\(size) = vector<\(type), \(size)>;")
     }
 }
+print()
 
 for type in ["half", "float"] {
     for i in 2 ... 4 {
         for j in 2 ... 4 {
-            print("struct \(type)\(i)x\(j) {")
-            for m in 0 ..< i {
-                print("    \(type)\(j) row\(m);")
-            }
-            print("}")
-            //print("typedef matrix<\(type), \(i), \(j)> = \(type)\(i)x\(j);")
+            print("native typedef matrix<\(type), \(i), \(j)>;")
+            print("typedef \(type)\(i)x\(j) = matrix<\(type), \(i), \(j)>;")
         }
     }
 }
@@ -42,22 +39,23 @@ print()
 
 for type1 in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for type2 in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
-        if (type1 == type2) {
-            print("operator \(type1)(\(type2) x) {")
-            print("    return x;")
-            print("}")
-        } else {
+        if (type1 != type2) {
             print("native operator \(type1)(\(type2));")
         }
     }
 }
+print()
 
-print("operator bool(bool x) {")
-print("    return x;")
-print("}")
+for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
+    print("operator bool(\(type) x) {")
+    print("    return x != 0;");
+    print("}")
+}
+print()
 
 print("native operator int(atomic_int);")
 print("native operator uint(atomic_uint);")
+print()
 
 print("native bool operator==(bool, bool);")
 
@@ -521,34 +519,102 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
     print("bool operator==(\(type)4 a, \(type)4 b) {")
     print("    return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;")
     print("}")
-    print("thread \(type)* operator&[](thread \(type)2* foo, uint index) {")
+    print("native \(type) operator.x(\(type)2 v);")
+    print("native \(type) operator.y(\(type)2 v);")
+    print("native \(type) operator.x(\(type)3 v);")
+    print("native \(type) operator.y(\(type)3 v);")
+    print("native \(type) operator.z(\(type)3 v);")
+    print("native \(type) operator.x(\(type)4 v);")
+    print("native \(type) operator.y(\(type)4 v);")
+    print("native \(type) operator.z(\(type)4 v);")
+    print("native \(type) operator.w(\(type)4 v);")
+    print("native \(type) operator.x=(\(type)2 v, \(type));")
+    print("native \(type) operator.y=(\(type)2 v, \(type));")
+    print("native \(type) operator.x=(\(type)3 v, \(type));")
+    print("native \(type) operator.y=(\(type)3 v, \(type));")
+    print("native \(type) operator.z=(\(type)3 v, \(type));")
+    print("native \(type) operator.x=(\(type)4 v, \(type));")
+    print("native \(type) operator.y=(\(type)4 v, \(type));")
+    print("native \(type) operator.z=(\(type)4 v, \(type));")
+    print("native \(type) operator.w=(\(type)4 v, \(type));")
+    print("\(type) operator[](\(type)2 v, uint index) {")
     print("    if (index == 0)")
-    print("        return &foo->x;")
+    print("        return v.x;")
     print("    if (index == 1)")
-    print("        return &foo->y;")
+    print("        return v.y;")
     print("    trap;")
     print("}")
-    print("thread \(type)* operator&[](thread \(type)3* foo, uint index) {")
+    print("\(type) operator[](\(type)3 v, uint index) {")
     print("    if (index == 0)")
-    print("        return &foo->x;")
+    print("        return v.x;")
     print("    if (index == 1)")
-    print("        return &foo->y;")
+    print("        return v.y;")
     print("    if (index == 2)")
-    print("        return &foo->z;")
+    print("        return v.z;")
     print("    trap;")
     print("}")
-    print("thread \(type)* operator&[](thread \(type)4* foo, uint index) {")
+    print("\(type) operator[](\(type)4 v, uint index) {")
     print("    if (index == 0)")
-    print("        return &foo->x;")
+    print("        return v.x;")
     print("    if (index == 1)")
-    print("        return &foo->y;")
+    print("        return v.y;")
     print("    if (index == 2)")
-    print("        return &foo->z;")
+    print("        return v.z;")
     print("    if (index == 3)")
-    print("        return &foo->w;")
+    print("        return v.w;")
     print("    trap;")
+    print("}")
+    print("\(type)2 operator[]=(\(type)2 v, uint index, \(type) a) {")
+    print("    switch (index) {")
+    print("        case 0:")
+    print("            v.x = a;")
+    print("        case 1:")
+    print("            v.y = a;")
+    print("        default:")
+    print("            trap;")
+    print("    }")
+    print("    return v;")
+    print("}")
+    print("\(type)3 operator[]=(\(type)3 v, uint index, \(type) a) {")
+    print("    switch (index) {")
+    print("        case 0:")
+    print("            v.x = a;")
+    print("        case 1:")
+    print("            v.y = a;")
+    print("        case 2:")
+    print("            v.z = a;")
+    print("        default:")
+    print("            trap;")
+    print("    }")
+    print("    return v;")
+    print("}")
+    print("\(type)4 operator[]=(\(type)4 v, uint index, \(type) a) {")
+    print("    switch (index) {")
+    print("        case 0:")
+    print("            v.x = a;")
+    print("        case 1:")
+    print("            v.y = a;")
+    print("        case 2:")
+    print("            v.z = a;")
+    print("        case 3:")
+    print("            v.w = a;")
+    print("        default:")
+    print("            trap;")
+    print("    }")
+    print("    return v;")
     print("}")
 }
+print()
+
+for type in ["half", "float"] {
+    for m in 2 ... 4 {
+        for n in 2 ... 4 {
+            print("native \(type)\(n) operator[](\(type)\(m)x\(n) foo, uint index);")
+            print("native \(type)\(m)x\(n) operator[]=(\(type)\(m)x\(n), uint, \(type)\(n));")
+        }
+    }
+}
+print()
 
 for type in ["half", "float"] {
     for size in 2 ... 4 {
