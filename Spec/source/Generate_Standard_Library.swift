@@ -635,38 +635,6 @@ for type in ["half", "float"] {
 print()
 
 for type in ["half", "float"] {
-    for size in 2 ... 4 {
-        print("thread \(type)\(size)* operator&[](thread \(type)2x\(size)* foo, uint index) {")
-        print("    if (index == 0)")
-        print("        return &foo->row0;")
-        print("    if (index == 1)")
-        print("        return &foo->row1;")
-        print("    trap;")
-        print("}")
-        print("thread \(type)\(size)* operator&[](thread \(type)3x\(size)* foo, uint index) {")
-        print("    if (index == 0)")
-        print("        return &foo->row0;")
-        print("    if (index == 1)")
-        print("        return &foo->row1;")
-        print("    if (index == 2)")
-        print("        return &foo->row2;")
-        print("    trap;")
-        print("}")
-        print("thread \(type)\(size)* operator&[](thread \(type)4x\(size)* foo, uint index) {")
-        print("    if (index == 0)")
-        print("        return &foo->row0;")
-        print("    if (index == 1)")
-        print("        return &foo->row1;")
-        print("    if (index == 2)")
-        print("        return &foo->row2;")
-        print("    if (index == 3)")
-        print("        return &foo->row3;")
-        print("    trap;")
-        print("}")
-    }
-}
-
-for type in ["half", "float"] {
     for i in 2 ... 4 {
         for j in 2 ... 4 {
             print("bool operator==(\(type)\(i)x\(j) a, \(type)\(i)x\(j) b) {")
@@ -789,16 +757,16 @@ do {
         print("    return pow(x, 0.5);")
         print("}")
         print("\(type) log2(\(type) x) {");
-        print("    return log(x) / log(2);")
+        print("    return log(x) / log(\(type)(2));")
         print("}")
         print("\(type) log10(\(type) x) {");
-        print("    return log(x) / log(10);")
+        print("    return log(x) / log(\(type)(10));")
         print("}")
         print("\(type) frac(\(type) x) {");
         print("    return x - floor(x);")
         print("}")
         print("\(type) exp2(\(type) x) {");
-        print("    return exp(x * log(2));")
+        print("    return exp(x * log(\(type)(2)));")
         print("}")
         print("\(type) degrees(\(type) x) {");
         print("    return x * 180 / 3.14159;")
@@ -1789,7 +1757,7 @@ for type in ["half", "float"] {
 
 for type in ["uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     for size in 2 ... 4 {
-        print("\(type)\(size) mul(\(type)\(size) x, \(type)\(size) y) {")
+        print("\(type) mul(\(type)\(size) x, \(type)\(size) y) {")
         print("    return dot(x, y);")
         print("}")
     }
