@@ -1030,17 +1030,27 @@ for type in ["half", "float"] {
     print("}")
     for size in 2 ... 4 {
         print("void sincos(\(type)\(size) x, thread \(type)\(size)* y, thread \(type)\(size)* z) {");
+        // Can't take a pointer to a member of a vector.
+        print("    float sinResult;")
+        print("    float cosResult;")
         for i in 0 ..< size {
-            print("    sincos(x[\(i)], &((*y)[\(i)]), &((*z)[\(i)]));")
+            print("    sincos(x[\(i)], &sinResult]), &cosResult]));")
+            print("    (*y)[\(i)] = sinResult;")
+            print("    (*z)[\(i)] = cosResult;")
         }
         print("}")
     }
     for i in 2 ... 4 {
         for j in 2 ... 4 {
             print("void sincos(\(type)\(i)x\(j) x, thread \(type)\(i)x\(j)* y, thread \(type)\(i)x\(j)* z) {");
+            // Can't take a pointer to a member of a matrix.
+            print("    float sinResult;")
+            print("    float cosResult;")
             for m in 0 ..< i {
                 for n in 0 ..< j {
-                    print("    sincos(x[\(m)][\(n)], &((*y)[\(m)][\(n)]), &((*z)[\(m)][\(n)]));")
+                    print("    sincos(x[\(m)][\(n)], &sinResult, &cosResult);")
+                    print("    (*y)[\(m)][\(n)] = sinResult;")
+                    print("    (*z)[\(m)][\(n)] = cosResult;")
                 }
             }
             print("}")
@@ -1261,8 +1271,11 @@ for type in ["half", "float"] {
     for size in 2 ... 4 {
         print("\(type)\(size) modf(\(type)\(size) x, thread \(type)\(size)* y) {");
         print("    \(type)\(size) result;")
+        // Can't take a pointer to a member of a vector.
+        print("    \(type) buffer;")
         for i in 0 ..< size {
-            print("    result[\(i)] = modf(x[\(i)], &((*y)[\(i)]));")
+            print("    result[\(i)] = modf(x[\(i)], &buffer);")
+            print("    (*y)[\(i)] = buffer;");
         }
         print("    return result;")
         print("}")
@@ -1271,9 +1284,12 @@ for type in ["half", "float"] {
         for j in 2 ... 4 {
             print("\(type)\(i)x\(j) modf(\(type)\(i)x\(j) x, thread \(type)\(i)x\(j)* y) {");
             print("    \(type)\(i)x\(j) result;")
+            // Can't take a pointer to a member of a matrix.
+            print("    \(type) buffer;")
             for m in 0 ..< i {
                 for n in 0 ..< j {
-                    print("    result[\(m)][\(n)] = modf(x[\(m)][\(n)], &((*y)[\(m)][\(n)]));")
+                    print("    result[\(m)][\(n)] = modf(x[\(m)][\(n)], &buffer);")
+                    print("    (*y)[\(m)][\(n)] = buffer;")
                 }
             }
             print("    return result;")
