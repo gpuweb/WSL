@@ -1321,7 +1321,7 @@ for i in 1 ..< 31 {
 print("           ((x | uint(1 << 31)) == 0 ? 0 : 1));")
 print("}")
 print("uchar reversebits(uchar x) {")
-print("    return uchar(((x & uchar(1 << 0)) << 7) | ")
+print("    return uchar(((x & uchar(1 << 0)) << 7) |")
 for i in 1 ..< 7 {
     let offset = 7 - 2 * i
     print("           ((x & uchar(1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
@@ -1329,7 +1329,7 @@ for i in 1 ..< 7 {
 print("           ((x & uchar(1 << 7)) >> 7));")
 print("}")
 print("ushort reversebits(ushort x) {")
-print("    return ushort(((x & ushort(1 << 0)) << 15) | ")
+print("    return ushort(((x & ushort(1 << 0)) << 15) |")
 for i in 1 ..< 15 {
     let offset = 15 - 2 * i
     print("           ((x & ushort(1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
@@ -1337,7 +1337,7 @@ for i in 1 ..< 15 {
 print("           ((x & ushort(1 << 15)) >> 15));")
 print("}")
 print("uint reversebits(uint x) {")
-print("    return uint(((x & uint(1 << 0)) << 31) | ")
+print("    return uint(((x & uint(1 << 0)) << 31) |")
 for i in 1 ..< 31 {
     let offset = 31 - 2 * i
     print("           ((x & uint(1 << \(i))) \(offset > 0 ? "<<" : ">>") \(abs(offset))) |")
