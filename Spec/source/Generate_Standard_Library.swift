@@ -1031,8 +1031,8 @@ for type in ["half", "float"] {
     for size in 2 ... 4 {
         print("void sincos(\(type)\(size) x, thread \(type)\(size)* y, thread \(type)\(size)* z) {");
         // Can't take a pointer to a member of a vector.
-        print("    float sinResult;")
-        print("    float cosResult;")
+        print("    \(type) sinResult;")
+        print("    \(type) cosResult;")
         for i in 0 ..< size {
             print("    sincos(x[\(i)], &sinResult, &cosResult);")
             print("    (*y)[\(i)] = sinResult;")
@@ -1044,8 +1044,8 @@ for type in ["half", "float"] {
         for j in 2 ... 4 {
             print("void sincos(\(type)\(i)x\(j) x, thread \(type)\(i)x\(j)* y, thread \(type)\(i)x\(j)* z) {");
             // Can't take a pointer to a member of a matrix.
-            print("    float sinResult;")
-            print("    float cosResult;")
+            print("    \(type) sinResult;")
+            print("    \(type) cosResult;")
             for m in 0 ..< i {
                 for n in 0 ..< j {
                     print("    sincos(x[\(m)][\(n)], &sinResult, &cosResult);")
