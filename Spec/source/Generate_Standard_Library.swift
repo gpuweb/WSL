@@ -1034,7 +1034,7 @@ for type in ["half", "float"] {
         print("    float sinResult;")
         print("    float cosResult;")
         for i in 0 ..< size {
-            print("    sincos(x[\(i)], &sinResult]), &cosResult]));")
+            print("    sincos(x[\(i)], &sinResult], &cosResult]);")
             print("    (*y)[\(i)] = sinResult;")
             print("    (*z)[\(i)] = cosResult;")
         }
