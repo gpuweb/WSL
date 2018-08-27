@@ -65,7 +65,29 @@ RESTRICTED: 'restricted';
 UNDERSCORE: '_';
 AUTO: 'auto';
 PROTOCOL: 'protocol';
+CONST: 'const';
+STATIC: 'static';
 // Note: these are currently not used by the grammar, but I would like to make them reserved keywords for future expansion of the language. to bikeshed
+
+Qualifier: 'nointerpolation' | 'noperspective' | 'uniform' | 'specialized' | 'centroid' | 'sample';
+
+Semantics
+    : 'SV_instanceID'
+    | 'SV_vertexID'
+    | 'PSIZE'
+    | 'SV_Position'
+    | 'SV_IsFrontFace'
+    | 'SV_SampleIndex'
+    | 'SV_InnerCoverage'
+    | 'SV_Target' CoreDecimalIntLiteral?
+    | 'SV_Depth'
+    | 'SV_Coverage'
+    | 'SV_DispatchThreadID'
+    | 'SV_GroupID'
+    | 'SV_GroupIndex'
+    | 'SV_GroupThreadID'
+    | 'attribute(' CoreDecimalIntLiteral ')'
+    | 'register(' [utbcs] CoreDecimalIntLiteral ')'; 
 
 fragment ValidIdentifier: [a-zA-Z_] [a-zA-Z0-9_]* ;
 Identifier: ValidIdentifier ;
@@ -95,7 +117,7 @@ topLevelDecl
 typeDef: TYPEDEF Identifier '=' type ';' ;
 
 structDef: STRUCT Identifier '{' structElement* '}' ;
-structElement: type Identifier ';' ;
+structElement: Qualifier* type Identifier (':' Semantics)? ';' ;
 
 enumDef: ENUM Identifier (':' type)? '{' enumMember (',' enumMember)* '}' ;
 // Note: we could allow an extra ',' at the end of the list of enumMembers, ala Rust, to make it easier to reorder the members. to bikeshed
@@ -110,7 +132,7 @@ funcDecl
 parameters
     : '(' ')'
     | '(' parameter (',' parameter)* ')' ;
-parameter: type Identifier? ;
+parameter: Qualifier* type Identifier? (':' Semantics)?;
 
 nativeFuncDecl: RESTRICTED? NATIVE funcDecl ';' ;
 nativeTypeDecl: NATIVE TYPEDEF Identifier typeArguments ';' ;
@@ -125,7 +147,7 @@ typeSuffixNonAbbreviated: '*' addressSpace | '[]' addressSpace | '[' IntLiteral 
 
 typeArguments
     : '<' (typeArgument ',')* addressSpace? Identifier '<' (typeArgument (',' typeArgument)*)? '>>'
-    //Note: this first alternative is a horrible hack to deal with nested generics that end with '>>'. As far as I can tell it works fine, but requires arbitrary lookahead.
+    // Note: this first alternative is a horrible hack to deal with nested generics that end with '>>'. As far as I can tell it works fine, but requires arbitrary lookahead.
     | '<' typeArgument (',' typeArgument)* '>'
     | ('<' '>')? ;
 typeArgument: constexpr | type ;
@@ -161,7 +183,7 @@ whileStmt: WHILE '(' expr ')' stmt ;
 doStmt: DO stmt WHILE '(' expr ')' ;
 
 variableDecls: type variableDecl (',' variableDecl)* ;
-variableDecl: Identifier ('=' expr)? ;
+variableDecl: Qualifier* Identifier (':' Semantics)? ('=' expr)? ;
 
 /* 
  * Parser: Expressions

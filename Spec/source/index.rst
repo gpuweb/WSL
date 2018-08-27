@@ -350,7 +350,7 @@ An integer literal can either be decimal or hexadecimal, and either signed or un
 - A signed hexadecimal integer literal starts with an optional ``-``, then the string ``0x``, then a non-empty sequence of elements of [0-9a-fA-F] (non-case sensitive, leading 0s are allowed).
 - An unsigned hexadecimal inter literal starts with the string ``0x``, then a non-empty sequence of elements of [0-9a-fA-F] (non-case sensitive, leading 0s are allowed), and finally the character ``u``.
 
-.. todo:: I chose rather arbitrarily to allow leading 0s in hexadecimal, but not in decimal integer literals. This can obviously be changed either way.
+.. note:: Leading 0s are allowed in hexadecimal integer literals, but not in decimal integer literals
 
 A float literal is made of the following elements in sequence:
 
@@ -425,7 +425,9 @@ The second kind is a multi-line comment, that starts with the string ``/*`` and 
 Parsing
 -------
 
-.. todo:: add here a quick explanation of BNF syntax and our conventions.
+In this section we will describe the grammar of WHLSL programs, using the usual BNF metalanguage (https://en.wikipedia.org/wiki/Backus–Naur_form).
+We use names starting with an upper case letter to refer to lexical tokens defined in the previous section, and names starting with a lower case letter to refer to non-terminals. These are linked (at least in the HTML version of this document).
+We use non-bold text surrounded by quotes for text terminals (keywords, punctuation, etc..).
 
 Top-level declarations
 """"""""""""""""""""""
@@ -437,7 +439,6 @@ A valid file is made of a sequence of 0 or more top-level declarations, followed
 
 .. todo:: We may want to also allow variable declarations at the top-level if it can easily be supported by all of our targets. (Myles: We can emulate it an all the targets, but the targets themselves only allow constant variables
     at global scope. We should follow suit.)
-.. todo:: Decide whether we put native/restricted in the spec or not.
 
 .. productionlist::
     typedef: "typedef" `Identifier` "=" `type` ";"
@@ -465,10 +466,9 @@ Statements
 """"""""""
 
 .. productionlist::
-    stmt: "{" `stmt`* "}"
+    stmt: "{" (`stmt` | `variableDecls` ';')* "}"
         : | `compoundStmt` 
         : | `terminatorStmt` ";" 
-        : | `variableDecls` ";" 
         : | `maybeEffectfulExpr` ";"
     compoundStmt: `ifStmt` | `ifElseStmt` | `whileStmt` | `doWhileStmt` | `forStmt` | `switchStmt`
     terminatorStmt: "break" | "continue" | "fallthrough" | "return" `expr`? | "trap"
@@ -510,8 +510,6 @@ Complex variable declarations are also mere syntactic sugar.
 Several variable declarations separated by commas are the same as separating them with semicolons and repeating the type for each one.
 This transformation can always be done because variable declarations are only allowed inside blocks (and for loops, but these get desugared into a block, see above).
 
-.. todo:: should I make the requirement that variableDecls only appear in blocks be part of the syntax, or should it just be part of the validation rules?
-
 Types
 """""
 
@@ -534,8 +532,6 @@ Putting the address space before the identifier is just syntactic sugar for havi
     typeArgument: `constepxr` | `type`
 
 The first production rule for typeArguments is a way to say that `>>` can be parsed as two `>` closing delimiters, in the case of nested typeArguments.
-
-.. todo:: Now that we are disallowing the general use of type arguments, do we need the >> processing?
 
 Expressions
 """""""""""
@@ -611,7 +607,7 @@ In this first step all top-level declarations are gathered into a global environ
 More precisely they are gathered in three different mappings:
 
 - A mapping from identifiers to types (typedefs, enums and structs)
-- A mapping from identifiers to declarations of global variables
+- A mapping from identifiers to declarations of global (constant) variables
 - A mapping from identifiers to sets of function declarations.
 
 Each struct name, enum name, typedef name and global variable name must be unique, but function names do not have to be, as we support overloading.
@@ -699,9 +695,7 @@ If a function is called ``operator[]=``:
     #. Its first argument has the same type as the first argument of this one
     #. Its return type is the same as the type of the third argument of this one
 
-.. todo::
-    We currently do not restrict in any way the return type of these functions, following Test.js.
-    Do we want to?
+.. We currently do not restrict in any way the return type of these functions, following Test.js. Do we want to?
 
 No argument of a function can be of type ``void`` (which is a type that can only appear as the return type of a function).
 
@@ -722,22 +716,18 @@ In this section we define two mutually recursive judgments: "In typing environme
 
 A typing environment is a mapping from identifiers to types.
 
-.. todo::
-    Deal more explicitely with the rest of the global environment (structs/functions/enums).
-
 A type can either be:
 
 - A left-value type with an associated right-value type and an address space
 - A right-value type, which can be any of the following:
     
     - A basic type such as ``bool`` or ``uint``
+    - A structure type, defined by its name
+    - An enum type, defined by its name
     - ``void``
     - An array with an associated right-value type and a size (a number of elements)
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
-
-.. todo::
-    My terminology is rather terrible. I should try to find better names and rewrite this part.
 
 A behaviour is any of the following:
 
@@ -830,13 +820,9 @@ Literals are always well-typed, and are of any type that can contain them (depen
 
 ``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed)``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed)..
 
-.. todo::
-    Find a way to express that parentheses do the expected (trivial) thing.
+The type of an expression in parentheses, is the type of the expression in the parentheses.
 
 A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the type of its second operand.
-
-.. todo::
-    I don't mention || and && here explicitely because they can be overloaded. Find a clean way to say it.
 
 To check that a ternary conditional is well-typed:
 
@@ -880,6 +866,8 @@ To check that a function call is well-typed:
 Phase 4. Annotations for execution
 ----------------------------------
 
+We resolved each overloaded function call in the previous section. They must now be annotated with which function is actually being called.
+
 Every variable declaration, and every function parameter must be associated with a unique memory location.
 
 Each control barrier must be annotated with a unique barrier identifier.
@@ -898,17 +886,14 @@ These default values are computed as follows:
 .. todo::
     Sizes to deal with loads/arrays/@/...
 
-Phase 3: Monomorphisation and late validation
----------------------------------------------
+Phase 4. Verifying the absence of recursion
+-------------------------------------------
 
-.. todo:: We shouldn't need to monomorphize
+WHLSL does not support recursion (for efficient compilation to GPUs).
+So once all overloaded function calls have been resolved, we must do one last check.
 
-- monomorphisation itself
-- resolving function calls (probably done as part of monomorphisation)
-- checking no recursive functions (seems very hard to do before that step, as it requires resolving overloaded functions)
-- allocating a unique store identifier to each function parameter and variable declaration
-- annotating each array access with the stride used by that array type? If we do it here and not at runtime, then each assignment would also need a size annotation..
-- checks of proper use of address spaces
+We create a relationship "may call" that connects two functions ``f`` and ``g`` if there is a call to ``g`` in the body of ``f`` (after resolving overloading).
+If this relationship is cyclic, then the program is invalid.
 
 Dynamic rules
 =============
@@ -951,12 +936,10 @@ Here is how to reduce a block by one step:
    #. Else:
 
       #. Change the annotation of the block to the new environment.
-      #. Emit a store to the store identifier of the declaration, of a value that is either the initializing value (if available) or the default value for the type (otherwise)
+      #. Emit a store to the store identifier of the declaration, of the initializing value
       #. Remove this variable declaration from the block
 
 #. Else reduce the first statement of the block, using the environment that the block was annotated with (not the top-level environment)
-
-.. todo:: Specify this "default value for the type". It should be very simple (null for ptrs/refs, false for booleans, 0/0. for ints/floats, and the natural extension for arrays/structs).
 
 .. math::
     :nowrap:
