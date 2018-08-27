@@ -508,6 +508,31 @@ for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", 
     print("    return 4;")
     print("}")
 }
+print()
+
+for type in ["half", "float"] {
+    let variables = ["a", "b", "c", "d"];
+    for m in 2 ... 4 {
+        for n in 2 ... 4 {
+            var signature = "operator \(type)\(m)x\(n)("
+            for i in 0 ..< m {
+                if i != 0 {
+                    signature += ", "
+                }
+                signature += "\(type)\(n) \(variables[i])"
+            }
+            signature += ") {"
+            print(signature)
+            print("    \(type)\(m)x\(n) result;")
+            for i in 0 ..< m {
+                print("    result[\(i)] = \(variables[i]);")
+            }
+            print("    return result;")
+            print("}")
+        }
+    }
+}
+print()
 
 for type in ["bool", "uchar", "ushort", "uint", "char", "short", "int", "half", "float"] {
     print("bool operator==(\(type)2 a, \(type)2 b) {")
