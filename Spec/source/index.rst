@@ -286,6 +286,9 @@ Vertex shaders accept all four buckets as input, and allow only built-in variabl
 as output. Fragment shaders accept all four buckets as input, and allow only built-in variables as output.
 Compute shaders only accept built-in variables and resources, and do not allow any output.
 
+If an entry-point returns a single built-in or stage-out variable, the semantic for that variable must be
+placed between the function signature and the function's opening ``{`` character.
+
 Vertex shader stage-out variables and fragment-shader stage-in variables may be qualified with any of the
 following qualifiers: ``nointerpolation``, ``noperspective``, ``centroid``, or ``sample``. ``nointerpolation``
 and ``noperspective`` must not both be specified on the same variable. ``centroid`` and ``sample`` must not
