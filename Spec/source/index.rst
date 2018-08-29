@@ -1601,6 +1601,13 @@ Interface with JavaScript
 Shaders are supplied to the Javascript WebGPU API as a single argument
 which is understood to be of type 'DOMString'.
 
+Resource Limits
+===============
+
+#. How many inputs
+#. How many outputs
+#. How many intermediate variables
+
 Indices and tables
 ##################
 
