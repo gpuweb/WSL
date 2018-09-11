@@ -480,7 +480,8 @@ Statements
     ifStmt: "if" "(" `expr` ")" `stmt`
     ifElseStmt: "if" "(" `expr` ")" `stmt` "else" `stmt`
 
-.. todo:: should I forbid assignments (without parentheses) inside the conditions of if/while to avoid the common mistaking of "=" for "==" ? (Myles: Let's say "yes, forbid it" for now, and we can change it if people complain)
+.. should I forbid assignments (without parentheses) inside the conditions of if/while to avoid the common mistaking of "=" for "==" ? (Myles: Let's say "yes, forbid it" for now, and we can change it if people complain)
+   Delayed for now, may be done in a future revision
 
 The first of these two productions is merely syntactic sugar for the second:
 
@@ -630,12 +631,7 @@ Then for each typedef it must be resolved, meaning that each mention of it is re
 Phase 2: Local validation, excluding typing
 -------------------------------------------
 
-From this point onwards each declaration can be validated independently, only referring to the global environment.
-
-.. todo::
-    Is this true? Don't we need the size of types for annotating array accesses?
-    Maybe it could be added to the global environment instead, and accessed directly in the semantics?
-    We also need to annotate each variable declaration with a fresh identifier.
+The checks in this section (and the next) can be done independently for each declaration.
 
 Structs
 """""""
@@ -804,16 +800,12 @@ To check a block:
     #. Check that the rest of the block, removing the first statement, is well-typed with a set of behaviours B'
     #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
 
-.. todo::
-    Add checks that types are well-formed
+.. Do we have a notion of ill-formed syntactically correct type? If so we should make sure it appears nowhere.
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed, and its set of behaviours is then {Nothing}.
 
 .. todo::
     Insert the formal rules.
-
-.. todo::
-    Check that I have not forgotten some kind of statement.
 
 Typing expressions
 """"""""""""""""""
@@ -866,6 +858,11 @@ To check that a function call is well-typed:
 .. note::
     Our overloading resolution is only this simple because this version of the language does not have generics.
 
+.. note::
+    A consequence of the rule that overloading must be resolved without ambiguity is that if there are too implementations of a function ``foo``
+    that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
+    The programmer can easily make its intent clear with something like ``int x = 42; foo(x);``.
+
 Phase 4. Annotations for execution
 ----------------------------------
 
@@ -886,10 +883,25 @@ These default values are computed as follows:
 - The default value for an array is an array of the right size filled with the default values for its element type
 - The default value for a structure type is a structure whose elements are all given their respective default values
 
-.. todo::
-    Sizes to deal with loads/arrays/@/...
+Every load and store must also be annotated with a size in bytes.
 
-Phase 4. Verifying the absence of recursion
+- The size of primitive types, pointers and array references is implementation defined.
+- The size of enums is the size of the underlying type
+- The size of arrays is their number of elements multiplied by the size of one element
+- The size of structs is computed in the same way as for C structs, and includes padding
+
+.. note::
+    The fact that padding is included in the size, combined with the dynamic rules in the next section, means that copying a struct
+    also copies any padding bits. This may be observable by the outside world depending on where the store occurs.
+
+.. Should we keep the basic sizes implementation defined?
+   Should I find the exact rules for structs for C, and copy them here?
+   Also, is this idea of using size annotation in bytes the right formalism at all?
+
+Finally, every array dereference (the ``[]`` operator) must be annotated with the stride, i.e. the size of the elements of the array.
+This size is computed in exactly the way described above.
+
+Phase 5. Verifying the absence of recursion
 -------------------------------------------
 
 WHLSL does not support recursion (for efficient compilation to GPUs).
@@ -1113,8 +1125,8 @@ If a statement is just an expression (``effectfulExpr`` in the grammar), it is e
 
 If a statement is a return followed by an expression, and the expression can be reduced, then the statement can as well by reducing the expression.
 
-.. todo::
-    Atomics (load/store/fence aka memory barrier).
+The standard library also offers atomic operations and fences (a.k.a. *memory barriers*, not to be confused with *control barriers*).
+Each of these emit a specific memory event when they are executed, whose semantics is described in the memory model section.
 
 Execution of expressions
 ------------------------
@@ -1233,8 +1245,26 @@ Symmetrically, to reduce ``* e``:
 The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
 There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
 
+The ``[]`` dereferencing operator is actually two operators depending on the type of its first operand (the array or array reference).
+If its first operand is an array, then it is unchecked: the validation rules should ensure that the index is always in-bound.
+But if it is an array reference, then there must be a bounds-check.
+More specifically, to reduce it by one step:
+
+#. If the index can be reduced, then reduce it
+#. Else if the type of the first operand is an array
+
+    #. ASSERT(the index is in-bounds)
+    #. Replace the whole expression by the corresponding value in the array
+
+#. Else if the type of the first operand is an array reference
+
+   #. If the index is out-of-bounds, then trap
+   #. Else compute an address from the address of the array reference, adding the product of the index and the stride
+   #. Emit a load of the size of an element at that address
+   #. Replace the whole expression by the value loaded
+
 .. todo::
-    Finish writing the related formal rules, and explicitely deal with arrays
+    Finish writing the related formal rules
 
 Variables and assignment
 """"""""""""""""""""""""
@@ -1243,9 +1273,6 @@ A variable name can be reduced in one step into whatever that name binds in the 
 This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.
 
 An lvalue can then be reduced by emitting a load to the corresponding address, and replacing it by whatever value is loaded.
-
-.. todo::
-    make the size of the load explicit?
 
 To reduce an assignment ``e1 = e2``:
 
@@ -1256,9 +1283,7 @@ To reduce an assignment ``e1 = e2``:
    #. Emit a store to the address of the lvalue, of the value on the right of the equal.
    #. Replace the entire expression by the value on the right of the equal.
 
-.. todo::
-    Make the size of the store explicit.
-    Maybe also make it clearer that value == cannot be reduced, and how to convert from values into bits.
+.. Should we make the sizes of loads/stores more explicit?
 
 Calls
 """""
@@ -1323,24 +1348,58 @@ Parentheses have no effect at runtime (beyond their effect during parser).
 
 The comma operator very simply reduces its first operand as long as it can, then drop it and is replaced by its second operand.
 
-.. todo::
-    Decide on whether the ! operator deserves a mention, or should just be special syntax for a standard library function.
-    It really does not do anything surprising or interesting.
+.. I don't mention the ! operator here, because it has no weirdness: it is just a special syntax for a standard library function.
 
 Memory model
 ------------
 
-There are 4 address spaces:
+There are 4 address spaces into which all memory locations are partitioned:
 
 #. global (read-write)
 #. constant
 #. threadgroup
 #. thread
 
-.. todo::
-    How do these interact with pointers? How can you have a pointer in one address space that points to a value in another address space?
-    talk about fences (aka memory barriers).
-    talk about atomics, races, etc..
+Global and constant memory are shared between all threads, threadgroup memory is shared between threads in the same group, and finally thread memory is thread-local.
+Furthermore, the rules in the validation section should prevent any store to the constant address space.
+
+As we have seen in the previous sections, each thread can emit memory events. There are several possible such kinds of events:
+
+- (non-atomic) stores of a value to a location
+- (non-atomic) loads of a value from a location
+- Fences (a.k.a. memory barrier, not to be confused with control barriers)
+- atomic stores of a value to a location
+- atomic loads of a value from a location.
+
+In this section we will give the *memory model* of WHLSL, that is the set of rules that determine which values a load is allowed to read.
+This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
+The gist of it is that all atomic accesses are fully ordered and sequentially consistent, and that races involving non-atomic accesses result in unspecified values being read.
+
+Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
+Then we augment each of these candidate executions with several relationships:
+
+- Reads-from
+- Happens-before
+- Memory-order
+- Sequentially-consistent-before
+
+TODO: DEFINE THOSE
+
+Then we filter all of these to only keep those candidate executions that verify a few rules:
+
+TODO: give rules.
+
+TODO: what follows is an aborted attempt to write this section, copy whatever parts of it are salvageable in the right place.
+
+Any store or load that does not come from the atomic functions in the standard library is non-atomic.
+If a store and a load access the same memory location, and are not related by the happens-before relation, then that load is *racy*.
+If two stores access the same memory location and are not related by the happens-before relation, then any load that does not happen before both of them is racy as well.
+The value read by a racy load is unspecified: it can be anything (even a value that is not written anywhere in the program). Contrary to C++ though, it is not an undefined behaviour to have a racy access.
+
+The happens-before relationship is defined as the smallest transitive relationship such that:
+
+- If two events are emitted by the same thread in some order, they are related in the same order by happens-before
+- If an atomic load reads a value written by an atomic store, then that atomic store happens-before that atomic load.
 
 Standard library
 ================
