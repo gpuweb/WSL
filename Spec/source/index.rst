@@ -1404,7 +1404,7 @@ As we have seen in the previous sections, each thread can emit memory events. Th
 - atomic stores of a value to a location
 - atomic loads of a value from a location.
 
-All non-atomic stores and loads are considered to happen by byte
+All non-atomic stores and loads are considered to happen byte-by-byte.
 
 In this section we will give the *memory model* of WHLSL, that is the set of rules that determine which values a load is allowed to read.
 This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
@@ -1413,27 +1413,24 @@ The gist of it is that all atomic accesses are fully ordered and sequentially co
 Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
 Then we augment each of these candidate executions with several relationships:
 
-- Reads-from, which associate one store to each load
+- Reads-from, which optionally associates one store at the same address to each load
 - Memory-order, which must be a total order for each memory address on all the stores to that memory address
-- Sequentially-consistent-before
+- Sequentially-consistent-before, that is a total order on all atomic operations
 
-TODO: DEFINE THOSE
+This further increase the number of candidate executions to include all possible relationships above.
+We then build yet another relationship called happens-before with the following rules:
+
+- If two events are emitted by the same thread in some order, they are related in the same order by happens-before
+- If an atomic load (or a normal load followed in program order by a fence) reads a value written by an atomic store (or a normal store preceded in program order by a fence), then that atomic store (or fence) happens-before that atomic load (or fence).
 
 Then we filter all of these to only keep those candidate executions that verify a few rules:
 
-TODO: give rules.
-
+TODO: essentially every part of the C11 model related to mo, hb, rf; + a fixed version of the rules for sc.. it is going to be ugly and unreadable to anyone not an expert I'm afraid.
 TODO: what follows is an aborted attempt to write this section, copy whatever parts of it are salvageable in the right place.
 
-Any store or load that does not come from the atomic functions in the standard library is non-atomic.
 If a store and a load access the same memory location, and are not related by the happens-before relation, then that load is *racy*.
 If two stores access the same memory location and are not related by the happens-before relation, then any load that does not happen before both of them is racy as well.
 The value read by a racy load is unspecified: it can be anything (even a value that is not written anywhere in the program). Contrary to C++ though, it is not an undefined behaviour to have a racy access.
-
-The happens-before relationship is defined as the smallest transitive relationship such that:
-
-- If two events are emitted by the same thread in some order, they are related in the same order by happens-before
-- If an atomic load reads a value written by an atomic store, then that atomic store happens-before that atomic load.
 
 Standard library
 ================
