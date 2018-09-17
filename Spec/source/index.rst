@@ -674,7 +674,7 @@ If a function is called ``operator.field=`` for some name ``field``
     #. Its argument has the same type as the first argument of this one
     #. Its return type is the same as the type of the second argument of this one
 
-.. note::
+..
     We currently do not restrict in any way the return type of these functions, following Test.js.
     Do we want to?
 
@@ -843,6 +843,17 @@ If an expression is well-typed and its type is an left-value type, it can also b
 An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed and of a left-value type (respectively of a pointer type).
 The associated right-value types and address spaces are left unchanged by these two operators.
 
+An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed and of a left-value type. The associated right-value types and address spaces are left unchanged by this operator.
+
+To check that an array dereference ``e1[e2]]`` is well-typed:
+
+#. Check that ``e2`` is well-typed with the type ``uint32``
+#. Check that ``e1`` is well-typed
+#. If the type of ``e1`` is an array of elements of type ``T``, then the whole expression is well-typed and its type is ``T``
+#. Else if the type of ``e1`` is a left-value type, whose associated type is an array of elements of type ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
+#. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
+#. Else the expression is ill-typed
+
 To check that a function call is well-typed:
 
 #. Check that each argument is well-typed
@@ -859,7 +870,7 @@ To check that a function call is well-typed:
     Our overloading resolution is only this simple because this version of the language does not have generics.
 
 .. note::
-    A consequence of the rule that overloading must be resolved without ambiguity is that if there are too implementations of a function ``foo``
+    A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function ``foo``
     that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
     The programmer can easily make its intent clear with something like ``int x = 42; foo(x);``.
 
@@ -898,8 +909,10 @@ Every load and store must also be annotated with a size in bytes.
    Should I find the exact rules for structs for C, and copy them here?
    Also, is this idea of using size annotation in bytes the right formalism at all?
 
-Finally, every array dereference (the ``[]`` operator) must be annotated with the stride, i.e. the size of the elements of the array.
+Finally, every array dereference (the ``[]`` operator) must be annotated with the stride, i.e. the size of the elements of the corresponding array.
 This size is computed in exactly the way described above.
+If the first operand is either an array or a left-value type associated with an array type, the access must also be annotated with the statically known size of the array.
+
 
 Phase 5. Verifying the absence of recursion
 -------------------------------------------
@@ -929,6 +942,9 @@ The per-thread state is made of a few element:
 
 Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, modifing
 the control-flow stack in the following way, and emitting the following memory events."
+
+In some of these rules we use ``ASSERT`` to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
+Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.
 
 Execution of statements
 -----------------------
@@ -1028,7 +1044,7 @@ Here is how to reduce a switch statement by one step:
 
     #. Wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
-    #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in the program order
+    #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
 
 #. Else
 
@@ -1131,8 +1147,17 @@ Each of these emit a specific memory event when they are executed, whose semanti
 Execution of expressions
 ------------------------
 
-.. todo::
-    Define the notion of value, also define the extra (non-syntactic) elements we add to expressions (Ptr, Ref, array literals, struct literals, LVal, etc..)
+We define the following kinds of values:
+
+- Integers, floats, booleans and other primitives provided by the standard library
+- Pointers. These have an address and an address space
+- Left values. These also have an address and an address space
+- Array references. These have a base address, an address space and a size
+- Struct values. These are a sequence of bytes of the right size, and can be interpreted as a tuple of their elements (plus padding bits)
+- Array values. These are also a sequence of bytes of the right size, and can also be interpreted as a sequence of their elements (plus padding bits).
+
+In this section we describe how to reduce each kind of expression to another expression or to a value.
+Left values are the only kind of values that can be further reduced.
 
 Operations affecting control-flow
 """""""""""""""""""""""""""""""""
@@ -1245,23 +1270,31 @@ Symmetrically, to reduce ``* e``:
 The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
 There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
 
-The ``[]`` dereferencing operator is actually two operators depending on the type of its first operand (the array or array reference).
-If its first operand is an array, then it is unchecked: the validation rules should ensure that the index is always in-bound.
-But if it is an array reference, then there must be a bounds-check.
-More specifically, to reduce it by one step:
+TODO: the part about [] is just plain wrong: we cannot do bounds check at compile time AND we must convert an lval of an array into an lval.
 
-#. If the index can be reduced, then reduce it
-#. Else if the type of the first operand is an array
+The ``[]`` dereferencing operator is polymorphic: its first operand can be either an array reference, or an array, or a left value pointing
+to an array.
+To reduce ``e1[e2]`` by one step:
+#. If ``e2`` can be reduced, then reduce it by one step
+#. Else if the first operand is an array
 
-    #. ASSERT(the index is in-bounds)
-    #. Replace the whole expression by the corresponding value in the array
+    #. ASSERT(``e2`` is a non-negative integer value)
+    #. If the value is equal or greater than the size of the array (known from typing information), trap
+    #. Else replace the whole expression by the corresponding element of the array
 
-#. Else if the type of the first operand is an array reference
+#. Else if the first operand is a left-value
 
-   #. If the index is out-of-bounds, then trap
-   #. Else compute an address from the address of the array reference, adding the product of the index and the stride
-   #. Emit a load of the size of an element at that address
-   #. Replace the whole expression by the value loaded
+   #. ASSERT(``e2`` is a non-negative integer value)
+   #. If the value is equal or greater than the size of the array pointed to by the left-value (known from typing information), trap
+   #. Offset the address pointed to by the left-value by the product of the stride size (annotated during typing) and ``e2``
+   #. Replace the whole expression by the resulting left-value (without changing its address space)
+
+#. Else if the first operand is an array reference
+
+   #. ASSERT(``e2`` is a non-negative integer value)
+   #. If the value is equal or greater than the size carried by the array reference, trap
+   #. Make a left-value with the same address-space as ``e1``, with an address that is the address pointed to by ``e1``, offset by the product of the stride size (annotated during typing) and ``e2``
+   #. Replace the whole expression by it
 
 .. todo::
     Finish writing the related formal rules
@@ -1327,7 +1360,7 @@ To reduce a function call by one step:
 
 To reduce a ``Call`` construct by one step:
 
-#. If its argument can be reduce, reduce it
+#. If its argument can be reduced, reduce it
 #. Else if its argument is ``return;`` or an empty block, replace it by a special ``Void`` value. Nothing can be done with such a value, except discarding it (see Effectful Expression).
 #. Else if its argument is ``return val;`` for some value ``val``, then replace it by this value.
 
@@ -1344,11 +1377,11 @@ To reduce a ``Call`` construct by one step:
 Other
 """""
 
-Parentheses have no effect at runtime (beyond their effect during parser).
+Parentheses have no effect at runtime (beyond their effect during parsing).
 
 The comma operator very simply reduces its first operand as long as it can, then drop it and is replaced by its second operand.
 
-.. I don't mention the ! operator here, because it has no weirdness: it is just a special syntax for a standard library function.
+.. I don't mention the ! operator here, because it has no weirdness/interest: it is just a special syntax for a standard library function.
 
 Memory model
 ------------
@@ -1371,6 +1404,8 @@ As we have seen in the previous sections, each thread can emit memory events. Th
 - atomic stores of a value to a location
 - atomic loads of a value from a location.
 
+All non-atomic stores and loads are considered to happen by byte
+
 In this section we will give the *memory model* of WHLSL, that is the set of rules that determine which values a load is allowed to read.
 This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
 The gist of it is that all atomic accesses are fully ordered and sequentially consistent, and that races involving non-atomic accesses result in unspecified values being read.
@@ -1378,9 +1413,8 @@ The gist of it is that all atomic accesses are fully ordered and sequentially co
 Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
 Then we augment each of these candidate executions with several relationships:
 
-- Reads-from
-- Happens-before
-- Memory-order
+- Reads-from, which associate one store to each load
+- Memory-order, which must be a total order for each memory address on all the stores to that memory address
 - Sequentially-consistent-before
 
 TODO: DEFINE THOSE
