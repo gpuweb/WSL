@@ -1857,8 +1857,12 @@ print();
 for (let type of [`uint`, `int`]) {
     for (let functionName of [`Add`, `And`, `Exchange`, `Max`, `Min`, `Or`, `Xor`]) {
         print(`native void Interlocked${functionName}(thread atomic_${type}*, ${type}, thread ${type}*);`);
+        print(`native void Interlocked${functionName}(threadgroup atomic_${type}*, ${type}, thread ${type}*);`);
+        print(`native void Interlocked${functionName}(device atomic_${type}*, ${type}, thread ${type}*);`);
     }
     print(`native void InterlockedCompareExchange(thread atomic_${type}*, ${type}, ${type}, thread ${type}*);`);
+    print(`native void InterlockedCompareExchange(threadgroup atomic_${type}*, ${type}, ${type}, thread ${type}*);`);
+    print(`native void InterlockedCompareExchange(device atomic_${type}*, ${type}, ${type}, thread ${type}*);`);
 }
 print();
 
