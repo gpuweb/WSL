@@ -1051,8 +1051,10 @@ print();
 
 for (let type of [`half`, `float`]) {
     print(`void sincos(${type} x, thread ${type}* y, thread ${type}* z) {`);
-    print(`    *y = sin(x);`);
-    print(`    *z = cos(x);`);
+    print(`    if (y != null)`);
+    print(`        *y = sin(x);`);
+    print(`    if (z != null)`);
+    print(`        *z = cos(x);`);
     print(`}`);
     for (let size of [2, 3, 4]) {
         print(`void sincos(${type}${size} x, thread ${type}${size}* y, thread ${type}${size}* z) {`);
@@ -1061,8 +1063,10 @@ for (let type of [`half`, `float`]) {
         print(`    ${type} cosResult;`);
         for (let i = 0; i < size; ++i) {
             print(`    sincos(x[${i}], &sinResult, &cosResult);`);
-            print(`    (*y)[${i}] = sinResult;`);
-            print(`    (*z)[${i}] = cosResult;`);
+            print(`    if (y != null)`);
+            print(`        (*y)[${i}] = sinResult;`);
+            print(`    if (z != null)`);
+            print(`        (*z)[${i}] = cosResult;`);
         }
         print(`}`);
     }
@@ -1075,8 +1079,10 @@ for (let type of [`half`, `float`]) {
             for (let m = 0; m < i; ++m) {
                 for (let n = 0; n < j; ++n) {
                     print(`    sincos(x[${m}][${n}], &sinResult, &cosResult);`);
-                    print(`    (*y)[${m}][${n}] = sinResult;`);
-                    print(`    (*z)[${m}][${n}] = cosResult;`);
+                    print(`    if (y != null)`);
+                    print(`        (*y)[${m}][${n}] = sinResult;`);
+                    print(`    if (z != null)`);
+                    print(`        (*z)[${m}][${n}] = cosResult;`);
                 }
             }
             print(`}`);
@@ -1290,7 +1296,8 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
 for (let type of [`half`, `float`]) {
     print(`${type} modf(${type} x, thread ${type}* ip) {`);
     print(`    uint result = uint(x);`);
-    print(`    *ip = x - ${type}(result);`);
+    print(`    if (ip != null)`);
+    print(`        *ip = x - ${type}(result);`);
     print(`    return ${type}(result);`);
     print(`}`);
 
@@ -1301,7 +1308,8 @@ for (let type of [`half`, `float`]) {
         print(`    ${type} buffer;`);
         for (let i = 0; i < size; ++i) {
             print(`    result[${i}] = modf(x[${i}], &buffer);`);
-            print(`    (*y)[${i}] = buffer;`);
+            print(`    if (y != null)`);
+            print(`        (*y)[${i}] = buffer;`);
         }
         print(`    return result;`);
         print(`}`);
@@ -1315,7 +1323,8 @@ for (let type of [`half`, `float`]) {
             for (let m = 0; m < i; ++m) {
                 for (let n = 0; n < j; ++n) {
                     print(`    result[${m}][${n}] = modf(x[${m}][${n}], &buffer);`);
-                    print(`    (*y)[${m}][${n}] = buffer;`);
+                    print(`    if (y != null)`);
+                    print(`        (*y)[${m}][${n}] = buffer;`);
                 }
             }
             print(`    return result;`);
