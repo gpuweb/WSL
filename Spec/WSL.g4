@@ -57,6 +57,8 @@ THREAD: 'thread';
 
 VERTEX: 'vertex';
 FRAGMENT: 'fragment';
+COMPUTE: 'compute';
+NUMTHREADS: 'numthreads';
 
 NATIVE: 'native';
 RESTRICTED: 'restricted';
@@ -125,7 +127,7 @@ enumMember: Identifier ('=' constexpr)? ;
 
 funcDef: RESTRICTED? funcDecl block;
 funcDecl
-    : (VERTEX | FRAGMENT) type Identifier parameters
+    : (VERTEX | FRAGMENT | ('[' NUMTHREADS '(' CoreDecimalIntLiteral ',' CoreDecimalIntLiteral ',' CoreDecimalIntLiteral ')' ']' COMPUTE)) type Identifier parameters
     | type (Identifier | OperatorName) parameters
     | OPERATOR type parameters ;
 // Note: the return type is moved in a different place for operator casts, as a hint that it plays a role in overload resolution. to bikeshed
