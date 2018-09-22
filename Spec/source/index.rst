@@ -1643,7 +1643,7 @@ shaders:
 +------------------+--------+
 | Semantic Name    | Type   |
 +==================+========+
-| SV_IsFrontFace   | float4 |
+| SV_IsFrontFace   | bool   |
 +------------------+--------+
 | SV_SampleIndex   | uint   |
 +------------------+--------+

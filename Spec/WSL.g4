@@ -55,8 +55,11 @@ DEVICE: 'device';
 THREADGROUP: 'threadgroup';
 THREAD: 'thread';
 
+SPACEKEYWORD: 'space';
+
 VERTEX: 'vertex';
 FRAGMENT: 'fragment';
+COMPUTE: 'compute';
 
 NATIVE: 'native';
 RESTRICTED: 'restricted';
@@ -71,15 +74,15 @@ STATIC: 'static';
 
 Qualifier: 'nointerpolation' | 'noperspective' | 'uniform' | 'specialized' | 'centroid' | 'sample';
 
-Semantics
-    : 'SV_instanceID'
-    | 'SV_vertexID'
+Semantic
+    : 'SV_InstanceID'
+    | 'SV_VertexID'
     | 'PSIZE'
     | 'SV_Position'
     | 'SV_IsFrontFace'
     | 'SV_SampleIndex'
     | 'SV_InnerCoverage'
-    | 'SV_Target' CoreDecimalIntLiteral?
+    | 'SV_Target' CoreDecimalIntLiteral
     | 'SV_Depth'
     | 'SV_Coverage'
     | 'SV_DispatchThreadID'
@@ -87,7 +90,8 @@ Semantics
     | 'SV_GroupIndex'
     | 'SV_GroupThreadID'
     | 'attribute(' CoreDecimalIntLiteral ')'
-    | 'register(' [utbcs] CoreDecimalIntLiteral ')'; 
+    | 'register(' [utbs] CoreDecimalIntLiteral (',' SPACEKEYWORD CoreDecimalIntLiteral)? ')'
+    | 'specialized';
 
 fragment ValidIdentifier: [a-zA-Z_] [a-zA-Z0-9_]* ;
 Identifier: ValidIdentifier ;
@@ -117,7 +121,7 @@ topLevelDecl
 typeDef: TYPEDEF Identifier '=' type ';' ;
 
 structDef: STRUCT Identifier '{' structElement* '}' ;
-structElement: Qualifier* type Identifier (':' Semantics)? ';' ;
+structElement: Qualifier* type Identifier (':' Semantic)? ';' ;
 
 enumDef: ENUM Identifier (':' type)? '{' enumMember (',' enumMember)* '}' ;
 // Note: we could allow an extra ',' at the end of the list of enumMembers, ala Rust, to make it easier to reorder the members. to bikeshed
@@ -125,14 +129,14 @@ enumMember: Identifier ('=' constexpr)? ;
 
 funcDef: RESTRICTED? funcDecl block;
 funcDecl
-    : (VERTEX | FRAGMENT) type Identifier parameters
-    | type (Identifier | OperatorName) parameters
-    | OPERATOR type parameters ;
+    : (VERTEX | FRAGMENT | COMPUTE) type Identifier parameters (':' Semantic)?
+    | type (Identifier | OperatorName) parameters (':' Semantic)?
+    | OPERATOR type parameters (':' Semantic)? ;
 // Note: the return type is moved in a different place for operator casts, as a hint that it plays a role in overload resolution. to bikeshed
 parameters
     : '(' ')'
     | '(' parameter (',' parameter)* ')' ;
-parameter: Qualifier* type Identifier? (':' Semantics)?;
+parameter: Qualifier* type Identifier? (':' Semantic)?;
 
 nativeFuncDecl: RESTRICTED? NATIVE funcDecl ';' ;
 nativeTypeDecl: NATIVE TYPEDEF Identifier typeArguments ';' ;
@@ -183,7 +187,7 @@ whileStmt: WHILE '(' expr ')' stmt ;
 doStmt: DO stmt WHILE '(' expr ')' ;
 
 variableDecls: type variableDecl (',' variableDecl)* ;
-variableDecl: Qualifier* Identifier (':' Semantics)? ('=' expr)? ;
+variableDecl: Qualifier* Identifier ('=' expr)? ;
 
 /* 
  * Parser: Expressions
