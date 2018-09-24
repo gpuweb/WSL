@@ -749,6 +749,13 @@ To check an if-then-else statement:
 #. Check that neither B nor B' contain a return of a pointer type, or of an array reference type
 #. Then the if-then-else statement is well-typed, and its behaviours is the union of B and B'
 
+.. math::
+    :nowrap:
+
+    \begin{align*}
+       \ottdruleif{}
+    \end{align*}
+
 To check a do-while statement:
 
 #. Check that the condition is a well-typed expression of type ``bool``
@@ -756,6 +763,16 @@ To check a do-while statement:
 #. Check that B does not contain a return of a pointer type, or of an array reference type
 #. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
 #. Then the do-while statement is well-typed, and its behaviours is this new set
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+       \ottdruledoXXwhile{}
+    \end{align*}
+
+.. note::
+    We do not give rules for for loops, or for while loops, or for if-then statements without an else, because all of those are syntactic sugar that are eliminated during parsing.
 
 To check a switch statement:
 
@@ -765,17 +782,39 @@ To check a switch statement:
 #. Check that no two such cases have the same value
 #. If there is a default, check that there is at least one value in that type which is not covered by the cases
 #. Else check that for all values in that type, there is one case that covers it
-#. Check that the body of each case (and default) are well-typed.
-#. Make a set of behaviours that is the union of the behaviours of all of these bodies.
-#. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type.
+#. Check that the body of each case (and default) are well-typed, treating them as blocks
+#. Make a set of behaviours that is the union of the behaviours of all of these bodies
+#. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
 #. Remove Break and Fallthrough from this set (if they are in it) and add Nothing
-#. Then the switch statement is well-typed, and its behaviours is this last set.
+#. Then the switch statement is well-typed, and its behaviours is this last set
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+       \ottdruleswitch{}\\
+       \ottdrulecase{}\\
+       \ottdruledefault{}\\
+       \ottdruleswitchXXblock{}
+    \end{align*}
 
 The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.
 
 The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T, and its behaviours is then {Return T}.
 
 The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+       \ottdrulebreak{}\\
+       \ottdrulecontinue{}\\
+       \ottdrulefallthrough{}\\
+       \ottdrulereturnXXvoid{}\\
+       \ottdrulereturn{}\\
+       \ottdruletrap{}
+    \end{align*}
 
 To check a block:
 
@@ -800,12 +839,33 @@ To check a block:
     #. Check that the rest of the block, removing the first statement, is well-typed with a set of behaviours B'
     #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
 
-.. Do we have a notion of ill-formed syntactically correct type? If so we should make sure it appears nowhere.
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleemptyXXblock{}\\
+        \ottdrulevariableXXdecl{}\\
+        \ottdrulevariableXXdeclXXinit{}\\
+        \ottdruletrivialXXblock{}\\
+        \ottdruleblock{}
+    \end{align*}
+
+.. note::
+    The fact that Fallthrough is forbidden in the remnant of the block is purely to forbid some trivial case of dead code.
+
+.. todo::
+    Change the variable declaration ott rules, now that I've decided to have different namespaces for types and variables
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed, and its set of behaviours is then {Nothing}.
 
-.. todo::
-    Insert the formal rules.
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleexpr{}
+    \end{align*}
+
+.. Do we have a notion of ill-formed syntactically correct type? If so we should make sure it appears nowhere.
 
 Typing expressions
 """"""""""""""""""
@@ -813,11 +873,23 @@ Typing expressions
 Literals are always well-typed, and are of any type that can contain them (depending on which is required for validation to succeed).
 ``true`` and ``false`` are always boolean.
 
-``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed)``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed)..
+``null`` is always well-typed, and its type can be any pointer or array reference type (depending on which is required for validation to succeed).
 
 The type of an expression in parentheses, is the type of the expression in the parentheses.
 
 A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the type of its second operand.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleliteralXXtrue{}\\
+        \ottdruleliteralXXfalse{}\\
+        \ottdrulenullXXlitXXarrayXXref{}\\
+        \ottdrulenullXXlitXXptr{}\\
+        \ottdruleparens{}\\
+        \ottdrulecomma{}
+    \end{align*}
 
 To check that a ternary conditional is well-typed:
 
@@ -826,6 +898,13 @@ To check that a ternary conditional is well-typed:
 #. Check that the types of its branches are the same
 #. Check that this same type is neither a pointer type nor an array reference type.
 #. Then it is well-typed, and of that type.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleternary{}
+    \end{align*}
 
 To check that an assignment is well-typed:
 
@@ -836,6 +915,14 @@ To check that an assignment is well-typed:
 #. Check that the address space associated with this left-value type is not ``constant``
 #. Then the assignment is well-typed, and its type is "tval"
 
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleassignment{}
+    \end{align*}
+
+
 A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
 
 If an expression is well-typed and its type is an left-value type, it can also be treated as if it were of the associated right-value type.
@@ -845,7 +932,22 @@ The associated right-value types and address spaces are left unchanged by these 
 
 An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed and of a left-value type. The associated right-value types and address spaces are left unchanged by this operator.
 
-To check that an array dereference ``e1[e2]]`` is well-typed:
+.. note::
+    The dynamic behaviour depends on whether the expression is a left-value array type or not, but it makes no difference during validation.
+    ``@x`` for a variable ``x`` with a non-array type is valid, it will merely produce an array reference for which only the index 0 can be used without trapping.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulevariableXXname{}\\
+        \ottdrulelvalXXaccess{}\\
+        \ottdruleaddressXXtaking{}\\
+        \ottdruleptrXXderef{}\\
+        \ottdruletakeXXrefXXlval{}
+    \end{align*}
+
+To check that an array dereference ``e1[e2]`` is well-typed:
 
 #. Check that ``e2`` is well-typed with the type ``uint32``
 #. Check that ``e1`` is well-typed
@@ -853,6 +955,21 @@ To check that an array dereference ``e1[e2]]`` is well-typed:
 #. Else if the type of ``e1`` is a left-value type, whose associated type is an array of elements of type ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
 #. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
 #. Else the expression is ill-typed
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulearrayXXindexXXlval{}\\
+        \ottdrulearrayXXindexXXrval{}\\
+        \ottdrulearrayXXrefXXindex{}
+    \end{align*}
+
+.. note::
+    The rules shown above can be applied in two different orders in the case of an array dereference of a left-value of an array.
+    The left-value can either be treated as a right-value (base) array type by the rule lval\_access then the dereferencing can be validated by array\_index\_rval
+    or the dereference can first be validated by array\_index\_lval, and the result then converted to a right-value type by the rule lval\_access.
+    This apparent ambiguity is benign because the result is the same in both cases.
 
 To check that a function call is well-typed:
 
@@ -873,6 +990,8 @@ To check that a function call is well-typed:
     A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function ``foo``
     that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
     The programmer can easily make its intent clear with something like ``int x = 42; foo(x);``.
+
+.. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
 
 Phase 4. Annotations for execution
 ----------------------------------
@@ -1008,8 +1127,7 @@ Here is how to reduce a branch (if-then-else construct, remember that if-then is
         \ottdruleifXXreduce{}
     \end{align*}
 
-.. todo::
-    Find a way to reduce the size of the rules
+.. Find a way to reduce the size of the rules in the html version, they are significantly larger than the text for some reason.
 
 Here is how to reduce a ``Join(s)`` statement:
 
@@ -1270,8 +1388,6 @@ Symmetrically, to reduce ``* e``:
 The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
 There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
 
-TODO: the part about [] is just plain wrong: we cannot do bounds check at compile time AND we must convert an lval of an array into an lval.
-
 The ``[]`` dereferencing operator is polymorphic: its first operand can be either an array reference, or an array, or a left value pointing
 to an array.
 To reduce ``e1[e2]`` by one step:
@@ -1409,28 +1525,40 @@ All non-atomic stores and loads are considered to happen byte-by-byte.
 In this section we will give the *memory model* of WHLSL, that is the set of rules that determine which values a load is allowed to read.
 This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
 The gist of it is that all atomic accesses are fully ordered and sequentially consistent, and that races involving non-atomic accesses result in unspecified values being read.
+A bit more precisely, a read is racy if:
 
-Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
-Then we augment each of these candidate executions with several relationships:
+- It is non-atomic, and the set of all stores that are visible to it (same location and not happening-after it) is not a singleton that happens-before it
+- Or there are at least two stores in the set of all stores that are visible to it, and at least one of these stores is non-atomic
 
-- Reads-from, which optionally associates one store at the same address to each load
-- Memory-order, which must be a total order for each memory address on all the stores to that memory address
-- Sequentially-consistent-before, that is a total order on all atomic operations
-
-This further increase the number of candidate executions to include all possible relationships above.
-We then build yet another relationship called happens-before with the following rules:
-
-- If two events are emitted by the same thread in some order, they are related in the same order by happens-before
-- If an atomic load (or a normal load followed in program order by a fence) reads a value written by an atomic store (or a normal store preceded in program order by a fence), then that atomic store (or fence) happens-before that atomic load (or fence).
-
-Then we filter all of these to only keep those candidate executions that verify a few rules:
-
-TODO: essentially every part of the C11 model related to mo, hb, rf; + a fixed version of the rules for sc.. it is going to be ugly and unreadable to anyone not an expert I'm afraid.
-TODO: what follows is an aborted attempt to write this section, copy whatever parts of it are salvageable in the right place.
-
-If a store and a load access the same memory location, and are not related by the happens-before relation, then that load is *racy*.
-If two stores access the same memory location and are not related by the happens-before relation, then any load that does not happen before both of them is racy as well.
 The value read by a racy load is unspecified: it can be anything (even a value that is not written anywhere in the program). Contrary to C++ though, it is not an undefined behaviour to have a racy access.
+
+.. 
+    Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
+    Then we augment each of these candidate executions with several relationships:
+
+    - Reads-from, which optionally associates one store at the same address to each load
+    - Memory-order, which must be a total order for each memory address on all the stores to that memory address
+    - Sequentially-consistent-before, that is a total order on all atomic operations
+
+    This further increase the number of candidate executions to include all possible relationships above.
+    We then build yet another relationship called happens-before with the following rules:
+
+    - If two events are emitted by the same thread in some order, they are related in the same order by happens-before
+    - If an atomic load (or a normal load followed in program order by a fence) reads a value written by an atomic store (or a normal store preceded in program order by a fence), then that atomic store (or fence) happens-before that atomic load (or fence).
+    - Happens-before is transitive (and is the smallest relationship that follows these rules
+
+    Then we filter all of these to only keep those candidate executions that verify a few rules:
+
+    - If a load reads-from a store, it must read the same value that was written by that store
+    - If two stores are ordered by both memory-order and happens-before, then they must be in the same order in both
+    - If two stores are ordered by both memory-order and sequentially-consistent-before, then they must be in the same order in both
+    - Happens-before is irreflexive
+    - A read cannot reads-from a store that happens-after it
+    - If there is a single store that happens-before a normal load such that every other store to that memory location either happens-before that store or happens-after that load, then the load must read-from the store
+    - If there is at least one store to a location that does not happen-after a load to that location, then that load must reads-from one such store
+
+    TODO: my rules are currently wrong, because of the case of atomic/non-atomic race.
+    TODO: essentially every part of the C11 model related to mo, hb, rf; + a fixed version of the rules for sc.. it is going to be ugly and unreadable to anyone not an expert I'm afraid.
 
 Standard library
 ================
