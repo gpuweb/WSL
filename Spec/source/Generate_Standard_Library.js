@@ -768,11 +768,19 @@ for (let type of [`bool`, `uchar`, `ushort`, `uint`, `char`, `short`, `int`, `ha
 // These functions are unary floating-point scalar functions,
 // which can also be applied to vectors and matrices component-wise.
 (function() {
-    let nativeFunctions = [`cos`, `sin`, `tan`, `acos`, `asin`, `atan`, `cosh`, `sinh`, `tanh`, `ceil`, `exp`, `floor`, `log`, `round`, `trunc`, `ddx`, `ddy`];
+    let nativeFunctions = [`cos`, `sin`, `tan`, `acos`, `asin`, `atan`, `cosh`, `sinh`, `tanh`, `ceil`, `exp`, `floor`, `log`, `round`, `trunc`];
+    let nativeFragmentFunctions = [`ddx`, `ddy`];
     let nonNativeFunctions = [`sqrt`, `log2`, `log10`, `frac`, `exp2`, `degrees`, `radians`, `rcp`, `rsqrt`, `saturate`, `ddx_coarse`, `ddx_fine`, `ddy_coarse`, `ddy_fine`, `fwidth`];
 
     for (let nativeFunction of nativeFunctions) {
         print(`native float ${nativeFunction}(float);`);
+        print(`half ${nativeFunction}(half x) {`);
+        print(`    return half(${nativeFunction}(float(x)));`);
+        print(`}`);
+    }
+
+    for (let nativeFunction of nativeFragmentFunctions) {
+        print(`native fragment float ${nativeFunction}(float);`);
         print(`half ${nativeFunction}(half x) {`);
         print(`    return half(${nativeFunction}(float(x)));`);
         print(`}`);
@@ -825,7 +833,7 @@ for (let type of [`bool`, `uchar`, `ushort`, `uint`, `char`, `short`, `int`, `ha
         print(`    return abs(ddx(x)) + abs(ddy(x));`);
         print(`}`);
 
-        for (let outputFunction of nativeFunctions.concat(nonNativeFunctions)) {
+        for (let outputFunction of nativeFunctions.concat(nativeFragmentFunctions.concat(nonNativeFunctions))) {
             for (let size of [2, 3, 4]) {
                 print(`${type}${size} ${outputFunction}(${type}${size} x) {`);
                 print(`    ${type}${size} result;`);
@@ -1049,37 +1057,47 @@ for (let type of [`half`, `float`]) {
 }
 print();
 
-for (let type of [`half`, `float`]) {
-    print(`void sincos(${type} x, thread ${type}* y, thread ${type}* z) {`);
-    print(`    *y = sin(x);`);
-    print(`    *z = cos(x);`);
-    print(`}`);
-    for (let size of [2, 3, 4]) {
-        print(`void sincos(${type}${size} x, thread ${type}${size}* y, thread ${type}${size}* z) {`);
-        // Can't take a pointer to a member of a vector.
-        print(`    ${type} sinResult;`);
-        print(`    ${type} cosResult;`);
-        for (let i = 0; i < size; ++i) {
-            print(`    sincos(x[${i}], &sinResult, &cosResult);`);
-            print(`    (*y)[${i}] = sinResult;`);
-            print(`    (*z)[${i}] = cosResult;`);
-        }
-        print(`}`);
-    }
-    for (let i of [2, 3, 4]) {
-        for (let j of [2, 3, 4]) {
-            print(`void sincos(${type}${i}x${j} x, thread ${type}${i}x${j}* y, thread ${type}${i}x${j}* z) {`);
-            // Can't take a pointer to a member of a matrix.
-            print(`    ${type} sinResult;`);
-            print(`    ${type} cosResult;`);
-            for (let m = 0; m < i; ++m) {
-                for (let n = 0; n < j; ++n) {
-                    print(`    sincos(x[${m}][${n}], &sinResult, &cosResult);`);
-                    print(`    (*y)[${m}][${n}] = sinResult;`);
-                    print(`    (*z)[${m}][${n}] = cosResult;`);
+for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+    for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+        for (let type of [`half`, `float`]) {
+            print(`void sincos(${type} x, ${addressSpace1} ${type}* y, ${addressSpace2} ${type}* z) {`);
+            print(`    if (y != null)`);
+            print(`        *y = sin(x);`);
+            print(`    if (z != null)`);
+            print(`        *z = cos(x);`);
+            print(`}`);
+            for (let size of [2, 3, 4]) {
+                print(`void sincos(${type}${size} x, ${addressSpace1} ${type}${size}* y, ${addressSpace2} ${type}${size}* z) {`);
+                // Can't take a pointer to a member of a vector.
+                print(`    ${type} sinResult;`);
+                print(`    ${type} cosResult;`);
+                for (let i = 0; i < size; ++i) {
+                    print(`    sincos(x[${i}], &sinResult, &cosResult);`);
+                    print(`    if (y != null)`);
+                    print(`        (*y)[${i}] = sinResult;`);
+                    print(`    if (z != null)`);
+                    print(`        (*z)[${i}] = cosResult;`);
+                }
+                print(`}`);
+            }
+            for (let i of [2, 3, 4]) {
+                for (let j of [2, 3, 4]) {
+                    print(`void sincos(${type}${i}x${j} x, ${addressSpace1} ${type}${i}x${j}* y, ${addressSpace2} ${type}${i}x${j}* z) {`);
+                    // Can't take a pointer to a member of a matrix.
+                    print(`    ${type} sinResult;`);
+                    print(`    ${type} cosResult;`);
+                    for (let m = 0; m < i; ++m) {
+                        for (let n = 0; n < j; ++n) {
+                            print(`    sincos(x[${m}][${n}], &sinResult, &cosResult);`);
+                            print(`    if (y != null)`);
+                            print(`        (*y)[${m}][${n}] = sinResult;`);
+                            print(`    if (z != null)`);
+                            print(`        (*z)[${m}][${n}] = cosResult;`);
+                        }
+                    }
+                    print(`}`);
                 }
             }
-            print(`}`);
         }
     }
 }
@@ -1287,42 +1305,47 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
     print();
 }
 
-for (let type of [`half`, `float`]) {
-    print(`${type} modf(${type} x, thread ${type}* ip) {`);
-    print(`    uint result = uint(x);`);
-    print(`    *ip = x - ${type}(result);`);
-    print(`    return ${type}(result);`);
-    print(`}`);
-
-    for (let size of [2, 3, 4]) {
-        print(`${type}${size} modf(${type}${size} x, thread ${type}${size}* y) {`);
-        print(`    ${type}${size} result;`);
-        // Can't take a pointer to a member of a vector.
-        print(`    ${type} buffer;`);
-        for (let i = 0; i < size; ++i) {
-            print(`    result[${i}] = modf(x[${i}], &buffer);`);
-            print(`    (*y)[${i}] = buffer;`);
-        }
-        print(`    return result;`);
+for (let addressSpace of [`thread`, `device`, `threadgroup`]) {
+    for (let type of [`half`, `float`]) {
+        print(`${type} modf(${type} x, ${addressSpace} ${type}* ip) {`);
+        print(`    uint result = uint(x);`);
+        print(`    if (ip != null)`);
+        print(`        *ip = x - ${type}(result);`);
+        print(`    return ${type}(result);`);
         print(`}`);
-    }
-    for (let i of [2, 3, 4]) {
-        for (let j of [2, 3, 4]) {
-            print(`${type}${i}x${j} modf(${type}${i}x${j} x, thread ${type}${i}x${j}* y) {`);
-            print(`    ${type}${i}x${j} result;`);
-            // Can't take a pointer to a member of a matrix.
+
+        for (let size of [2, 3, 4]) {
+            print(`${type}${size} modf(${type}${size} x, ${addressSpace} ${type}${size}* y) {`);
+            print(`    ${type}${size} result;`);
+            // Can't take a pointer to a member of a vector.
             print(`    ${type} buffer;`);
-            for (let m = 0; m < i; ++m) {
-                for (let n = 0; n < j; ++n) {
-                    print(`    result[${m}][${n}] = modf(x[${m}][${n}], &buffer);`);
-                    print(`    (*y)[${m}][${n}] = buffer;`);
-                }
+            for (let i = 0; i < size; ++i) {
+                print(`    result[${i}] = modf(x[${i}], &buffer);`);
+                print(`    if (y != null)`);
+                print(`        (*y)[${i}] = buffer;`);
             }
             print(`    return result;`);
             print(`}`);
         }
+        for (let i of [2, 3, 4]) {
+            for (let j of [2, 3, 4]) {
+                print(`${type}${i}x${j} modf(${type}${i}x${j} x, ${addressSpace} ${type}${i}x${j}* y) {`);
+                print(`    ${type}${i}x${j} result;`);
+                // Can't take a pointer to a member of a matrix.
+                print(`    ${type} buffer;`);
+                for (let m = 0; m < i; ++m) {
+                    for (let n = 0; n < j; ++n) {
+                        print(`    result[${m}][${n}] = modf(x[${m}][${n}], &buffer);`);
+                        print(`    if (y != null)`);
+                        print(`        (*y)[${m}][${n}] = buffer;`);
+                    }
+                }
+                print(`    return result;`);
+                print(`}`);
+            }
+        }
+        print();
     }
-    print();
 }
 
 print(`uchar count_bits(uchar x) {`);
@@ -1742,9 +1765,9 @@ for (let size of [2, 3, 4]) {
 }
 print();
 
-print(`native void AllMemoryBarrierWithGroupSync();`);
-print(`native void DeviceMemoryBarrierWithGroupSync();`);
-print(`native void GroupMemoryBarrierWithGroupSync();`);
+print(`native compute void AllMemoryBarrierWithGroupSync();`);
+print(`native compute void DeviceMemoryBarrierWithGroupSync();`);
+print(`native compute void GroupMemoryBarrierWithGroupSync();`);
 print();
 
 for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]) {
@@ -1854,15 +1877,14 @@ for (let type of [`half`, `float`]) {
 }
 print();
 
-for (let type of [`uint`, `int`]) {
-    for (let functionName of [`Add`, `And`, `Exchange`, `Max`, `Min`, `Or`, `Xor`]) {
-        print(`native void Interlocked${functionName}(thread atomic_${type}*, ${type}, thread ${type}*);`);
-        print(`native void Interlocked${functionName}(threadgroup atomic_${type}*, ${type}, thread ${type}*);`);
-        print(`native void Interlocked${functionName}(device atomic_${type}*, ${type}, thread ${type}*);`);
+for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+    for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+        for (let type of [`uint`, `int`]) {
+            for (let functionName of [`Add`, `And`, `Exchange`, `Max`, `Min`, `Or`, `Xor`])
+                print(`native void Interlocked${functionName}(${addressSpace1} atomic_${type}*, ${type}, ${addressSpace2} ${type}*);`);
+            print(`native void InterlockedCompareExchange(${addressSpace1} atomic_${type}*, ${type}, ${type}, ${addressSpace2} ${type}*);`);
+        }
     }
-    print(`native void InterlockedCompareExchange(thread atomic_${type}*, ${type}, ${type}, thread ${type}*);`);
-    print(`native void InterlockedCompareExchange(threadgroup atomic_${type}*, ${type}, ${type}, thread ${type}*);`);
-    print(`native void InterlockedCompareExchange(device atomic_${type}*, ${type}, ${type}, thread ${type}*);`);
 }
 print();
 
@@ -1872,13 +1894,21 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
         print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location, int offset);`);
         print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location);`);
         print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location, int offset);`);
-        print(`native void GetDimensions(Texture1D<${type}${length}>, uint MipLevel, thread uint* Width, thread uint* NumberOfLevels);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
+                print(`native void GetDimensions(Texture1D<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* NumberOfLevels);`);
+        }
         print();
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location);`);
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location, int offset);`);
         print(`native ${type}${length} Load(Texture1DArray<${type}${length}>, int3 location);`);
         print(`native ${type}${length} Load(Texture1DArray<${type}${length}>, int3 location, int offset);`);
-        print(`native void GetDimensions(Texture1DArray<${type}${length}>, uint MipLevel, thread uint* Width, thread uint* Elements, thread uint* NumberOfLevels);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
+                    print(`native void GetDimensions(Texture1DArray<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Elements, ${addressSpace3} uint* NumberOfLevels);`);
+            }
+        }
         print();
         print(`native ${type}${length} Sample(Texture2D<${type}${length}>, sampler, float2 location);`);
         print(`native ${type}${length} Sample(Texture2D<${type}${length}>, sampler, float2 location, int2 offset);`);
@@ -1906,7 +1936,12 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
         }
         print(`native ${type}${length} Load(Texture2D<${type}${length}>, int3 location);`);
         print(`native ${type}${length} Load(Texture2D<${type}${length}>, int3 location, int2 offset);`);
-        print(`native void GetDimensions(Texture2D<${type}${length}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* NumberOfLevels);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                    print(`native void GetDimensions(Texture2D<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* NumberOfLevels);`);
+            }
+        }
         print();
         print(`native ${type}${length} Sample(Texture2DArray<${type}${length}>, sampler, float3 location);`);
         print(`native ${type}${length} Sample(Texture2DArray<${type}${length}>, sampler, float3 location, int2 offset);`);
@@ -1934,13 +1969,27 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
         }
         print(`native ${type}${length} Load(Texture2DArray<${type}${length}>, int4 location);`);
         print(`native ${type}${length} Load(Texture2DArray<${type}${length}>, int4 location, int2 offset);`);
-        print(`native void GetDimensions(Texture2DArray<${type}${length}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* Elements, thread uint* NumberOfLevels);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                    for (let addressSpace4 of [`thread`, `device`, `threadgroup`])
+                        print(`native void GetDimensions(Texture2DArray<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Elements, ${addressSpace4} uint* NumberOfLevels);`);
+                }
+            }
+        }
         print();
         print(`native ${type}${length} Sample(Texture3D<${type}${length}>, sampler, float3 location);`);
         print(`native ${type}${length} Sample(Texture3D<${type}${length}>, sampler, float3 location, int3 offset);`);
         print(`native ${type}${length} Load(Texture3D<${type}${length}>, int4 location);`);
         print(`native ${type}${length} Load(Texture3D<${type}${length}>, int4 location, int3 offset);`);
-        print(`native void GetDimensions(Texture3D<${type}${length}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* Depth, thread uint* NumberOfLevels);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                    for (let addressSpace4 of [`thread`, `device`, `threadgroup`])
+                        print(`native void GetDimensions(Texture3D<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Depth, ${addressSpace4} uint* NumberOfLevels);`);
+                }
+            }
+        }
         print();
         print(`native ${type}${length} Sample(TextureCube<${type}${length}>, sampler, float3 location);`);
         print(`native ${type}${length} SampleBias(TextureCube<${type}${length}>, sampler, float3 location, float Bias);`);
@@ -1956,30 +2005,57 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
                     print(`native ${type}4 GatherAlpha(TextureCube<${type}${length}>, sampler, float3 location);`);
             }
         }
-        print(`native void GetDimensions(TextureCube<${type}${length}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* NumberOfLevels);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
+                    print(`native void GetDimensions(TextureCube<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* NumberOfLevels);`);
+            }
+        }
         print();
-        print(`native void GetDimensions(RWTexture1D<${type}${length}>, thread uint* Width);`);
-        print(`native void GetDimensions(RWTexture1D<${type}${length}>, thread float* Width);`);
+        for (let addressSpace of [`thread`, `device`, `threadgroup`]) {
+            print(`native void GetDimensions(RWTexture1D<${type}${length}>, ${addressSpace} uint* Width);`);
+            print(`native void GetDimensions(RWTexture1D<${type}${length}>, ${addressSpace} float* Width);`);
+        }
         print(`native ${type}${length} Load(RWTexture1D<${type}${length}>, int location);`);
         print(`native void Store(RWTexture1D<${type}${length}>, ${type}${length}, uint location);`);
         print();
-        print(`native void GetDimensions(RWTexture1DArray<${type}${length}>, thread uint* Width, thread uint* Elements);`);
-        print(`native void GetDimensions(RWTexture1DArray<${type}${length}>, thread float* Width, thread uint* Elements);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                print(`native void GetDimensions(RWTexture1DArray<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Elements);`);
+                print(`native void GetDimensions(RWTexture1DArray<${type}${length}>, ${addressSpace1} float* Width, ${addressSpace2} uint* Elements);`);
+            }
+        }
         print(`native ${type}${length} Load(RWTexture1DArray<${type}${length}>, int2 location);`);
         print(`native void Store(RWTexture1DArray<${type}${length}>, ${type}${length}, uint2 location);`);
         print();
-        print(`native void GetDimensions(RWTexture2D<${type}${length}>, thread uint* Width, thread uint* Height);`);
-        print(`native void GetDimensions(RWTexture2D<${type}${length}>, thread float* Width, thread float* Height);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                print(`native void GetDimensions(RWTexture2D<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height);`);
+                print(`native void GetDimensions(RWTexture2D<${type}${length}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height);`);
+            }
+        }
         print(`native ${type}${length} Load(RWTexture2D<${type}${length}>, int2 location);`);
         print(`native void Store(RWTexture2D<${type}${length}>, ${type}${length}, uint2 location);`);
         print();
-        print(`native void GetDimensions(RWTexture2DArray<${type}${length}>, thread uint* Width, thread uint* Height, thread uint* Elements);`);
-        print(`native void GetDimensions(RWTexture2DArray<${type}${length}>, thread float* Width, thread float* Height, thread float* Elements);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                    print(`native void GetDimensions(RWTexture2DArray<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Elements);`);
+                    print(`native void GetDimensions(RWTexture2DArray<${type}${length}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height, ${addressSpace3} float* Elements);`);
+                }
+            }
+        }
         print(`native ${type}${length} Load(RWTexture2DArray<${type}${length}>, int3 location);`);
         print(`native void Store(RWTexture2DArray<${type}${length}>, ${type}${length}, uint3 location);`);
         print();
-        print(`native void GetDimensions(RWTexture3D<${type}${length}>, thread uint* Width, thread uint* Height, thread uint* Depth);`);
-        print(`native void GetDimensions(RWTexture3D<${type}${length}>, thread float* Width, thread float* Height, thread float* Depth);`);
+        for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                    print(`native void GetDimensions(RWTexture3D<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Depth);`);
+                    print(`native void GetDimensions(RWTexture3D<${type}${length}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height, ${addressSpace3} float* Depth);`);
+                }
+            }
+        }
         print(`native ${type}${length} Load(RWTexture3D<${type}${length}>, int3 location);`);
         print(`native void Store(RWTexture3D<${type}${length}>, ${type}${length}, uint3 location);`);
         print();
@@ -2009,7 +2085,12 @@ for (let type of [`half`, `float`]) {
     print(`native ${type}4 GatherCmpRed(TextureDepth2D<${type}>, sampler, float2 location, float compare_value, int2 offset);`);
     print(`native ${type} Load(TextureDepth2D<${type}>, int3 location);`);
     print(`native ${type} Load(TextureDepth2D<${type}>, int3 location, int2 offset);`);
-    print(`native void GetDimensions(TextureDepth2D<${type}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* NumberOfLevels);`);
+    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
+                print(`native void GetDimensions(TextureDepth2D<${type}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* NumberOfLevels);`);
+        }
+    }
     print();
     print(`native ${type} Sample(TextureDepth2DArray<${type}>, sampler, float3 location);`);
     print(`native ${type} Sample(TextureDepth2DArray<${type}>, sampler, float3 location, int2 offset);`);
@@ -2033,7 +2114,14 @@ for (let type of [`half`, `float`]) {
     print(`native ${type}4 GatherCmpRed(TextureDepth2DArray<${type}>, sampler, float3 location, float compare_value, int2 offset);`);
     print(`native ${type} Load(TextureDepth2DArray<${type}>, int4 location);`);
     print(`native ${type} Load(TextureDepth2DArray<${type}>, int4 location, int2 offset);`);
-    print(`native void GetDimensions(TextureDepth2DArray<${type}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* Elements, thread uint* NumberOfLevels);`);
+    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                for (let addressSpace4 of [`thread`, `device`, `threadgroup`])
+                    print(`native void GetDimensions(TextureDepth2DArray<${type}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Elements, ${addressSpace4} uint* NumberOfLevels);`);
+            }
+        }
+    }
     print();
     print(`native ${type} Sample(TextureDepthCube<${type}>, sampler, float3 location);`);
     print(`native ${type} SampleCmp(TextureDepthCube<${type}>, sampler, float3 location, ${type} CompareValue);`);
@@ -2045,15 +2133,30 @@ for (let type of [`half`, `float`]) {
     print(`native ${type}4 GatherRed(TextureDepthCube<${type}>, sampler, float3 location);`);
     print(`native ${type}4 GatherCmp(TextureDepthCube<${type}>, sampler, float3 location, float compare_value);`);
     print(`native ${type}4 GatherCmpRed(TextureDepthCube<${type}>, sampler, float3 location, float compare_value);`);
-    print(`native void GetDimensions(TextureDepthCube<${type}>, uint MipLevel, thread uint* Width, thread uint* Height, thread uint* NumberOfLevels);`);
+    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
+                print(`native void GetDimensions(TextureDepthCube<${type}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* NumberOfLevels);`);
+        }
+    }
     print();
-    print(`native void GetDimensions(RWTextureDepth2D<${type}>, thread uint* Width, thread uint* Height);`);
-    print(`native void GetDimensions(RWTextureDepth2D<${type}>, thread float* Width, thread float* Height);`);
+    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+            print(`native void GetDimensions(RWTextureDepth2D<${type}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height);`);
+            print(`native void GetDimensions(RWTextureDepth2D<${type}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height);`);
+        }
+    }
     print(`native ${type} Load(RWTextureDepth2D<${type}>, int2 location);`);
     print(`native void Store(RWTextureDepth2D<${type}>, ${type}, uint2 location);`);
     print();
-    print(`native void GetDimensions(RWTextureDepth2DArray<${type}>, thread uint* Width, thread uint* Height, thread uint* Elements);`);
-    print(`native void GetDimensions(RWTextureDepth2DArray<${type}>, thread float* Width, thread float* Height, thread float* Elements);`);
+    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
+            for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
+                print(`native void GetDimensions(RWTextureDepth2DArray<${type}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Elements);`);
+                print(`native void GetDimensions(RWTextureDepth2DArray<${type}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height, ${addressSpace3} float* Elements);`);
+            }
+        }
+    }
     print(`native ${type} Load(RWTextureDepth2DArray<${type}>, int3 location);`);
     print(`native void Store(RWTextureDepth2DArray<${type}>, ${type}, uint3 location);`);
     print();
