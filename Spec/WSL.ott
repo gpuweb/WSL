@@ -3,18 +3,18 @@ indexvar i, j, k, n, m ::=
 
 grammar
 td :: top_level_decl_ ::= {{com top-level declaration}}
-    | tx f <( tparam0 , .. , tparamk )> ( tx0 x0 , .. , txm xm ) { s0 .. sn } :: :: func_decl
-    | typedef x <( tparam0 , .. , tparamk )> = tx ; :: :: typedef
+    | tval f <( tparam0 , .. , tparamk )> ( tval0 x0 , .. , tvalm xm ) { s0 .. sn } :: :: func_decl
+    | typedef x <( tparam0 , .. , tparamk )> = tval ; :: :: typedef
 
 tparam :: type_parameter_ ::= {{com type parameter}}
-    | tx x :: :: constexpr
+    | tval x :: :: constexpr
     | x : y0 + .. + yn :: :: type_variable
 
 s :: stmt_ ::= {{com statement}}
     | if ( e ) s :: :: if_then {{com Desugared}}
     | while ( e ) s :: :: while {{com Desugared}}
     | for ( eOrVDecls ; eOrNothing ; eOrNothing' ) s :: :: for {{com Desugared}}
-    | tx vdecl0 , .. , vdecln ; :: :: multi_vdecls {{com partly desugared}}
+    | tval vdecl0 , .. , vdecln ; :: :: multi_vdecls {{com partly desugared}}
     | ; :: :: empty {{com Desugared}}
     | if ( e ) s else s' :: :: if
     | do s while ( e ) ; :: :: do_while
@@ -46,7 +46,7 @@ vdecl :: variable_declaration_ ::=
 
 eOrVDecls :: expr_or_vdecl_ ::=
     | e :: :: expr
-    | tx vdecl0 , .. , vdecln :: :: vdecl
+    | tval vdecl0 , .. , vdecln :: :: vdecl
     | :: :: nothing
 
 eOrNothing :: expr_or_nothing_ ::=
@@ -92,7 +92,7 @@ addr :: addr_ ::=
 
 targ :: type_argument_ ::= {{com type argument}}
     | x :: :: ident {{com either a type or a constexpr}}
-    | tx :: :: type {{com a type that is not just an identifier}}
+    | tval :: :: type {{com a type that is not just an identifier}}
     | x . y :: :: enum_value {{com a field of an enum, for a constexpr type parameter}}
 
 G {{tex \Gamma}} , Gglobal {{tex \Gamma_{global} }} :: env_ ::= {{com typing environment}}
@@ -101,8 +101,6 @@ G {{tex \Gamma}} , Gglobal {{tex \Gamma_{global} }} :: env_ ::= {{com typing env
 
 envMapping :: env_mapping_ ::= 
     | t :: :: var {{com $x$ is of type $\tau$}}
-    | SyntaxTypedef ( <( tparam0 , .. , tparamn )> -> tx ) :: :: typedef_syntax {{com resolved before local typing}}
-    | Typedef ( <( tparam0 , .. , tparamn )> -> tval ) :: :: typedef
     | Func { sig0 , .. , sign } :: :: func {{com $x$ is a function whose signatures are $sig0$ to $sign$}}
     | SyntaxFunc { sigx0 , .. , sigxn } :: :: func_syntax
     | Nothing :: :: nothing {{tex \emptyset}} {{com to remove $x$ from $\Gamma$}}
@@ -115,7 +113,7 @@ namedSigs :: named_signatures_ ::=
     | U namedSigs0 .. namedSigsn :: :: union
 
 sigx :: signature_syntax_ ::=
-    | <( tparamAnon0 , .. , tparamAnonm )> ( tx0 , .. , txn ) -> tx :: :: sigx
+    | <( tparamAnon0 , .. , tparamAnonm )> ( tval0 , .. , tvaln ) -> tval :: :: sigx
 
 sig :: signature_ ::=
     | <( tparamAnon0 , .. , tparamAnonm )> ( tval0 , .. , tvaln ) -> tval :: :: sig
@@ -150,11 +148,6 @@ tval {{tex {\tau^{val} } }} :: type_value_ ::=
     | uint32 :: :: uint32 {{tex \textbf{uint32} }}
     | void :: :: void
     | TVar tid namedSigs :: :: tvar
-tx {{tex {\tau^{syntax} } }} :: type_syntactic_ ::= {{com syntactic type}}
-    | x <( targ0 , .. , targm )> :: :: base
-    | tx * addressSpace :: :: ptr
-    | tx [] addressSpace :: :: array_ref 
-    | tx [ i ] :: :: array_fixed_size
 addressSpace, as :: address_space_ ::=
     | thread :: :: thread
     | threadgroup :: :: threadgroup
@@ -268,14 +261,14 @@ s --> s' :: :: desugaring_stmt :: '' {{com Desugaring statements}} by
     for ( ; e' ; e'') s --> while(e') {s e'';}
 
     ------------------------------------------------------------------------------------------ :: for_init_vdecls
-    for (tx vdecl0 , .. , vdecln ; e' ; e'') s --> {tx vdecl0 , .. , vdecln; while(e') {s e'';}}
+    for (tval vdecl0 , .. , vdecln ; e' ; e'') s --> {tval vdecl0 , .. , vdecln; while(e') {s e'';}}
 
     k > 0
     -------------------------------------------------------------------------------------- :: multiple_vdecls
-    { s0..sn tx vdecl0, vdecl1, .., vdeclk; s'0..s'm} --> {s0..sn tx vdecl0; tx vdecl1, .., vdeclk; s'0..s'm}
+    { s0..sn tval vdecl0, vdecl1, .., vdeclk; s'0..s'm} --> {s0..sn tval vdecl0; tval vdecl1, .., vdeclk; s'0..s'm}
 
     ------------------------------------------------------------- :: initialized_vdecl
-    { s0..sn tx x = e; s'0..s'm} --> {s0..sn tx x; x = e; s'0..s'm}
+    { s0..sn tval x = e; s'0..s'm} --> {s0..sn tval x; x = e; s'0..s'm}
 
 % TODO: replace foo(e0,..,en) by foo<>(e0,..,en)
 % Both in expressions, and in top-level declarations
@@ -287,78 +280,29 @@ e --> e' :: :: desugaring_expr :: '' {{com Desugaring expressions}} by
     ----------------------- :: not_equals_operator
     e != e' --> ! (e == e')
 
-%defns
-%gather :: '' ::=
-%defn
-%G = gather ( td0 .. tdn ) :: :: gather :: '' by
-%
-%    G = gather (td0..tdk)
-%    x -> SyntaxFunc{sigx0, .., sigxi} in G
-%    G' = G[x -> SyntaxFunc{sigx0, .., sigxi, <( )>(tx0, .., txn) -> tx}]
-%    -------------------------------------------------------------------- :: func_overload
-%    G' = gather(tx x <( )> (tx0 x0, .., txn xn) {s0 .. sm} td0..tdk)
-% 
-%    G = gather (td0..tdk)
-%    x not in G
-%    G' = G[x ->SyntaxFunc{<()>(tx0, .., txn) -> tx}]
-%    ---------------------------------------------------------------- :: func_no_overload
-%    G' = gather(tx x <( )> (tx0 x0, .., txn xn) {s0 .. sm} td0..tdk)
-% 
-%    G = gather (td0..tdk)
-%    x not in G
-%    G' = G[x -> SyntaxTypedef(<()> -> tx)]
-%    ------------------------------------------ :: typedef
-%    G' = gather(typedef x <()> = tx; td0..tdk)
-%    % TODO: add rules for the other kinds of top-level declaration, as well as the base case for an empty file
-%    % the base case needs to add typedefs for bool/uint32 at the very least
-
-defns
-reduce_type :: '' ::=
-defn
-G |- tx : tval :: :: syntax :: '' {{com Evaluating types}} {{tex [[G]] [[|-]] [[tx]] \Downarrow [[tval]]}} by
-
-    x -> Typedef (<( )> -> tval) in G
-    ------------------------------- :: basic_typedef
-    G |- x <( )> : tval
-
-    G |- tx : tval
-    ------------------------- :: array
-    G |- tx [i] : [tval]
-
-    G |- tx : tval
-    ---------------------------------------- :: ref
-    G |- tx [] addressSpace : Ref(tval, addressSpace)
-
-    G |- tx : tval
-    --------------------------------------- :: ptr
-    G |- tx * addressSpace : Ptr(tval, addressSpace)
-
 defns
 well_formed :: '' ::=
 defn
 G |- well_formed ( td ) :: :: top_level :: '' by
 
-    G |- tx : tval
     G |- {s0..sn} : {Return tval}
     ---------------------------------- :: func_trivial
-    G |- well_formed(tx f<()>() {s0..sn})
+    G |- well_formed(tval f<()>() {s0..sn})
 
-    G |- tx0 : tval
-    G[x0 -> LVal(tval, thread)] |- well_formed (tx f<()>(tx1 x1, .., txm xm) {s0..sn})
+    G[x0 -> LVal(tval0, thread)] |- well_formed (tval f<()>(tval1 x1, .., tvalm xm) {s0..sn})
     -------------------------------------------------------------------- :: func_param
-    G |- well_formed (tx f<()>(tx0 x0, tx1 x1, .., txm xm) {s0..sn})
+    G |- well_formed (tval f<()>(tval0 x0, tval1 x1, .., tvalm xm) {s0..sn})
 
-    G |- tx' : tval'
-    G[x -> tval'] |- well_formed (tx f<(tparam0, .., tparamk)> (tx0 x0, .., txm xm) {s0..sn}) 
+    G[x -> tval'] |- well_formed (tval f<(tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
     ---------------------------------------------------------------------------------------- :: func_constexpr
-    G |- well_formed (tx f<(tx' x, tparam0, .., tparamk)> (tx0 x0, .., txm xm) {s0..sn}) 
+    G |- well_formed (tval f<(tval' x, tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
 
     y0 -> Protocol namedSigs0 in G /\ .. /\ yi -> Protocol namedSigsi in G
     namedSigs = U namedSigs0 .. namedSigsi
     tid = makeFresh()
-    G[x -> TVar tid namedSigs] |- well_formed (tx f<(tparam0, .., tparamk)> (tx0 x0, .., txm xm) {s0..sn})
+    G[x -> TVar tid namedSigs] |- well_formed (tval f<(tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn})
     ------------------------------------------------------------------------------------------------------ :: func_tvar
-    G |- well_formed (tx f<(x : y0 + .. + yi, tparam0, .., tparamk)> (tx0 x0, .., txm xm) {s0..sn}) 
+    G |- well_formed (tval f<(x : y0 + .. + yi, tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
     % TODO: maybe add some check here that the different protocols are not incompatible.
     % Can we even have incompatible protocols?
 
@@ -418,28 +362,22 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     ------------------- :: empty_block
     G |- {} : {Nothing}
 
-    G[x -> Nothing] |- tx : tval
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
     G[x -> LVal(tval, thread)] |- {s0 .. sn} : B
-    s0 != tx' x; /\../\ sn != tx' x;
-    s0 != tx' x = e'; /\../\ sn != tx' x = e';
+    s0 != tval' x; /\../\ sn != tval' x;
+    s0 != tval' x = e'; /\../\ sn != tval' x = e';
     -------------------------------------------- :: variable_decl
-    G |- {tx x; s0 .. sn} : B
-    % Note: we remove x from the environment before reducing tx, to avoid a situation where x is required in the definition of tx, which gets rather weird with multiple declarations
-    % (see email from 20/06/2018).
-    % TODO: we can maybe put types in a different namespace instead.
-    % if they are applied where s is a variable declaration.
+    G |- {tval x; s0 .. sn} : B
     % Note: the last two premises prevent redeclaration of a variable in the same scope it was declared in.
     % Implemented naively it takes O(n**2) to check, but can easily be optimized.
 
-    G[x -> Nothing] |- tx : tval
     G[x -> LVal(tval, thread)] |- e : tval
     G[x -> LVal(tval, thread)] |- {s0 .. sn} : B
-    s0 != tx' x; /\../\ sn != tx' x;
-    s0 != tx' x = e'; /\../\ sn != tx' x = e';
+    s0 != tval' x; /\../\ sn != tval' x;
+    s0 != tval' x = e'; /\../\ sn != tval' x = e';
     -------------------------------------------- :: variable_decl_init
-    G |- {tx x = e; s0 .. sn} : B
+    G |- {tval x = e; s0 .. sn} : B
 
     G |- s : B
     ------------ :: trivial_block

@@ -854,7 +854,7 @@ To check a block:
     The fact that Fallthrough is forbidden in the remnant of the block is purely to forbid some trivial case of dead code.
 
 .. todo::
-    Change the variable declaration ott rules, now that I've decided to have different namespaces for types and variables
+    Change the variable declaration ott rules to support threadgroup local variables
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed, and its set of behaviours is then {Nothing}.
 
@@ -1372,7 +1372,8 @@ In particular, to reduce ``& e``:
 
 Symmetrically, to reduce ``* e``:
 
-#. If ``e`` is a pointer, replace the whole expression by a lvalue to the same address
+#. If ``e`` is null, trap
+#. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address
 #. Else reduce ``e``.
 
 .. math::
@@ -1386,12 +1387,18 @@ Symmetrically, to reduce ``* e``:
     \end{align*}
 
 The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
-There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
+More precisely, to reduce ``@ e``:
 
+#. If ``e`` is an LValue and was of type LValue of an array of size ``n`` during typing, replace it by an array reference to the same address, same address space, and with a bound of ``n``
+#. Else if it is an LValue and was of type LValue of a non-array type during typing, replace it by an array reference to the same address, same address space, and with a bound of ``1``
+#. Else reduce it
+
+There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
 The ``[]`` dereferencing operator is polymorphic: its first operand can be either an array reference, or an array, or a left value pointing
 to an array.
 To reduce ``e1[e2]`` by one step:
 #. If ``e2`` can be reduced, then reduce it by one step
+#. Else if the first operand is null, trap
 #. Else if the first operand is an array
 
     #. ASSERT(``e2`` is a non-negative integer value)
@@ -1495,7 +1502,7 @@ Other
 
 Parentheses have no effect at runtime (beyond their effect during parsing).
 
-The comma operator very simply reduces its first operand as long as it can, then drop it and is replaced by its second operand.
+The comma operator simply reduces its first operand as long as it can, then drop it and is replaced by its second operand.
 
 .. I don't mention the ! operator here, because it has no weirdness/interest: it is just a special syntax for a standard library function.
 
@@ -1523,7 +1530,6 @@ As we have seen in the previous sections, each thread can emit memory events. Th
 All non-atomic stores and loads are considered to happen byte-by-byte.
 
 In this section we will give the *memory model* of WHLSL, that is the set of rules that determine which values a load is allowed to read.
-This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
 The gist of it is that all atomic accesses are fully ordered and sequentially consistent, and that races involving non-atomic accesses result in unspecified values being read.
 A bit more precisely, a read is racy if:
 
@@ -1533,6 +1539,7 @@ A bit more precisely, a read is racy if:
 The value read by a racy load is unspecified: it can be anything (even a value that is not written anywhere in the program). Contrary to C++ though, it is not an undefined behaviour to have a racy access.
 
 .. 
+    This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
     Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
     Then we augment each of these candidate executions with several relationships:
 
