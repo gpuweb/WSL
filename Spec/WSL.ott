@@ -632,8 +632,12 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ---------------- :: environment_access
     R |- x -> val ;;
 
-    --------------------------------------- :: load
+    --------------------------------------- :: load_non_enum
     R |- LVal(addr) -> rval ; addr -> rval;
+
+    --------------------------------------- :: load_enum
+    R |- LVal(addr) -> rval ; addr -> rval;
+    % TODO: find a way to express to ott the rules for enums
 
     e0 != LVal(addr)
     R |- e0 -> e0' ; E ; S

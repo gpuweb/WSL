@@ -90,8 +90,8 @@ Semantic
     | 'SV_GroupID'
     | 'SV_GroupIndex'
     | 'SV_GroupThreadID'
-    | 'attribute(' CoreDecimalIntLiteral ')'
-    | 'register(' [utbs] CoreDecimalIntLiteral (',' SPACEKEYWORD CoreDecimalIntLiteral)? ')'
+    | 'attribute' '(' CoreDecimalIntLiteral ')'
+    | 'register' '(' [utbs] CoreDecimalIntLiteral (',' SPACEKEYWORD CoreDecimalIntLiteral)? ')'
     | 'specialized';
 
 fragment ValidIdentifier: [a-zA-Z_] [a-zA-Z0-9_]* ;

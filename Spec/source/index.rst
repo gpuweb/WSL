@@ -370,17 +370,21 @@ Keywords and punctuation
 
 The following strings are reserved keywords of the language:
 
-+-------------------------------+---------------------------------------------------------------------------------+
-| Top level                     | struct typedef enum operator vertex fragment native restricted                  |
-+-------------------------------+---------------------------------------------------------------------------------+
-| Control flow                  | if else switch case default while do for break continue fallthrough return trap |
-+-------------------------------+---------------------------------------------------------------------------------+
-| Literals                      | null true false                                                                 |
-+-------------------------------+---------------------------------------------------------------------------------+
-| Address space                 | constant device threadgroup thread                                              |
-+-------------------------------+---------------------------------------------------------------------------------+
-| Reserved for future extension | protocol auto                                                                   |
-+-------------------------------+---------------------------------------------------------------------------------+
++-------------------------------+-----------------------------------------------------------------------------------------+
+| Top level                     | struct typedef enum operator vertex fragment native restricted space compute numthreads |
++-------------------------------+-----------------------------------------------------------------------------------------+
+| Control flow                  | if else switch case default while do for break continue fallthrough return trap         |
++-------------------------------+-----------------------------------------------------------------------------------------+
+| Literals                      | null true false                                                                         |
++-------------------------------+-----------------------------------------------------------------------------------------+
+| Address space                 | constant device threadgroup thread                                                      |
++-------------------------------+-----------------------------------------------------------------------------------------+
+| Qualifier                     | nointerpolation noperspective uniform specialized centroid sample                       |
++-------------------------------+-----------------------------------------------------------------------------------------+
+| Reserved for future extension | protocol auto const static                                                              |
++-------------------------------+-----------------------------------------------------------------------------------------+
+
+.. todo:: Find a way to explain the 'Semantic' grammar element here, or at least the relevant keywords
 
 ``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
 
@@ -1428,7 +1432,15 @@ Variables and assignment
 A variable name can be reduced in one step into whatever that name binds in the current environment.
 This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.
 
-An lvalue can then be reduced by emitting a load to the corresponding address, and replacing it by whatever value is loaded.
+To reduce an lvalue:
+
+#. Emit a load to the corresponding address
+#. If the type of the expression was an enum type, and the value loaded is not a valid value of that type, replace it by an unspecified valid value of that type
+#. Replace the whole expression by this value
+
+.. note::
+    The 2nd step is to prevent races from allowing the creation of invalid enum values, which could cause problems to switches without default cases.
+    We don't need a similar rules for pointers or array references, because we do not allow potentially racy assignments to variables of these types.
 
 To reduce an assignment ``e1 = e2``:
 
