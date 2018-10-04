@@ -73,7 +73,7 @@ CONST: 'const';
 STATIC: 'static';
 // Note: these are currently not used by the grammar, but I would like to make them reserved keywords for future expansion of the language. to bikeshed
 
-Qualifier: 'nointerpolation' | 'noperspective' | 'uniform' | 'specialized' | 'centroid' | 'sample';
+Qualifier: 'nointerpolation' | 'noperspective' | 'uniform' | 'centroid' | 'sample';
 
 Semantic
     : 'SV_InstanceID'

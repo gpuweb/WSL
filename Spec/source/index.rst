@@ -292,7 +292,8 @@ placed between the function signature and the function's opening ``{`` character
 Vertex shader stage-out variables and fragment-shader stage-in variables may be qualified with any of the
 following qualifiers: ``nointerpolation``, ``noperspective``, ``centroid``, or ``sample``. ``nointerpolation``
 and ``noperspective`` must not both be specified on the same variable. ``centroid`` and ``sample`` must not
-both be specified on the same variable.
+both be specified on the same variable. If other variables are qualified with these qualifiers, the qualifiers
+are ignored.
 
 ``nointerpolation`` configures the rasterizer to not interpolate the value of this variable across the
 geometry. ``noperspective`` configures the rasterize to not use perspective-correct interpolation,
