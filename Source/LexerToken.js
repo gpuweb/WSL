@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class LexerToken {
+export default class LexerToken {
     constructor(lexer, index, kind, text)
     {
         this._lexer = lexer;
@@ -36,49 +35,51 @@ class LexerToken {
         this._kind = kind;
         this._text = text;
     }
-    
+
     get lexer()
     {
         return this._lexer;
     }
-    
+
     get kind()
     {
         return this._kind;
     }
-    
+
     get text()
     {
         return this._text;
     }
-    
+
     get origin()
     {
         return this.lexer.origin;
     }
-    
+
     get originKind()
     {
         return this.lexer.originKind;
     }
-    
+
     get index()
     {
         return this._index;
     }
-    
+
     get lineNumber()
     {
         return this._lexer.lineNumberForIndex(this._index);
     }
-    
+
     get originString()
     {
         return this.origin + ":" + this.lineNumber;
     }
-    
+
     toString()
     {
         return "LexerToken(" + this.kind + ", " + this.text + ", " + this.lineNumber + ")";
     }
 }
+
+export { LexerToken };

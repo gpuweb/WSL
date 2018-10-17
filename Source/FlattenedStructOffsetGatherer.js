@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class FlattenedStructOffsetGatherer extends Visitor {
+import { Visitor } from "./Visitor.js";
+
+export default class FlattenedStructOffsetGatherer extends Visitor {
     constructor(initial)
     {
         super();
@@ -41,11 +42,11 @@ class FlattenedStructOffsetGatherer extends Visitor {
     {
         return this._result;
     }
-    
+
     visitReferenceType(node)
     {
     }
-    
+
     visitField(node)
     {
         this._offset += node.offset;
@@ -54,13 +55,13 @@ class FlattenedStructOffsetGatherer extends Visitor {
         this._name.pop();
         this._offset -= node.offset;
     }
-    
+
     visitNativeType(node)
     {
         this._result.push({name: this._name.join("."), offset: this._offset, type: node.name});
         super.visitNativeType(node);
     }
-    
+
     visitTypeRef(node)
     {
         Node.visit(node.type, this);
@@ -91,3 +92,4 @@ class FlattenedStructOffsetGatherer extends Visitor {
     }
 }
 
+export { FlattenedStructOffsetGatherer };

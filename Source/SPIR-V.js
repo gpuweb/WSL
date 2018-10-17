@@ -252,7 +252,7 @@ function SPIRV(json) {
     return result;
 }
 
-class SPIRVAssembler {
+export default class SPIRVAssembler {
     constructor()
     {
         this._largestId = 0;

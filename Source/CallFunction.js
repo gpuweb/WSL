@@ -26,10 +26,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Evaluator } from "./Evaluator.js";
+import { StructLayoutBuilder } from "./StructLayoutBuilder.js";
+import { TypedValue } from "./TypedValue.js";
+import { WTypeError } from "./WTypeError.js";
 
 // This allows you to pass structs and arrays in-place, but it's a more annoying API.
-function callFunction(program, name, argumentList)
+export function callFunction(program, name, argumentList)
 {
     let argumentTypes = argumentList.map(argument => argument.type);
     let overload = program.globalNameContext.resolveFuncOverload(name, argumentTypes, null, true);
@@ -46,3 +50,4 @@ function callFunction(program, name, argumentList)
     return new TypedValue(func.returnType, result);
 }
 
+export { callFunction as default };

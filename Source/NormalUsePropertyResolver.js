@@ -26,17 +26,19 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class NormalUsePropertyResolver extends Rewriter {
+import { Rewriter } from "./Rewriter.js";
+
+export default class NormalUsePropertyResolver extends Rewriter {
     visitDotExpression(node)
     {
         return super.visitDotExpression(node).rewriteAfterCloning();
     }
-    
+
     visitIndexExpression(node)
     {
         return super.visitIndexExpression(node).rewriteAfterCloning();
     }
 }
 
+export { NormalUsePropertyResolver };

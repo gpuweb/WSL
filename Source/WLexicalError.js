@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class WLexicalError extends Error {
+export default class WLexicalError extends Error {
     constructor(originString, message)
     {
         super("Lexical error at " + originString + ": " + message);
@@ -37,3 +36,4 @@ class WLexicalError extends Error {
     }
 }
 
+export { WLexicalError };

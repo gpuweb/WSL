@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class WSyntaxError {
+export default class WSyntaxError {
     constructor(originString, message)
     {
         this.payload = "Syntax error at " + originString + ": " + message;
@@ -42,3 +41,4 @@ class WSyntaxError {
     }
 }
 
+export { WSyntaxError };

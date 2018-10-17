@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Assignment extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class Assignment extends Expression {
     constructor(origin, lhs, rhs, type = null)
     {
         super(origin);
@@ -36,13 +37,14 @@ class Assignment extends Expression {
         this._rhs = rhs;
         this.type = type;
     }
-    
+
     get lhs() { return this._lhs; }
     get rhs() { return this._rhs; }
-    
+
     toString()
     {
         return this.lhs + " = " + this.rhs;
     }
 };
 
+export { Assignment };

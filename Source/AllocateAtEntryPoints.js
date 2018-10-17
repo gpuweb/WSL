@@ -26,7 +26,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { AnonymousVariable } from "./AnonymousVariable.js";
+import { Assignment } from "./Assignment.js";
+import { Block } from "./Block.js";
+import { CallExpression } from "./CallExpression.js";
+import { CommaExpression } from "./CommaExpression.js";
+import { DereferenceExpression } from "./DereferenceExpression.js";
+import { Field } from "./Field.js";
+import { Func } from "./Func.js";
+import { FuncDef } from "./FuncDef.js";
+import { FuncParameter } from "./FuncParameter.js";
+import { MakePtrExpression } from "./MakePtrExpression.js";
+import { PtrType } from "./PtrType.js";
+import { Return } from "./Return.js";
+import { Rewriter } from "./Rewriter.js";
+import { StructType } from "./StructType.js";
+import { TypeRef } from "./TypeRef.js";
+import { VariableDecl } from "./VariableDecl.js";
+import { VariableRef } from "./VariableRef.js";
+import { Visitor } from "./Visitor.js";
+import { synthesizeStructAccessorsForStructType } from "./SynthesizeStructAccessors.js";
 
 function gatherEntryPoints(program)
 {
@@ -110,7 +130,7 @@ function createGlobalStructTypeAndVarToFieldMap(origin, allVariablesAndFunctionP
     return [ globalStructType, varToFieldMap ];
 }
 
-function allocateAtEntryPoints(program)
+export function allocateAtEntryPoints(program)
 {
     const entryPoints = gatherEntryPoints(program);
     const allCallees = gatherCallees(entryPoints);
@@ -257,3 +277,5 @@ function allocateAtEntryPoints(program)
     for (let func of allExecutedFunctions)
         func.visit(updateCallExpressionVisitor);
 }
+
+export { allocateAtEntryPoints as default };

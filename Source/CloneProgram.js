@@ -26,12 +26,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Program } from "./Program.js";
+import { StatementCloner } from "./StatementCloner.js";
 
 // This is only currently used to clone programs just after parsing, so it doesn't really need to be
 // able to handle all aspects of what Rewriter would need to do.
 
-function cloneProgram(program)
+export function cloneProgram(program)
 {
     let result = new Program();
     let cloner = new StatementCloner();
@@ -40,3 +42,4 @@ function cloneProgram(program)
     return result;
 }
 
+export { cloneProgram as default };

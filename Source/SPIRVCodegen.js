@@ -327,3 +327,4 @@ function generateSPIRV(spirv, program)
     return { file: assembler.result, locations: locations };
 }
 
+export { SPIRVCodegen };

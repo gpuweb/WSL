@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ForLoop extends Node {
+import { Node } from "./Node.js";
+
+export default class ForLoop extends Node {
     constructor(origin, initialization, condition, increment, body)
     {
         super();
@@ -51,3 +52,4 @@ class ForLoop extends Node {
     }
 };
 
+export { ForLoop };

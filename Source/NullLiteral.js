@@ -26,18 +26,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class NullLiteral extends Expression {
+import { Expression } from "./Expression.js";
+import { NullType } from "./NullType.js";
+
+export default class NullLiteral extends Expression {
     constructor(origin)
     {
         super(origin);
         this.type = new NullType(origin);
     }
-    
+
     toString()
     {
         return "null";
     }
 }
 
+export { NullLiteral };

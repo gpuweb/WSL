@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function createLiteralType(config)
+import { AutoWrapper } from "./AutoWrapper.js";
+import { Type } from "./Type.js";
+import { TypeRef } from "./TypeRef.js";
+
+export default function createLiteralType(config)
 {
     class GenericLiteralType extends Type {
         constructor(origin, value)
@@ -38,27 +41,27 @@ function createLiteralType(config)
             this._value = value;
             this.preferredType = new TypeRef(origin, config.preferredTypeName);
         }
-        
+
         get origin() { return this._origin; }
         get value() { return this._value; }
-        
+
         get isPrimitive() { return true; }
         get isUnifiable() { return true; }
         get isLiteral() { return true; }
-        
+
         typeVariableUnify(unificationContext, other)
         {
             if (!(other instanceof Type))
                 return false;
-            
+
             return this._typeVariableUnifyImpl(unificationContext, other);
         }
-        
+
         unifyImpl(unificationContext, other)
         {
             return this.typeVariableUnify(unificationContext, other);
         }
-        
+
         prepareToVerify(unificationContext)
         {
             let realThis = unificationContext.find(this);
@@ -70,17 +73,17 @@ function createLiteralType(config)
                 };
             }
         }
-        
+
         verifyAsArgument(unificationContext)
         {
             return config.verifyAsArgument.call(this, unificationContext);
         }
-        
+
         verifyAsParameter(unificationContext)
         {
             throw new Error("GenericLiteralType should never be used as a type parameter");
         }
-        
+
         conversionCost(unificationContext)
         {
             let realThis = unificationContext.find(this);
@@ -88,18 +91,19 @@ function createLiteralType(config)
                 return 0;
             return 1;
         }
-        
+
         commitUnification(unificationContext)
         {
             this.type = unificationContext.find(this).visit(new AutoWrapper());
         }
-        
+
         toString()
         {
             return config.preferredTypeName + "LiteralType<" + this.value + ">";
         }
     }
-    
+
     return GenericLiteralType;
 }
 
+export { createLiteralType };

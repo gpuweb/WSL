@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class SpecializationConstantSemantic extends Semantic {
+import { Semantic } from "./Semantic.js";
+
+export default class SpecializationConstantSemantic extends Semantic {
     constructor(origin)
     {
         super(origin);
@@ -44,9 +45,15 @@ class SpecializationConstantSemantic extends Semantic {
         return direction == "input";
     }
 
+    equalToOtherSemantic(otherSemantic)
+    {
+        return otherSemantic instanceof SpecializationConstantSemantic;
+    }
+
     toString()
     {
         return "specialized";
     }
 }
 
+export { SpecializationConstantSemantic };

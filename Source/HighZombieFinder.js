@@ -26,28 +26,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Visitor } from "./Visitor.js";
 
 // If a high-level construct somehow manages to live on when we're lowered, it's a high zombie.
-class HighZombieFinder extends Visitor {
+export default class HighZombieFinder extends Visitor {
     _found(node)
     {
         throw new Error(node.origin.originString + ": High zombie: " + node);
     }
-    
+
     visitDotExpression(node)
     {
         this._found(node);
     }
-    
+
     visitIndexExpression(node)
     {
         this._found(node);
     }
-    
+
     visitCallExpression(node)
     {
         super.visitCallExpression(node);
     }
 }
 
+export { HighZombieFinder };

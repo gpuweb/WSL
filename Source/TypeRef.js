@@ -26,9 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TypeRef extends Type {
+import { NativeType } from "./NativeType.js";
+import { Type } from "./Type.js";
+import { WTypeError } from "./WTypeError.js";
+import { resolveTypeOverloadImpl } from "./ResolveOverloadImpl.js";
+
+export default class TypeRef extends Type {
     constructor(origin, name, typeArguments = [])
     {
         super();
@@ -37,7 +41,7 @@ class TypeRef extends Type {
         this._type = null;
         this._typeArguments = typeArguments;
     }
-    
+
     static wrap(type)
     {
         if (type instanceof TypeRef)
@@ -50,11 +54,11 @@ class TypeRef extends Type {
         result.type = type;
         return result;
     }
- 
+
     get origin() { return this._origin; }
     get name() { return this._name; }
     get typeArguments() { return this._typeArguments; }
-    
+
     get type()
     {
         return this._type;
@@ -93,7 +97,7 @@ class TypeRef extends Type {
                 if (!result)
                     throw new Error("At " + this.origin.originString + " argument types for Type and TypeRef not equal: argument type = " + typeArgument + ", resolved type argument = " + resolvedTypeArgument);
             }
-                
+
         }
         this.type = overload.type;
     }
@@ -104,22 +108,22 @@ class TypeRef extends Type {
             throw new Error(`No type when evaluating ${this} unifyNode`);
         return this.type.unifyNode;
     }
-    
+
     populateDefaultValue(buffer, offset)
     {
         return this.type.populateDefaultValue(buffer, offset);
     }
-    
+
     get size()
     {
         return this.type.size;
     }
-    
+
     get isPrimitive()
     {
         return this.type.isPrimitive;
     }
-    
+
     unifyImpl(unificationContext, other)
     {
         if (!(other instanceof TypeRef))
@@ -128,7 +132,7 @@ class TypeRef extends Type {
             return false;
         return true;
     }
-    
+
     toString()
     {
         if (!this.name)
@@ -140,3 +144,4 @@ class TypeRef extends Type {
     }
 }
 
+export { TypeRef };

@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class OperatorAnderIndexer {
+import { EPtr } from "./EPtr.js";
+import { WTrapError } from "./WTrapError.js";
+
+export default class OperatorAnderIndexer {
     constructor(baseTypeName, addressSpace)
     {
         this._baseTypeName = baseTypeName;
@@ -57,3 +59,4 @@ class OperatorAnderIndexer {
         func.implementationData = this;
     }
 }
+export { OperatorAnderIndexer };

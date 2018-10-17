@@ -26,9 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Program extends Node {
+import { Func } from "./Func.js";
+import { NameContext } from "./NameContext.js";
+import { Node } from "./Node.js";
+import { Type } from "./Type.js";
+
+export default class Program extends Node {
     constructor()
     {
         super();
@@ -40,12 +44,12 @@ class Program extends Node {
         this._globalNameContext.recognizeIntrinsics();
         this.intrinsics = this._globalNameContext.intrinsics;
     }
-    
+
     get topLevelStatements() { return this._topLevelStatements; }
     get functions() { return this._functions; }
     get types() { return this._types; }
     get globalNameContext() { return this._globalNameContext; }
-    
+
     add(statement)
     {
         statement.program = this;
@@ -67,7 +71,7 @@ class Program extends Node {
         this.topLevelStatements.push(statement);
         this.globalNameContext.add(statement);
     }
-    
+
     toString()
     {
         if (!this.topLevelStatements.length)
@@ -76,3 +80,4 @@ class Program extends Node {
     }
 }
 
+export { Program };

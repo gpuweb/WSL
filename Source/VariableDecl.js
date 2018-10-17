@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class VariableDecl extends Value {
+import { Value } from "./Value.js";
+
+export default class VariableDecl extends Value {
     constructor(origin, name, type, initializer)
     {
         super();
@@ -37,16 +38,17 @@ class VariableDecl extends Value {
         this._type = type;
         this._initializer = initializer;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return this._name; }
     get type() { return this._type; }
     get initializer() { return this._initializer; }
     get varIsLValue() { return true; }
-    
+
     toString()
     {
         return this.type + " " + this.name + (this.initializer ? " = " + this.initializer : "");
     }
 }
 
+export { VariableDecl };

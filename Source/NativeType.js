@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class NativeType extends Type {
+import { Type } from "./Type.js";
+
+export default class NativeType extends Type {
     constructor(origin, name, typeArguments)
     {
         if (!(typeArguments instanceof Array))
@@ -42,12 +43,12 @@ class NativeType extends Type {
         this._isFloating = false;
         this._isPrimitive = false;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return this._name; }
     get typeArguments() { return this._typeArguments; }
     get isNative() { return true; }
-    
+
     // We let Intrinsics.js set these as it likes.
     get isNumber() { return this._isNumber; }
     set isNumber(value) { this._isNumber = value; }
@@ -57,7 +58,7 @@ class NativeType extends Type {
     set isFloating(value) { this._isFloating = value; }
     get isPrimitive() { return this._isPrimitive; }
     set isPrimitive(value) { this._isPrimitive = value; }
-    
+
     toString()
     {
         let result = `native typedef ${this.name}`;
@@ -65,15 +66,6 @@ class NativeType extends Type {
             result += "<" + this.typeArguments.join(",") + ">";
         return result;
     }
-    
-    static create(origin, name, typeArguments)
-    {
-        if (name == "vector")
-            return new VectorType(origin, name, typeArguments);
-        if (name == "matrix")
-            return new MatrixType(origin, name, typeArguments);
-
-        return new NativeType(origin, name, typeArguments);
-    }
 }
 
+export { NativeType };

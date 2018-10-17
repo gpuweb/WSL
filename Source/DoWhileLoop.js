@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class DoWhileLoop extends Node {
+import { Node } from "./Node.js";
+
+export default class DoWhileLoop extends Node {
     constructor(origin, body, conditional)
     {
         super();
@@ -47,3 +48,4 @@ class DoWhileLoop extends Node {
     }
 };
 
+export { DoWhileLoop };

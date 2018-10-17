@@ -26,9 +26,38 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-let prepare = (() => {
+import { Program } from "./Program.js";
+import { StructLayoutBuilder } from "./StructLayoutBuilder.js";
+import { allocateAtEntryPoints } from "./AllocateAtEntryPoints.js";
+import { check } from "./Check.js";
+import { checkLiteralTypes } from "./CheckLiteralTypes.js";
+import { checkLoops } from "./CheckLoops.js";
+import { checkNativeFuncStages } from "./CheckNativeFuncStages.js";
+import { checkProgramWrapped } from "./CheckWrapped.js";
+import { checkRecursion } from "./CheckRecursion.js";
+import { checkRecursiveTypes } from "./CheckRecursiveTypes.js";
+import { checkReturns } from "./CheckReturns.js";
+import { checkTypesWithArguments } from "./CheckTypesWithArguments.js";
+import { checkUnreachableCode } from "./CheckUnreachableCode.js";
+import { cloneProgram } from "./CloneProgram.js";
+import { createNameResolver, resolveNamesInTypes, resolveNamesInFunctions } from "./ResolveNames.js";
+import { findHighZombies } from "./FindHighZombies.js";
+import { foldConstexprs } from "./FoldConstexprs.js";
+import { inline } from "./Inline.js";
+import { layoutBuffers } from "./LayoutBuffers.js";
+import { parse } from "./Parse.js";
+import { programWithUnnecessaryThingsRemoved } from "./ProgramWithUnnecessaryThingsRemoved.js";
+import { resolveProperties } from "./ResolveProperties.js";
+import { resolveTypeDefsInFunctions, resolveTypeDefsInTypes } from "./ResolveTypeDefs.js";
+import { standardLibrary } from "./StandardLibrary.js";
+import { synthesizeArrayOperatorLength } from "./SynthesizeArrayOperatorLength.js";
+import { synthesizeCopyConstructorOperator } from "./SynthesizeCopyConstructorOperator.js";
+import { synthesizeDefaultConstructorOperator } from "./SynthesizeDefaultConstructorOperator.js";
+import { synthesizeEnumFunctions } from "./SynthesizeEnumFunctions.js";
+import { synthesizeStructAccessors } from "./SynthesizeStructAccessors.js";
+
+export let prepare = (() => {
     let standardProgram;
     return function(origin, lineNumberOffset, text, shouldInline = false) {
         if (!standardProgram) {
@@ -81,3 +110,4 @@ let prepare = (() => {
     };
 })();
 
+export { prepare as default };

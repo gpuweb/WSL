@@ -26,27 +26,29 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TypedValue {
+import { EPtr } from "./EPtr.js";
+
+export default class TypedValue {
     constructor(type, ePtr)
     {
         this._type = type;
         this._ePtr = ePtr;
     }
-    
+
     get type() { return this._type; }
     get ePtr() { return this._ePtr; }
-    
+
     static box(type, value)
     {
         return new TypedValue(type, EPtr.box(value));
     }
-    
+
     get value() { return this.ePtr.loadValue(); }
-    
+
     toString()
     {
         return this.type + "(" + this.ePtr + ")";
     }
 }
+export { TypedValue };

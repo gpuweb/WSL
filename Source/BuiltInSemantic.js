@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class BuiltInSemantic extends Semantic {
+import { Semantic } from "./Semantic.js";
+
+export default class BuiltInSemantic extends Semantic {
     constructor(origin, name, ...extraArguments)
     {
         super(origin);
@@ -154,6 +155,28 @@ class BuiltInSemantic extends Semantic {
         }
     }
 
+    equalToOtherSemantic(otherSemantic)
+    {
+        if (!(otherSemantic instanceof BuiltInSemantic))
+            return false;
+        if (this.name != otherSemantic.name)
+            return false;
+        if (this.extraArguments && otherSemantic.extraArguments) {
+            if (this.extraArguments.length != otherSemantic.extraArguments.length)
+                return false;
+            for (let i = 0; i < this.extraArguments.length; ++i) {
+                if (this.extraArguments[i] != otherSemantic.extraArguments[i])
+                    return false;
+            }
+            return true;
+        }
+        if (this.extraArguments)
+            return this.extraArguments.length == 0;
+        if (otherSemantic.extraArguments)
+            return otherSemantic.extraArguments.length == 0;
+        return true;
+    }
+
     toString()
     {
         let result = this.name;
@@ -163,3 +186,4 @@ class BuiltInSemantic extends Semantic {
     }
 }
 
+export { BuiltInSemantic };

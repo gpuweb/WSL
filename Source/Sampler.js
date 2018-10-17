@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Sampler {
+export default class Sampler {
     constructor(options)
     {
         if (options.rAddressMode == undefined)
@@ -76,7 +75,7 @@ class Sampler {
         else
             this._borderColor = options.borderColor;
     }
-    
+
     get rAddressMode() { return this._rAddressMode; }
     get sAddressMode() { return this._sAddressMode; }
     get tAddressMode() { return this._tAddressMode; }
@@ -165,3 +164,5 @@ class Sampler {
         return computeValues()[this.borderColor];
     }
 }
+
+export { Sampler };

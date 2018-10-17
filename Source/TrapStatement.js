@@ -26,20 +26,22 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TrapStatement extends Node {
+import { Node } from "./Node.js";
+
+export default class TrapStatement extends Node {
     constructor(origin)
     {
         super();
         this._origin = origin;
     }
-    
+
     get origin() { return this._origin; }
-    
+
     toString()
     {
         return "trap";
     }
 };
 
+export { TrapStatement };

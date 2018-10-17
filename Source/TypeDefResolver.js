@@ -26,15 +26,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TypeDefResolver extends Visitor {
+import { TypeDef } from "./TypeDef.js";
+import { VisitingSet } from "./VisitingSet.js";
+import { Visitor } from "./Visitor.js";
+
+export default class TypeDefResolver extends Visitor {
     constructor()
     {
         super();
         this._visiting = new VisitingSet();
     }
-    
+
     visitTypeRef(node)
     {
         this._visiting.doVisit(node, () => {
@@ -46,3 +49,4 @@ class TypeDefResolver extends Visitor {
         });
     }
 }
+export { TypeDefResolver };

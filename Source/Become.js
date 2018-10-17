@@ -27,28 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { Expression } from "./Expression.js";
+import { IdentityExpression } from "./IdentityExpression.js";
 
-export default class CommaExpression extends Expression {
-    constructor(origin, list)
-    {
-        super(origin);
-        this._list = list;
-        for (let expression of list) {
-            if (!expression)
-                throw new Error("null expression");
-        }
-    }
-
-    get list() { return this._list; }
-
-    // NOTE: It's super tempting to say that CommaExpression is an lValue if its last entry is an lValue. But,
-    // PropertyResolver relies on this not being the case.
-
-    toString()
-    {
-        return "(" + this.list.toString() + ")";
-    }
+export function become(value, otherValue)
+{
+    // NOTE: Make sure that IdentityExpression implements unifyNode and all that
+    let origin = value.origin;
+    value.__proto__ = IdentityExpression.prototype;
+    value._origin = origin;
+    value._target = otherValue;
 }
 
-export { CommaExpression };
+export { become as default }

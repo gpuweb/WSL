@@ -26,12 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { PropertyResolver } from "./PropertyResolver.js";
 
 // This turns DotExpression and IndexExpression into calls to getters (operator.field and operator[]),
 // setters (operator.field= and operator[]=), and anders (operator&.field and operator&[]). This involves
 // transforming assignments and RMW's to do lvalue emulation.
-function resolveProperties(program)
+export function resolveProperties(program)
 {
     program.visit(new PropertyResolver());
 }
+
+export { resolveProperties as default };

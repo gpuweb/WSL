@@ -26,13 +26,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoint = false)
+import { OverloadResolutionFailure } from "./OverloadResolutionFailure.js";
+import { TypeOverloadResolutionFailure } from "./TypeOverloadResolutionFailure.js";
+import { inferTypesForCall, inferTypesForTypeArguments } from "./InferTypesForCall.js";
+
+export function resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoint = false)
 {
     if (!functions)
         throw new Error("Null functions; that should have been caught by the caller.");
-    
+
     let failures = [];
     let successes = [];
     for (let func of functions) {
@@ -46,16 +49,16 @@ function resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoi
         else
             successes.push(overload);
     }
-    
+
     if (!successes.length)
         return {failures: failures};
-    
+
     let minimumConversionCost = successes.reduce(
         (result, overload) => Math.min(result, overload.unificationContext.conversionCost),
         Infinity);
     successes = successes.filter(
         overload => overload.unificationContext.conversionCost == minimumConversionCost);
-    
+
     // If any of the signatures are restricted then we consider those first. This is an escape mechanism for
     // built-in things.
     // FIXME: It should be an error to declare a function that is at least as specific as a restricted function.
@@ -65,7 +68,7 @@ function resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoi
         false);
     if (hasRestricted)
         successes = successes.filter(overload => overload.func.isRestricted);
-    
+
     // We are only interested in functions that are at least as specific as all of the others. This means
     // that they can be "turned around" and applied onto all of the other functions in the list.
     let prunedSuccesses = [];
@@ -88,10 +91,10 @@ function resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoi
         if (ok)
             prunedSuccesses.push(successes[i]);
     }
-    
+
     if (prunedSuccesses.length == 1)
         return prunedSuccesses[0];
-    
+
     let ambiguityList;
     let message;
     if (prunedSuccesses.length == 0) {
@@ -101,11 +104,11 @@ function resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoi
         ambiguityList = prunedSuccesses;
         message = "Ambiguous overload - functions mutually applicable";
     }
-    
+
     return {failures: ambiguityList.map(overload => new OverloadResolutionFailure(overload.func, message))};
 }
 
-function resolveTypeOverloadImpl(types, typeArguments)
+export function resolveTypeOverloadImpl(types, typeArguments)
 {
     if (!types)
         throw new Error("Null types; that should have been caught by the caller.");
@@ -119,13 +122,15 @@ function resolveTypeOverloadImpl(types, typeArguments)
         else
             successes.push(overload);
     }
-    
+
     if (!successes.length)
         return {failures: failures};
-    
+
     if (successes.length == 1)
         return successes[0];
-    
+
     let message = "Ambiguous overload - types mutually applicable";
     return {failures: successes.map(overload => new TypeOverloadResolutionFailure(overload.type, message))};
 }
+
+export { resolveOverloadImpl as default };

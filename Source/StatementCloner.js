@@ -26,9 +26,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class StatementCloner extends Rewriter {
+import { BoolLiteral } from "./BoolLiteral.js";
+import { EnumType } from "./EnumType.js";
+import { FuncDef } from "./FuncDef.js";
+import { FuncNumThreadsAttribute } from "./FuncNumThreadsAttribute.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { NativeType } from "./NativeType.js";
+import { Rewriter } from "./Rewriter.js";
+import { StructType } from "./StructType.js";
+import { TypeDef } from "./TypeDef.js";
+
+export default class StatementCloner extends Rewriter {
     visitFuncDef(node)
     {
         let attributeBlock = null;
@@ -43,7 +52,7 @@ class StatementCloner extends Rewriter {
         result.isRestricted = node.isRestricted;
         return result;
     }
-    
+
     visitNativeFunc(node)
     {
         let result = new NativeFunc(
@@ -54,17 +63,17 @@ class StatementCloner extends Rewriter {
         result.isRestricted = node.isRestricted;
         return result;
     }
-    
+
     visitNativeType(node)
     {
         return new NativeType(node.origin, node.name, node.typeArguments.map(argument => argument.visit(this)));
     }
-    
+
     visitTypeDef(node)
     {
         return new TypeDef(node.origin, node.name, node.type.visit(this));
     }
-    
+
     visitStructType(node)
     {
         let result = new StructType(node.origin, node.name);
@@ -72,12 +81,12 @@ class StatementCloner extends Rewriter {
             result.add(field.visit(this));
         return result;
     }
-    
+
     visitBoolLiteral(node)
     {
         return new BoolLiteral(node.origin, node.value);
     }
-    
+
     visitEnumType(node)
     {
         let result = new EnumType(node.origin, node.name, node.baseType.visit(this));
@@ -92,3 +101,4 @@ class StatementCloner extends Rewriter {
     }
 }
 
+export { StatementCloner };

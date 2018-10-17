@@ -26,14 +26,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { EnumLiteral } from "./EnumLiteral.js";
+import { EnumType } from "./EnumType.js";
+import { Func } from "./Func.js";
+import { NameContext } from "./NameContext.js";
+import { Node } from "./Node.js";
+import { Type } from "./Type.js";
+import { TypeRef } from "./TypeRef.js";
+import { Value } from "./Value.js";
+import { VariableRef } from "./VariableRef.js";
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+import { become } from "./Become.js";
 
 // This only resolves names. After this phase runs, all names will be resolved. This means that all
 // XYZRef objects now know who they resolve to. This does not yet allow type analysis, because there
 // are still TypeDefs. This throws type errors for failed name resolutions and for things that are
 // more convenient to check here than in the Checker. This usually involves things that need to be
 // checked before TypeRefToTypeDefSkipper.
-class NameResolver extends Visitor {
+export default class NameResolver extends Visitor {
     constructor(nameContext)
     {
         super();
@@ -44,7 +56,7 @@ class NameResolver extends Visitor {
     {
         this._nameContext.doStatement(statement, () => statement.visit(this));
     }
-    
+
     visitFunc(node)
     {
         let checker = new NameResolver(new NameContext(this._nameContext));
@@ -52,7 +64,7 @@ class NameResolver extends Visitor {
         for (let parameter of node.parameters)
             parameter.visit(checker);
     }
-    
+
     visitFuncDef(node)
     {
         let funcDefNameContext = new NameContext(this._nameContext);
@@ -64,7 +76,7 @@ class NameResolver extends Visitor {
         }
         node.body.visit(funcDefNameResolver);
     }
-    
+
     visitBlock(node)
     {
         let checker = new NameResolver(new NameContext(this._nameContext));
@@ -106,14 +118,14 @@ class NameResolver extends Visitor {
             node.increment.visit(newResolver);
         node.body.visit(newResolver);
     }
-    
+
     visitTypeDef(node)
     {
         let nameContext = new NameContext(this._nameContext);
         let checker = new NameResolver(nameContext);
         node.type.visit(checker);
     }
-    
+
     visitStructType(node)
     {
         let nameContext = new NameContext(this._nameContext);
@@ -121,7 +133,7 @@ class NameResolver extends Visitor {
         for (let field of node.fields)
             field.visit(checker);
     }
-    
+
     visitTypeRef(node)
     {
         super.visitTypeRef(node);
@@ -139,13 +151,13 @@ class NameResolver extends Visitor {
                 node.type = type;
         }
     }
-    
+
     visitReferenceType(node)
     {
         let nameContext = new NameContext(this._nameContext);
         node.elementType.visit(new NameResolver(nameContext));
     }
-    
+
     visitVariableDecl(node)
     {
         this._nameContext.add(node);
@@ -163,13 +175,13 @@ class NameResolver extends Visitor {
             throw new WTypeError(node.origin.originString, "Could not find variable named " + node.name);
         node.variable = result;
     }
-    
+
     visitReturn(node)
     {
         node.func = this._nameContext.currentStatement;
         super.visitReturn(node);
     }
-    
+
     _handlePropertyAccess(node)
     {
         node.possibleGetOverloads = this._nameContext.get(Func, node.getFuncName);
@@ -179,7 +191,7 @@ class NameResolver extends Visitor {
         if (!node.possibleGetOverloads && !node.possibleAndOverloads)
             throw new WTypeError(node.origin.originString, "Cannot find either " + node.getFuncName + " or " + node.andFuncName);
     }
-    
+
     visitDotExpression(node)
     {
         // This could be a reference to an enum. Let's resolve that now.
@@ -189,21 +201,21 @@ class NameResolver extends Visitor {
                 let enumMember = enumType.memberByName(node.fieldName);
                 if (!enumMember)
                     throw new WTypeError(node.origin.originString, "Enum " + enumType.name + " does not have a member named " + node.fieldName);
-                node.become(new EnumLiteral(node.origin, enumMember));
+                become(node, new EnumLiteral(node.origin, enumMember));
                 return;
             }
         }
-        
+
         this._handlePropertyAccess(node);
         super.visitDotExpression(node);
     }
-    
+
     visitIndexExpression(node)
     {
         this._handlePropertyAccess(node);
         super.visitIndexExpression(node);
     }
-    
+
     visitCallExpression(node)
     {
         let funcs = this._nameContext.get(Func, node.name);
@@ -216,7 +228,9 @@ class NameResolver extends Visitor {
 
         if (!node.possibleOverloads)
             throw new WTypeError(node.origin.originString, "Cannot find any possible overloads for " + node);
-        
+
         super.visitCallExpression(node);
     }
 }
+
+export { NameResolver };

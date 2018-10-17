@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function findHighZombies(program)
+import { HighZombieFinder } from "./HighZombieFinder.js";
+
+export function findHighZombies(program)
 {
     program.visit(new HighZombieFinder());
 }
+
+export { findHighZombies as default };

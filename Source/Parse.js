@@ -26,9 +26,63 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function parse(program, origin, originKind, lineNumberOffset, text)
+import { ArrayRefType } from "./ArrayRefType.js";
+import { ArrayType } from "./ArrayType.js";
+import { Assignment } from "./Assignment.js";
+import { Block } from "./Block.js";
+import { BoolLiteral } from "./BoolLiteral.js";
+import { Break } from "./Break.js";
+import { BuiltInSemantic } from "./BuiltInSemantic.js";
+import { CallExpression } from "./CallExpression.js";
+import { CommaExpression } from "./CommaExpression.js";
+import { Continue } from "./Continue.js";
+import { DereferenceExpression } from "./DereferenceExpression.js";
+import { DoWhileLoop } from "./DoWhileLoop.js";
+import { DotExpression } from "./DotExpression.js";
+import { EnumMember } from "./EnumMember.js";
+import { EnumType } from "./EnumType.js";
+import { Field } from "./Field.js";
+import { FloatLiteral } from "./FloatLiteral.js";
+import { ForLoop } from "./ForLoop.js";
+import { Func } from "./Func.js";
+import { FuncDef } from "./FuncDef.js";
+import { FuncNumThreadsAttribute } from "./FuncNumThreadsAttribute.js";
+import { FuncParameter } from "./FuncParameter.js";
+import { IfStatement } from "./IfStatement.js";
+import { IndexExpression } from "./IndexExpression.js";
+import { IntLiteral } from "./IntLiteral.js";
+import { Lexer } from "./Lexer.js";
+import { LogicalExpression } from "./LogicalExpression.js";
+import { LogicalNot } from "./LogicalNot.js";
+import { MakeArrayRefExpression } from "./MakeArrayRefExpression.js";
+import { MakePtrExpression } from "./MakePtrExpression.js";
+import { MatrixType } from "./MatrixType.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { NativeType } from "./NativeType.js";
+import { NullLiteral } from "./NullLiteral.js";
+import { PtrType } from "./PtrType.js";
+import { ReadModifyWriteExpression } from "./ReadModifyWriteExpression.js";
+import { ResourceSemantic } from "./ResourceSemantic.js";
+import { Return } from "./Return.js";
+import { SpecializationConstantSemantic } from "./SpecializationConstantSemantic.js";
+import { StageInOutSemantic } from "./StageInOutSemantic.js";
+import { StructType } from "./StructType.js";
+import { SwitchCase } from "./SwitchCase.js";
+import { SwitchStatement } from "./SwitchStatement.js";
+import { TernaryExpression } from "./TernaryExpression.js";
+import { TrapStatement } from "./TrapStatement.js";
+import { TypeDef } from "./TypeDef.js";
+import { TypeRef } from "./TypeRef.js";
+import { UintLiteral } from "./UintLiteral.js";
+import { VariableDecl } from "./VariableDecl.js";
+import { VariableRef } from "./VariableRef.js";
+import { VectorType } from "./VectorType.js";
+import { WSyntaxError } from "./WSyntaxError.js";
+import { WhileLoop } from "./WhileLoop.js";
+import { addressSpaces } from "./AddressSpace.js";
+
+export function parse(program, origin, originKind, lineNumberOffset, text)
 {
     let lexer = new Lexer(origin, originKind, lineNumberOffset, text);
 
@@ -1451,7 +1505,11 @@ function parse(program, origin, originKind, lineNumberOffset, text)
             let maybeError = consume(";");
             if (maybeError instanceof WSyntaxError)
                 return maybeError;
-            return NativeType.create(origin, name.text, args);
+            if (name.text == "vector")
+                return new VectorType(origin, name.text, args);
+            if (name.text == "matrix")
+                return new MatrixType(origin, name.text, args);
+            return new NativeType(origin, name.text, args);
         }
         let stage = tryConsume("vertex", "fragment", "compute");
         if (stage)
@@ -1565,3 +1623,4 @@ function parse(program, origin, originKind, lineNumberOffset, text)
     }
 }
 
+export { parse as default };

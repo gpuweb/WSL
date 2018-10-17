@@ -26,23 +26,68 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { AnonymousVariable } from "./AnonymousVariable.js";
+import { ArrayType } from "./ArrayType.js";
+import { Assignment } from "./Assignment.js";
+import { Block } from "./Block.js";
+import { Break } from "./Break.js";
+import { BuiltInSemantic } from "./BuiltInSemantic.js";
+import { CallExpression } from "./CallExpression.js";
+import { CommaExpression } from "./CommaExpression.js";
+import { Continue } from "./Continue.js";
+import { ConvertPtrToArrayRefExpression } from "./ConvertPtrToArrayRefExpression.js";
+import { DereferenceExpression } from "./DereferenceExpression.js";
+import { DoWhileLoop } from "./DoWhileLoop.js";
+import { DotExpression } from "./DotExpression.js";
+import { EnumLiteral } from "./EnumLiteral.js";
+import { EnumMember } from "./EnumMember.js";
+import { Field } from "./Field.js";
+import { ForLoop } from "./ForLoop.js";
+import { FuncParameter } from "./FuncParameter.js";
+import { FunctionLikeBlock } from "./FunctionLikeBlock.js";
+import { IdentityExpression } from "./IdentityExpression.js";
+import { IfStatement } from "./IfStatement.js";
+import { IndexExpression } from "./IndexExpression.js";
+import { IntLiteral } from "./IntLiteral.js";
+import { LogicalExpression } from "./LogicalExpression.js";
+import { LogicalNot } from "./LogicalNot.js";
+import { MakeArrayRefExpression } from "./MakeArrayRefExpression.js";
+import { MakePtrExpression } from "./MakePtrExpression.js";
+import { MatrixType } from "./MatrixType.js";
+import { Node } from "./Node.js";
+import { NullLiteral } from "./NullLiteral.js";
+import { NullType } from "./NullType.js";
+import { ReadModifyWriteExpression } from "./ReadModifyWriteExpression.js";
+import { ResourceSemantic } from "./ResourceSemantic.js";
+import { Return } from "./Return.js";
+import { SpecializationConstantSemantic } from "./SpecializationConstantSemantic.js";
+import { StageInOutSemantic } from "./StageInOutSemantic.js";
+import { SwitchCase } from "./SwitchCase.js";
+import { SwitchStatement } from "./SwitchStatement.js";
+import { TernaryExpression } from "./TernaryExpression.js";
+import { TrapStatement } from "./TrapStatement.js";
+import { TypeRef } from "./TypeRef.js";
+import { VariableDecl } from "./VariableDecl.js";
+import { VariableRef } from "./VariableRef.js";
+import { VectorType } from "./VectorType.js";
+import { WhileLoop } from "./WhileLoop.js";
 
 // FIXME: This should have sensible behavior when it encounters definitions that it cannot handle. Right
 // now we are hackishly preventing this by wrapping things in TypeRef. That's probably wrong.
 // https://bugs.webkit.org/show_bug.cgi?id=176208
-class Rewriter {
+export default class Rewriter {
     constructor()
     {
         this._mapping = new Map();
     }
-    
+
     _mapNode(oldItem, newItem)
     {
         this._mapping.set(oldItem, newItem);
         return newItem;
     }
-    
+
     _getMapping(oldItem)
     {
         let result = this._mapping.get(oldItem);
@@ -50,7 +95,7 @@ class Rewriter {
             return result;
         return oldItem;
     }
-    
+
     // We return identity for anything that is not inside a function/struct body. When processing
     // function bodies, we only recurse into them and never out of them - for example if there is a
     // function call to another function then we don't rewrite the other function. This is how we stop
@@ -61,7 +106,7 @@ class Rewriter {
     visitTypeDef(node) { return node; }
     visitStructType(node) { return node; }
     visitEnumType(node) { return node; }
-    
+
     visitFuncParameter(node)
     {
         let result = new FuncParameter(node.origin, node.name, node.type.visit(this), Node.visit(node.semantic, this));
@@ -69,7 +114,7 @@ class Rewriter {
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitVariableDecl(node)
     {
         let result = new VariableDecl(
@@ -80,7 +125,7 @@ class Rewriter {
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitBlock(node)
     {
         let result = new Block(node.origin);
@@ -88,7 +133,7 @@ class Rewriter {
             result.add(statement.visit(this));
         return result;
     }
-    
+
     visitCommaExpression(node)
     {
         return new CommaExpression(node.origin, node.list.map(expression => {
@@ -98,7 +143,7 @@ class Rewriter {
             return result;
         }));
     }
-    
+
     visitTypeRef(node)
     {
         let result = new TypeRef(node.origin, node.name, node.typeArguments.map(argument => argument.visit(this)));
@@ -106,51 +151,51 @@ class Rewriter {
             result.type = Node.visit(node.type, this);
         return result;
     }
-    
+
     visitField(node)
     {
         return new Field(node.origin, node.name, node.type.visit(this), Node.visit(node.semantic, this));
     }
-    
+
     visitEnumMember(node)
     {
         return new EnumMember(node.origin, node.name, node.value.visit(this));
     }
-    
+
     visitEnumLiteral(node)
     {
         let result = new EnumLiteral(node.origin, node.member);
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitReferenceType(node)
     {
         return new node.constructor(node.origin, node.addressSpace, node.elementType.visit(this));
     }
-    
+
     visitPtrType(node)
     {
         return this.visitReferenceType(node);
     }
-    
+
     visitArrayRefType(node)
     {
         return this.visitReferenceType(node);
     }
-    
+
     visitArrayType(node)
     {
         return new ArrayType(node.origin, node.elementType.visit(this), node.numElements.visit(this));
     }
-    
+
     visitAssignment(node)
     {
         let result = new Assignment(node.origin, node.lhs.visit(this), node.rhs.visit(this));
         result.type = Node.visit(node.type, this);
         return result;
     }
-    
+
     visitReadModifyWriteExpression(node)
     {
         let result = new ReadModifyWriteExpression(node.origin, node.lValue.visit(this));
@@ -160,7 +205,7 @@ class Rewriter {
         result.resultExp = node.resultExp.visit(this);
         return result;
     }
-    
+
     visitDereferenceExpression(node)
     {
         let result = new DereferenceExpression(node.origin, node.ptr.visit(this));
@@ -173,7 +218,7 @@ class Rewriter {
     {
         return new TernaryExpression(node.origin, node.predicate.visit(this), node.bodyExpression.visit(this), node.elseExpression.visit(this));
     }
-    
+
     _handlePropertyAccessExpression(result, node)
     {
         result.possibleGetOverloads = node.possibleGetOverloads;
@@ -188,28 +233,28 @@ class Rewriter {
         result.errorForSet = node.errorForSet;
         result.updateCalls();
     }
-    
+
     visitDotExpression(node)
     {
         let result = new DotExpression(node.origin, node.struct.visit(this), node.fieldName);
         this._handlePropertyAccessExpression(result, node);
         return result;
     }
-    
+
     visitIndexExpression(node)
     {
         let result = new IndexExpression(node.origin, node.array.visit(this), node.index.visit(this));
         this._handlePropertyAccessExpression(result, node);
         return result;
     }
-    
+
     visitMakePtrExpression(node)
     {
         let result = new MakePtrExpression(node.origin, node.lValue.visit(this));
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitMakeArrayRefExpression(node)
     {
         let result = new MakeArrayRefExpression(node.origin, node.lValue.visit(this));
@@ -218,21 +263,21 @@ class Rewriter {
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitConvertPtrToArrayRefExpression(node)
     {
         let result = new ConvertPtrToArrayRefExpression(node.origin, node.lValue.visit(this));
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitVariableRef(node)
     {
         let result = new VariableRef(node.origin, node.name);
         result.variable = this._getMapping(node.variable);
         return result;
     }
-    
+
     visitReturn(node)
     {
         const returnStatement = new Return(node.origin, Node.visit(node.value, this));
@@ -240,12 +285,12 @@ class Rewriter {
             returnStatement.func = node.func;
         return returnStatement;
     }
-    
+
     visitContinue(node)
     {
         return new Continue(node.origin);
     }
-    
+
     visitBreak(node)
     {
         return new Break(node.origin);
@@ -255,7 +300,7 @@ class Rewriter {
     {
         return new TrapStatement(node.origin);
     }
-    
+
     visitGenericLiteral(node)
     {
         // FIXME: This doesn't seem right.
@@ -264,7 +309,7 @@ class Rewriter {
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitGenericLiteralType(node)
     {
         let result = new node.constructor(node.origin, node.value);
@@ -277,7 +322,7 @@ class Rewriter {
     {
         return node;
     }
-    
+
     visitNullLiteral(node)
     {
         let result = new NullLiteral(node.origin);
@@ -285,7 +330,7 @@ class Rewriter {
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitNullType(node)
     {
         let result = new NullType(node.origin);
@@ -314,7 +359,7 @@ class Rewriter {
             node.argumentList.map(argument => Node.visit(argument, this)));
         return this.processDerivedCallData(node, result);
     }
-    
+
     visitFunctionLikeBlock(node)
     {
         let result = new FunctionLikeBlock(
@@ -325,14 +370,14 @@ class Rewriter {
         result.returnEPtr = node.returnEPtr;
         return result;
     }
-    
+
     visitLogicalNot(node)
     {
         let result = new LogicalNot(node.origin, node.operand.visit(this));
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitLogicalExpression(node)
     {
         let result = new LogicalExpression(node.origin, node.text, node.left.visit(this), node.right.visit(this));
@@ -363,7 +408,7 @@ class Rewriter {
             Node.visit(node.increment, this),
             node.body.visit(this));
     }
-    
+
     visitSwitchStatement(node)
     {
         let result = new SwitchStatement(node.origin, Node.visit(node.value, this));
@@ -372,12 +417,12 @@ class Rewriter {
         result.type = Node.visit(node.type, this);
         return result;
     }
-    
+
     visitSwitchCase(node)
     {
         return new SwitchCase(node.origin, Node.visit(node.value, this), node.body.visit(this));
     }
-    
+
     visitAnonymousVariable(node)
     {
         let result = new AnonymousVariable(node.origin, Node.visit(node.type, this));
@@ -386,7 +431,7 @@ class Rewriter {
         result.ePtr = node.ePtr;
         return result;
     }
-    
+
     visitIdentityExpression(node)
     {
         return new IdentityExpression(node.target.visit(this));
@@ -426,3 +471,4 @@ class Rewriter {
     }
 }
 
+export { Rewriter };

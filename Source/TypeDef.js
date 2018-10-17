@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TypeDef extends Type {
+import { Type } from "./Type.js";
+
+export default class TypeDef extends Type {
     constructor(origin, name, type)
     {
         super();
@@ -36,15 +37,16 @@ class TypeDef extends Type {
         this._name = name;
         this._type = type;
     }
-    
+
     get unifyNode() { return this.type.unifyNode; }
     get origin() { return this._origin; }
     get name() { return this._name; }
     get type() { return this._type; }
-    
+
     toString()
     {
         return `typedef ${this.name} = ${this.type}`;
     }
 }
 
+export { TypeDef };

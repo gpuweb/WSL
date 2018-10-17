@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ReadModifyWriteExpression extends Expression {
+import { AnonymousVariable } from "./AnonymousVariable.js";
+import { Expression } from "./Expression.js";
+import { VariableRef } from "./VariableRef.js";
+
+export default class ReadModifyWriteExpression extends Expression {
     constructor(origin, lValue, type = null)
     {
         super(origin);
@@ -38,15 +41,16 @@ class ReadModifyWriteExpression extends Expression {
         this.newValueExp = null;
         this.resultExp = null;
     }
-    
+
     get lValue() { return this._lValue; }
-    
+
     oldValueRef() { return VariableRef.wrap(this.oldValueVar); }
     newValueRef() { return VariableRef.wrap(this.newValueVar); }
-    
+
     toString()
     {
         return "RMW(" + this.lValue + ", " + this.oldValueVar + ", " + this.newValueVar + ", " + this.newValueExp + ", " + this.resultExp + ")";
     }
 }
 
+export { ReadModifyWriteExpression };

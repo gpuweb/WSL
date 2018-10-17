@@ -26,19 +26,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class NameFinder extends Visitor {
+import { Visitor } from "./Visitor.js";
+
+export default class NameFinder extends Visitor {
     constructor()
     {
         super();
         this._set = new Set();
         this._worklist = [];
     }
-    
+
     get set() { return this._set; }
     get worklist() { return this._worklist; }
-    
+
     add(name)
     {
         if (this._set.has(name))
@@ -46,13 +47,13 @@ class NameFinder extends Visitor {
         this._set.add(name);
         this._worklist.push(name);
     }
-    
+
     visitTypeRef(node)
     {
         this.add(node.name);
         super.visitTypeRef(node);
     }
-    
+
     visitVariableRef(node)
     {
         this.add(node.name);
@@ -65,19 +66,19 @@ class NameFinder extends Visitor {
         this.add(node.setFuncName);
         this.add(node.andFuncName);
     }
-    
+
     visitDotExpression(node)
     {
         this._handlePropertyAccess(node);
         super.visitDotExpression(node);
     }
-    
+
     visitIndexExpression(node)
     {
         this._handlePropertyAccess(node);
         super.visitIndexExpression(node);
     }
-    
+
     visitCallExpression(node)
     {
         this.add(node.name);
@@ -85,3 +86,4 @@ class NameFinder extends Visitor {
     }
 }
 
+export { NameFinder };

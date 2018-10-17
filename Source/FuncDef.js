@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class FuncDef extends Func {
+import { Func } from "./Func.js";
+
+export default class FuncDef extends Func {
     constructor(origin, name, returnType, parameters, body, isCast, shaderType = "", semantic = null, attributeBlock = null)
     {
         super(origin, name, returnType, parameters, isCast, shaderType, semantic, attributeBlock);
@@ -49,10 +50,11 @@ class FuncDef extends Func {
         this._parameters = this._parameters.map(parameter => parameter.visit(rewriter));
         this._body = this.body.visit(rewriter);
     }
-    
+
     toString()
     {
         return super.toString() + " " + this.body;
     }
 }
 
+export { FuncDef };

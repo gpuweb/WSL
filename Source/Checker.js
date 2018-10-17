@@ -26,9 +26,28 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Checker extends Visitor {
+import { ArrayRefType } from "./ArrayRefType.js";
+import { ArrayType } from "./ArrayType.js";
+import { AutoWrapper } from "./AutoWrapper.js";
+import { CallExpression } from "./CallExpression.js";
+import { ConvertPtrToArrayRefExpression } from "./ConvertPtrToArrayRefExpression.js";
+import { EnumType } from "./EnumType.js";
+import { Lexer } from "./Lexer.js";
+import { MakePtrExpression } from "./MakePtrExpression.js";
+import { PtrType } from "./PtrType.js";
+import { StructType } from "./StructType.js";
+import { Type } from "./Type.js";
+import { UintLiteral } from "./UintLiteral.js";
+import { VectorElementSizes, VectorElementTypes } from "./StandardLibrary.js";
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+import { argumentForAndOverload, argumentTypeForAndOverload, returnTypeFromAndOverload } from "./ForAndOverload.js";
+import { become } from "./Become.js";
+import { isAddressSpace } from "./AddressSpace.js";
+import { resolveOverloadImpl } from "./ResolveOverloadImpl.js";
+
+export default class Checker extends Visitor {
     constructor(program)
     {
         super();
@@ -605,7 +624,7 @@ class Checker extends Visitor {
     {
         let elementType = node.lValue.visit(this).unifyNode;
         if (elementType.isPtr) {
-            node.become(new ConvertPtrToArrayRefExpression(node.origin, node.lValue));
+            become(node, new ConvertPtrToArrayRefExpression(node.origin, node.lValue));
             return new ArrayRefType(node.origin, elementType.addressSpace, elementType.elementType);
         }
 
@@ -632,7 +651,7 @@ class Checker extends Visitor {
         node.baseType = baseType;
 
         // Such a type must exist. This may throw if it doesn't.
-        let typeForAnd = baseType.argumentTypeForAndOverload(node.origin);
+        let typeForAnd = argumentTypeForAndOverload(baseType, node.origin);
         if (!typeForAnd)
             throw new Error("Cannot get typeForAnd");
 
@@ -652,14 +671,14 @@ class Checker extends Visitor {
         }
 
         try {
-            let baseForAnd = baseType.argumentForAndOverload(node.origin, node.base);
+            let baseForAnd = argumentForAndOverload(baseType, node.origin, node.base);
 
             let result = CallExpression.resolve(
                 node.origin, node.possibleAndOverloads,
                 node.andFuncName, [baseForAnd, ...extraArgs], [typeForAnd, ...extraArgTypes],
                 null, this._program);
             node.callForAnd = result.call;
-            node.resultTypeForAnd = result.resultType.unifyNode.returnTypeFromAndOverload(node.origin);
+            node.resultTypeForAnd = returnTypeFromAndOverload(result.resultType.unifyNode, node.origin);
         } catch (e) {
             if (!(e instanceof WTypeError))
                 throw e;
@@ -901,7 +920,7 @@ class Checker extends Visitor {
             throw new WTypeError(node.origin.originString, "Body and else clause of ternary statement don't have the same type: " + node);
         return bodyType;
     }
-    
+
     visitCallExpression(node)
     {
         let argumentTypes = node.argumentList.map(argument => {
@@ -920,3 +939,4 @@ class Checker extends Visitor {
     }
 }
 
+export { Checker };

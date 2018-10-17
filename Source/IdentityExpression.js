@@ -26,25 +26,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class IdentityExpression extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class IdentityExpression extends Expression {
     constructor(target)
     {
         super(target.origin);
         this._target = target;
     }
-    
+
     get target() { return this._target; }
-    
+
     get unifyNode() { return this.target.unifyNode; }
     get isConstexpr() { return this.target.isConstexpr; }
     get isLValue() { return this.target.isLValue; }
     get addressSpace() { return this.target.addressSpace; }
-    
+
     toString()
     {
         return "(" + this.target + ")";
     }
 }
 
+export { IdentityExpression };

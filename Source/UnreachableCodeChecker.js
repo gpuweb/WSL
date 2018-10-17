@@ -26,15 +26,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class UnreachableCodeChecker extends Visitor {
+import { ReturnChecker } from "./ReturnChecker.js";
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class UnreachableCodeChecker extends Visitor {
     constructor(program)
     {
         super();
         this._returnChecker = new ReturnChecker(program);
     }
-    
+
     visitBlock(node)
     {
         super.visitBlock(node);
@@ -51,3 +54,4 @@ class UnreachableCodeChecker extends Visitor {
         }
     }
 }
+export { UnreachableCodeChecker };

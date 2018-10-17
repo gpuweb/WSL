@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class FuncParameter extends Value {
+import { Value } from "./Value.js";
+
+export default class FuncParameter extends Value {
     // The name is optional. It's OK for it to be null!
     constructor(origin, name, type, semantic = null)
     {
@@ -38,13 +39,13 @@ class FuncParameter extends Value {
         this._type = type;
         this._semantic = semantic;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return this._name; }
     get type() { return this._type; }
     get semantic() { return this._semantic; }
     get varIsLValue() { return true; }
-    
+
     toString()
     {
         let result;
@@ -58,3 +59,4 @@ class FuncParameter extends Value {
     }
 }
 
+export { FuncParameter };

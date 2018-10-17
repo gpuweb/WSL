@@ -26,21 +26,24 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function programWithUnnecessaryThingsRemoved(program)
+import { Anything } from "./NameContext.js";
+import { NameFinder } from "./NameFinder.js";
+import { Program } from "./Program.js";
+
+export function programWithUnnecessaryThingsRemoved(program)
 {
     let nameFinder = new NameFinder();
-    
+
     // Build our roots.
     for (let statement of program.topLevelStatements) {
         if (statement.origin.originKind === "user")
             nameFinder.add(statement.name);
     }
-    
+
     // Unfortunately, we cannot know yet which operator casts we'll need.
     nameFinder.add("operator cast");
-    
+
     // We need these even if the program doesn't mention them by name.
     nameFinder.add("void");
     nameFinder.add("bool");
@@ -49,20 +52,21 @@ function programWithUnnecessaryThingsRemoved(program)
     nameFinder.add("float");
     nameFinder.add("vector");
     nameFinder.add("sampler");
-    
+
     // Pull in things as necessary.
     while (nameFinder.worklist.length) {
         let name = nameFinder.worklist.pop();
         for (let thing of program.globalNameContext.underlyingThings(Anything, name))
             thing.visit(nameFinder);
     }
-    
+
     let result = new Program();
     for (let name of nameFinder.set) {
         for (let thing of program.globalNameContext.underlyingThings(Anything, name))
             result.add(thing);
     }
-    
+
     return result;
 }
 
+export { programWithUnnecessaryThingsRemoved as default };

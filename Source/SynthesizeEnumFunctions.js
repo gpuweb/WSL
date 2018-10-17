@@ -26,9 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function synthesizeEnumFunctions(program)
+import { EPtr } from "./EPtr.js";
+import { EnumType } from "./EnumType.js";
+import { FuncParameter } from "./FuncParameter.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { Rewriter } from "./Rewriter.js";
+import { TypeRef } from "./TypeRef.js";
+
+export function synthesizeEnumFunctions(program)
 {
     for (let type of program.types.values()) {
         if (!(type instanceof EnumType))
@@ -69,3 +75,5 @@ function synthesizeEnumFunctions(program)
         program.add(nativeFunc);
     }
 }
+
+export { synthesizeEnumFunctions as default };

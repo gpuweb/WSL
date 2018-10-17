@@ -27,28 +27,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { Expression } from "./Expression.js";
+import { ArrayRefType } from "./ArrayRefType.js";
+import { ArrayType } from "./ArrayType.js";
+import { MakeArrayRefExpression } from "./MakeArrayRefExpression.js";
+import { MakePtrExpression } from "./MakePtrExpression.js";
+import { PtrType } from "./PtrType.js";
+import { WTypeError } from "./WTypeError.js";
 
-export default class CommaExpression extends Expression {
-    constructor(origin, list)
-    {
-        super(origin);
-        this._list = list;
-        for (let expression of list) {
-            if (!expression)
-                throw new Error("null expression");
-        }
-    }
+export function returnTypeFromAndOverload(type, origin)
+{
+    if (type instanceof PtrType)
+        return type.elementType;
 
-    get list() { return this._list; }
-
-    // NOTE: It's super tempting to say that CommaExpression is an lValue if its last entry is an lValue. But,
-    // PropertyResolver relies on this not being the case.
-
-    toString()
-    {
-        return "(" + this.list.toString() + ")";
-    }
+    throw new WTypeError(origin.originString, "By-pointer overload returned non-pointer type: " + this);
 }
 
-export { CommaExpression };
+// Have to call these on the unifyNode.
+export function argumentForAndOverload(type, origin, value)
+{
+    if (type instanceof ArrayRefType)
+        return value;
+
+    if (type instanceof ArrayType) {
+        let result = new MakeArrayRefExpression(origin, value);
+        result.numElements = type.numElements;
+        return result;
+    }
+
+    if (type instanceof PtrType)
+        throw new WTypeError(origin.originString, "Pointer subscript is not valid");
+
+    return new MakePtrExpression(origin, value);
+}
+
+export function argumentTypeForAndOverload(type, origin)
+{
+    if (type instanceof ArrayRefType)
+        return type;
+
+    if (type instanceof ArrayType)
+        return new ArrayRefType(origin, "thread", type.elementType);
+
+    if (type instanceof PtrType)
+        throw new WTypeError(origin.originString, "Pointer subscript is not valid");
+
+    return new PtrType(origin, "thread", type);
+}
+
+export { returnTypeFromAndOverload as default };

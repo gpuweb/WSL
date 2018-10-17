@@ -26,39 +26,53 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class PropertyResolver extends Visitor {
+import { AnonymousVariable } from "./AnonymousVariable.js";
+import { Assignment } from "./Assignment.js";
+import { CommaExpression } from "./CommaExpression.js";
+import { DereferenceExpression } from "./DereferenceExpression.js";
+import { IdentityExpression } from "./IdentityExpression.js";
+import { MakePtrExpression } from "./MakePtrExpression.js";
+import { NormalUsePropertyResolver } from "./NormalUsePropertyResolver.js";
+import { PropertyAccessExpression } from "./PropertyAccessExpression.js";
+import { PtrType } from "./PtrType.js";
+import { ReadModifyWriteExpression } from "./ReadModifyWriteExpression.js";
+import { VariableRef } from "./VariableRef.js";
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+import { become } from "./Become.js";
+
+export default class PropertyResolver extends Visitor {
     _visitRValuesWithinLValue(node)
     {
         let visit = node => node.visit(this);
-        
+
         class RValueFinder {
             visitDotExpression(node)
             {
                 node.struct.visit(this);
             }
-            
+
             visitIndexExpression(node)
             {
                 node.array.visit(this);
                 visit(node.index);
             }
-            
+
             visitVariableRef(node)
             {
             }
-            
+
             visitDereferenceExpression(node)
             {
                 visit(node.ptr);
             }
-            
+
             visitIdentityExpression(node)
             {
                 node.target.visit(this);
             }
-            
+
             visitMakeArrayRefExpression(node)
             {
                 visit(node.lValue);
@@ -68,27 +82,27 @@ class PropertyResolver extends Visitor {
             {
             }
         }
-        
+
         node.visit(new RValueFinder());
     }
-    
+
     _visitPropertyAccess(node)
     {
         let newNode = node.visit(new NormalUsePropertyResolver());
         newNode.visit(this);
-        node.become(newNode);
+        become(node, newNode);
     }
-    
+
     visitDotExpression(node)
     {
         this._visitPropertyAccess(node);
     }
-    
+
     visitIndexExpression(node)
     {
         this._visitPropertyAccess(node);
     }
-    
+
     _handleReadModifyWrite(node)
     {
         let type = node.oldValueVar.type;
@@ -100,7 +114,7 @@ class PropertyResolver extends Visitor {
                 throw new Error(node.origin.originString + ": LHS without address space: " + simpleLHS);
             let ptrType = new PtrType(node.origin, simpleLHS.addressSpace, type);
             let ptrVar = new AnonymousVariable(node.origin, ptrType);
-            node.become(new CommaExpression(node.origin, [
+            become(node, new CommaExpression(node.origin, [
                 node.oldValueVar, node.newValueVar, ptrVar,
                 new Assignment(
                     node.origin, VariableRef.wrap(ptrVar),
@@ -120,7 +134,7 @@ class PropertyResolver extends Visitor {
             ]));
             return;
         }
-        
+
         let result = new ReadModifyWriteExpression(node.origin, node.lValue.base, node.lValue.baseType);
         result.newValueExp = new CommaExpression(node.origin, [
             node.oldValueVar, node.newValueVar,
@@ -130,9 +144,9 @@ class PropertyResolver extends Visitor {
         ]);
         result.resultExp = node.newValueRef();
         this._handleReadModifyWrite(result);
-        node.become(result);
+        become(node, result);
     }
-    
+
     visitReadModifyWriteExpression(node)
     {
         node.newValueExp.visit(this);
@@ -140,21 +154,21 @@ class PropertyResolver extends Visitor {
         this._visitRValuesWithinLValue(node.lValue);
         this._handleReadModifyWrite(node);
     }
-    
+
     visitAssignment(node)
     {
         this._visitRValuesWithinLValue(node.lhs);
         node.rhs.visit(this);
-        
+
         let simpleLHS = node.lhs.visit(new NormalUsePropertyResolver());
         if (simpleLHS.isLValue) {
-            node.lhs.become(simpleLHS);
+            become(node.lhs, simpleLHS);
             return;
         }
-        
+
         if (!(node.lhs instanceof PropertyAccessExpression))
             throw new Error("Unexpected lhs type: " + node.lhs.constructor.name);
-        
+
         let result = new ReadModifyWriteExpression(node.origin, node.lhs.base, node.lhs.baseType);
         let resultVar = new AnonymousVariable(node.origin, node.type);
         result.newValueExp = new CommaExpression(node.origin, [
@@ -164,18 +178,18 @@ class PropertyResolver extends Visitor {
         ]);
         result.resultExp = VariableRef.wrap(resultVar);
         this._handleReadModifyWrite(result);
-        node.become(result);
+        become(node, result);
     }
-    
+
     visitMakePtrExpression(node)
     {
         super.visitMakePtrExpression(node);
         if (!node.lValue.isLValue)
             throw new WTypeError(node.origin.originString, "Not an lvalue: " + node.lValue);
         if (node.lValue.unifyNode instanceof DereferenceExpression)
-            node.become(new IdentityExpression(node.lValue.unifyNode.ptr));
+            become(node, new IdentityExpression(node.lValue.unifyNode.ptr));
     }
-    
+
     visitMakeArrayRefExpression(node)
     {
         super.visitMakeArrayRefExpression(node);
@@ -184,3 +198,4 @@ class PropertyResolver extends Visitor {
     }
 }
 
+export { PropertyResolver };

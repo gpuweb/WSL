@@ -26,9 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function synthesizeDefaultConstructorOperator(program)
+import { EPtr } from "./EPtr.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { TypeRef } from "./TypeRef.js";
+import { Visitor } from "./Visitor.js";
+
+export function synthesizeDefaultConstructorOperator(program)
 {
     const types = new Set();
 
@@ -75,3 +79,5 @@ function synthesizeDefaultConstructorOperator(program)
         program.add(nativeFunc);
     }
 }
+
+export { synthesizeDefaultConstructorOperator as default };

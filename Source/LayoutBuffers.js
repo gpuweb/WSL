@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function layoutBuffers(program)
+import { EBufferBuilder } from "./EBufferBuilder.js";
+
+export function layoutBuffers(program)
 {
     for (let funcList of program.functions.values()) {
         for (let func of funcList) {
@@ -38,3 +39,5 @@ function layoutBuffers(program)
         }
     }
 }
+
+export { layoutBuffers as default };

@@ -26,20 +26,22 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class LogicalNot extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class LogicalNot extends Expression {
     constructor(origin, operand)
     {
         super(origin);
         this._operand = operand;
     }
-    
+
     get operand() { return this._operand; }
-    
+
     toString()
     {
         return "!(" + this.operand + ")";
     }
 }
 
+export { LogicalNot };

@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class BuiltinMatrixSetter {
+import { EBuffer } from "./EBuffer.js";
+import { EPtr } from "./EPtr.js";
+import { WTrapError } from "./WTrapError.js";
+
+export default class BuiltinMatrixSetter {
     constructor(baseTypeName, height, width)
     {
         this._baseTypeName = baseTypeName;
@@ -75,3 +78,5 @@ class BuiltinMatrixSetter {
         func.implementationData = this;
     }
 }
+
+export { BuiltinMatrixSetter };

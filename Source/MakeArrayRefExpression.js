@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MakeArrayRefExpression extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class MakeArrayRefExpression extends Expression {
     constructor(origin, lValue)
     {
         super(origin);
@@ -48,3 +49,4 @@ class MakeArrayRefExpression extends Expression {
     }
 }
 
+export { MakeArrayRefExpression };

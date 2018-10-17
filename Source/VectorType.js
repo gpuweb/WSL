@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class VectorType extends NativeType {
+import { NativeType } from "./NativeType.js";
+
+export default class VectorType extends NativeType {
     constructor(origin, name, typeArguments)
     {
         super(origin, name, typeArguments);
@@ -62,3 +63,4 @@ class VectorType extends NativeType {
     }
 }
 
+export { VectorType };

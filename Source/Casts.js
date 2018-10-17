@@ -26,16 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function cast(typedArrayConstructor, number)
+export function cast(typedArrayConstructor, number)
 {
     var array = new typedArrayConstructor(1);
     array[0] = number;
     return array[0];
 }
 
-function bitwiseCast(typedArrayConstructor1, typedArrayConstructor2, value)
+export function bitwiseCast(typedArrayConstructor1, typedArrayConstructor2, value)
 {
     let typedArray1 = new typedArrayConstructor1(1);
     let typedArray2 = new typedArrayConstructor2(typedArray1.buffer);
@@ -43,42 +42,42 @@ function bitwiseCast(typedArrayConstructor1, typedArrayConstructor2, value)
     return typedArray2[0];
 }
 
-function castToBool(value)
+export function castToBool(value)
 {
     return !!value;
 }
 
-function castToUchar(number)
+export function castToUchar(number)
 {
     return number & 0xFF;
 }
 
-function castToUshort(number)
+export function castToUshort(number)
 {
     return number & 0xFFFF;
 }
 
-function castToUint(number)
+export function castToUint(number)
 {
     return number >>> 0;
 }
 
-function castToChar(number)
+export function castToChar(number)
 {
     return cast(Int8Array, number);
 }
 
-function castToShort(number)
+export function castToShort(number)
 {
     return cast(Int16Array, number);
 }
 
-function castToInt(number)
+export function castToInt(number)
 {
     return number | 0;
 }
 
-function castToHalf(number)
+export function castToHalf(number)
 {
     // FIXME: Make this math obey IEEE 754.
     if (Number.isNaN(number))
@@ -118,12 +117,12 @@ function castToHalf(number)
     return doubleArray[0];
 }
 
-function castToFloat(number)
+export function castToFloat(number)
 {
     return Math.fround(number);
 }
 
-function castAndCheckValue(castFunction, value)
+export function castAndCheckValue(castFunction, value)
 {
     const castedValue = castFunction(value);
     if (!isBitwiseEquivalent(castedValue, value))
@@ -131,7 +130,7 @@ function castAndCheckValue(castFunction, value)
     return castedValue;
 }
 
-function isBitwiseEquivalent(left, right)
+export function isBitwiseEquivalent(left, right)
 {
     let doubleArray = new Float64Array(1);
     let intArray = new Int32Array(doubleArray.buffer);
@@ -144,3 +143,5 @@ function isBitwiseEquivalent(left, right)
     }
     return true;
 }
+
+export { cast as default };

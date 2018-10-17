@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Type extends Node {
+import { Node } from "./Node.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class Type extends Node {
     get kind() { return Type; }
     get isPtr() { return false; }
     get isArray() { return false; }
@@ -39,24 +41,11 @@ class Type extends Node {
     get isFloating() { return false; }
     get isEnum() { return false; }
     get isPrimitive() { return false; }
-    
+
     get arrayRefType()
     {
         return new ArrayRefType(this.origin, "thread", this);
     }
-
-    // Have to call these on the unifyNode.
-    argumentForAndOverload(origin, value)
-    {
-        return new MakePtrExpression(origin, value);
-    }
-    argumentTypeForAndOverload(origin)
-    {
-        return new PtrType(origin, "thread", this);
-    }
-    returnTypeFromAndOverload(origin)
-    {
-        throw new WTypeError(origin.originString, "By-pointer overload returned non-pointer type: " + this);
-    }
 }
 
+export { Type };

@@ -26,9 +26,9 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-let standardLibrary = (function() {
+
+export let standardLibrary = (function() {
     let result = "";
     function print(s)
     {
@@ -2209,10 +2209,10 @@ let standardLibrary = (function() {
 // FIXME: Once the standard library has been replaced with a new version, this comments should be removed.
 // This list is used to restrict the availability of vector types available in the langauge.
 // Permissible vector element types must appear in this list and in the standard library
-const VectorElementTypes = [ "bool", "uchar", "char", "ushort", "short", "uint", "int", "half", "float" ];
-const VectorElementSizes = [ 2, 3, 4 ];
+export const VectorElementTypes = [ "bool", "uchar", "char", "ushort", "short", "uint", "int", "half", "float" ];
+export const VectorElementSizes = [ 2, 3, 4 ];
 
-function allVectorTypeNames()
+export function allVectorTypeNames()
 {
     const names = [];
     for (let elementType of VectorElementTypes) {
@@ -2221,3 +2221,5 @@ function allVectorTypeNames()
     }
     return names;
 }
+
+export { standardLibrary as default };

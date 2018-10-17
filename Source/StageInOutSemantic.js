@@ -26,9 +26,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class StageInOutSemantic extends Semantic {
+import { ArrayType } from "./ArrayType.js";
+import { EnumType } from "./EnumType.js";
+import { MatrixType } from "./MatrixType.js";
+import { Semantic } from "./Semantic.js";
+import { VectorType } from "./VectorType.js";
+
+export default class StageInOutSemantic extends Semantic {
     constructor(origin, index)
     {
          super(origin);
@@ -58,9 +63,17 @@ class StageInOutSemantic extends Semantic {
         }
     }
 
+    equalToOtherSemantic(otherSemantic)
+    {
+        if (!(otherSemantic instanceof StageInOutSemantic))
+            return false;
+        return this.index == otherSemantic.index;
+    }
+
     toString()
     {
         return `attribute(${this.index})`;
     }
 }
 
+export { StageInOutSemantic };

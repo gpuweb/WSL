@@ -26,8 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class FuncAttribute extends Node {
+import { Node } from "./Node.js";
+
+export default class FuncAttribute extends Node {
 }
 
+export { FuncAttribute };

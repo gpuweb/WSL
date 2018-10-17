@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class BuiltinVectorGetter {
+import { EPtr } from "./EPtr.js";
+import { VectorElementSizes, VectorElementTypes } from "./StandardLibrary.js";
+
+export default class BuiltinVectorGetter {
     constructor(baseTypeName, size, elementName, index)
     {
         this._baseTypeName = baseTypeName;
@@ -72,3 +74,4 @@ class BuiltinVectorGetter {
         func.implementationData = this;
     }
 }
+export { BuiltinVectorGetter };

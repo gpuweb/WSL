@@ -26,21 +26,23 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class BoolLiteral extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class BoolLiteral extends Expression {
     constructor(origin, value)
     {
         super(origin);
         this._value = value;
     }
-    
+
     get value() { return this._value; }
     get isConstexpr() { return true; }
-    
+
     toString()
     {
         return "" + this._value;
     }
 }
 
+export { BoolLiteral };

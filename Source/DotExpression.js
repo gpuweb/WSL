@@ -26,24 +26,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class DotExpression extends PropertyAccessExpression {
+import { PropertyAccessExpression } from "./PropertyAccessExpression.js";
+
+export default class DotExpression extends PropertyAccessExpression {
     constructor(origin, struct, fieldName)
     {
         super(origin, struct);
         this._fieldName = fieldName;
     }
-    
+
     get struct() { return this.base; }
     get fieldName() { return this._fieldName; }
-    
+
     get getFuncName() { return "operator." + this.fieldName; }
     get andFuncName() { return "operator&." + this.fieldName; }
     get setFuncName() { return "operator." + this.fieldName + "="; }
-    
+
     toString()
     {
         return "(" + this.struct + "." + this.fieldName + ")";
     }
 }
+export { DotExpression };

@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkNativeFuncStages(program)
+import { NativeFunc } from "./NativeFunc.js";
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+
+export function checkNativeFuncStages(program)
 {
     class CheckNativeFuncStages extends Visitor {
         constructor(entryPoint) {
@@ -50,3 +53,5 @@ function checkNativeFuncStages(program)
         }
     }
 }
+
+export { checkNativeFuncStages as default };

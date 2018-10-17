@@ -26,7 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Visitor } from "./Visitor.js";
 
 // This phase is for asserting that the compiler didn't violate its internal constraints, so it
 // throws Error not WTypeError.
@@ -36,13 +37,13 @@
 // example, null for ^ will probably take one pointer-sized word while null for [] will take two words
 // (one for base and one for length). The type checker is equipped to infer this, and this phase's job
 // is just to verify that the type checker succeeded.
-class LiteralTypeChecker extends Visitor {
+export default class LiteralTypeChecker extends Visitor {
     visitNullType(node)
     {
         if (!node.type)
             throw new Error("Null at " + node.origin.originString + " does not have type");
     }
-    
+
     visitGenericLiteralType(node)
     {
         if (!node.type)
@@ -52,3 +53,4 @@ class LiteralTypeChecker extends Visitor {
     }
 }
 
+export { LiteralTypeChecker };

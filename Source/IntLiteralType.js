@@ -26,11 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-let IntLiteralType = createLiteralType({
+import { createLiteralType } from "./CreateLiteralType.js";
+
+export let IntLiteralType = createLiteralType({
     preferredTypeName: "int",
-    
+
     verifyAsArgument(unificationContext)
     {
         let realThis = unificationContext.find(this);
@@ -41,3 +42,5 @@ let IntLiteralType = createLiteralType({
         return {result: true};
     }
 });
+
+export { IntLiteralType as default };

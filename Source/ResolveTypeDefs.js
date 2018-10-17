@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function resolveTypeDefsInTypes(program)
+import { TypeDefResolver } from "./TypeDefResolver.js";
+
+export function resolveTypeDefsInTypes(program)
 {
     let resolver = new TypeDefResolver();
     for (let type of program.types.values()) {
@@ -40,7 +41,7 @@ function resolveTypeDefsInTypes(program)
     }
 }
 
-function resolveTypeDefsInFunctions(program)
+export function resolveTypeDefsInFunctions(program)
 {
     let resolver = new TypeDefResolver();
     for (let funcs of program.functions.values()) {
@@ -49,3 +50,4 @@ function resolveTypeDefsInFunctions(program)
     }
 }
 
+export { resolveTypeDefsInTypes as default };

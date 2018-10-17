@@ -26,14 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Value extends Node {
+import { Node } from "./Node.js";
+
+export class Value extends Node {
     get kind() { return Value; }
     get isConstexpr() { return false; }
     get isLValue() { return false; }
     get notLValueReason() { return null; }
-    
+
     get notLValueReasonString()
     {
         let result = this.notLValueReason;
@@ -41,14 +42,6 @@ class Value extends Node {
             return "\n" + result;
         return "";
     }
-    
-    become(otherValue)
-    {
-        // NOTE: Make sure that IdentityExpression implements unifyNode and all that
-        let origin = this.origin;
-        this.__proto__ = IdentityExpression.prototype;
-        this._origin = origin;
-        this._target = otherValue;
-    }
 }
 
+export { Value as default };

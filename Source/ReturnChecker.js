@@ -26,9 +26,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ReturnChecker extends Visitor {
+import { BoolLiteral } from "./BoolLiteral.js";
+import { CallExpression } from "./CallExpression.js";
+import { TypeRef } from "./TypeRef.js";
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class ReturnChecker extends Visitor {
     constructor(program)
     {
         super();
@@ -39,7 +44,7 @@ class ReturnChecker extends Visitor {
         };
         this._program = program;
     }
-    
+
     _mergeReturnStyle(a, b)
     {
         if (!a)
@@ -63,12 +68,12 @@ class ReturnChecker extends Visitor {
     {
         if (node.returnType.equals(node.program.intrinsics.void))
             return;
-        
+
         let bodyValue = node.body.visit(this);
         if (bodyValue == this.returnStyle.DefinitelyDoesntReturn || bodyValue == this.returnStyle.HasntReturnedYet)
             throw new WTypeError(node.origin.originString, "Function does not return");
     }
-    
+
     visitBlock(node)
     {
         for (let statement of node.statements) {
@@ -140,7 +145,7 @@ class ReturnChecker extends Visitor {
             }
         }
     }
-    
+
     visitSwitchStatement(node)
     {
         // FIXME: This seems like it's missing things. For example, we need to be smart about this:
@@ -155,7 +160,7 @@ class ReturnChecker extends Visitor {
         // I'm not sure what that means for this analysis. I'm starting to think that the right way to
         // build this analysis is to run a visitor that builds a CFG and then analyze the CFG.
         // https://bugs.webkit.org/show_bug.cgi?id=177172
-        
+
         let returnStyle = null;
         for (let switchCase of node.switchCases) {
             let bodyStyle = switchCase.body.visit(this);
@@ -166,12 +171,12 @@ class ReturnChecker extends Visitor {
         }
         return returnStyle;
     }
-    
+
     visitReturn(node)
     {
         return this.returnStyle.DefinitelyReturns;
     }
-    
+
     visitTrapStatement(node)
     {
         return this.returnStyle.DefinitelyReturns;
@@ -193,3 +198,4 @@ class ReturnChecker extends Visitor {
         return this.returnStyle.DefinitelyDoesntReturn;
     }
 }
+export { ReturnChecker };

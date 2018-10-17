@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class NativeFunc extends Func {
+import { Func } from "./Func.js";
+
+export default class NativeFunc extends Func {
     constructor(origin, name, returnType, parameters, isCast = false, stage = null)
     {
         super(origin, name, returnType, parameters, isCast);
@@ -55,3 +56,4 @@ class NativeFunc extends Func {
     }
 }
 
+export { NativeFunc };

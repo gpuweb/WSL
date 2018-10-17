@@ -26,15 +26,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkExpressionWrapped(node)
+import { ExpressionFinder } from "./ExpressionFinder.js";
+import { WrapChecker } from "./WrapChecker.js";
+
+export function checkExpressionWrapped(node)
 {
     node.visit(new WrapChecker(node));
 }
 
-function checkProgramWrapped(node)
+export function checkProgramWrapped(node)
 {
     node.visit(new ExpressionFinder(checkExpressionWrapped));
 }
 
+export { checkExpressionWrapped as default };

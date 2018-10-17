@@ -26,23 +26,24 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class WrapChecker extends Visitor {
+import { Visitor } from "./Visitor.js";
+
+export default class WrapChecker extends Visitor {
     constructor(node)
     {
         super();
         this._startNode = node;
     }
-    
+
     visitVariableRef(node)
     {
     }
-    
+
     visitTypeRef(node)
     {
     }
-    
+
     _foundUnwrapped(node)
     {
         function originString(node)
@@ -52,29 +53,30 @@ class WrapChecker extends Visitor {
                 return "<null origin>";
             return origin.originString;
         }
-        
+
         throw new Error("Found unwrapped " + node.constructor.name + " at " + originString(node) + ": " + node + "\nWhile visiting " + this._startNode.constructor.name + " at " + originString(this._startNode.origin) + ": " + this._startNode);
     }
-    
+
     visitFuncParameter(node)
     {
         this._foundUnwrapped(node);
     }
-    
+
     visitVariableDecl(node)
     {
         this._foundUnwrapped(node);
     }
-    
+
     visitStructType(node)
     {
         this._foundUnwrapped(node);
     }
-    
+
     visitNativeType(node)
     {
         this._foundUnwrapped(node);
     }
-    
+
     // NOTE: This needs to be kept in sync with AutoWrapper.
 }
+export { WrapChecker };

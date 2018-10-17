@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class WhileLoop extends Node {
+import { Node } from "./Node.js";
+
+export default class WhileLoop extends Node {
     constructor(origin, conditional, body)
     {
         super();
@@ -47,3 +48,4 @@ class WhileLoop extends Node {
     }
 };
 
+export { WhileLoop };

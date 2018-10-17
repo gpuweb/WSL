@@ -26,18 +26,25 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-if (this.window) {
-    this.print = (text) => {
-        var span = document.createElement("pre");
-        document.getElementById("messages").appendChild(span);
-        span.innerText = text;
-        window.scrollTo(0,document.body.scrollHeight);
-    };
-    this.preciseTime = () => performance.now() / 1000;
-} else
-    load("All.js");
+import { ArrayRefType } from "./ArrayRefType.js";
+import { EArrayRef } from "./EArrayRef.js";
+import { EBuffer } from "./EBuffer.js";
+import { EPtr } from "./EPtr.js";
+import { EnumType } from "./EnumType.js";
+import { Evaluator } from "./Evaluator.js";
+import { Lexer } from "./Lexer.js";
+import { PtrType } from "./PtrType.js";
+import { Sampler } from "./Sampler.js";
+import { Texture1D, Texture1DRW, Texture1DArray, Texture1DArrayRW, Texture2D, Texture2DRW, Texture2DArray, Texture2DArrayRW, TextureDepth2D, TextureDepth2DArray, TextureDepth2DRW, TextureDepth2DArrayRW, Texture3D, Texture3DRW, TextureCube, TextureDepthCube } from "./Texture.js";
+import { TypedValue } from "./TypedValue.js";
+import { WLexicalError } from "./WLexicalError.js";
+import { WSyntaxError } from "./WSyntaxError.js";
+import { WTypeError } from "./WTypeError.js";
+import { callFunction } from "./CallFunction.js";
+import { castAndCheckValue, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToBool, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
+import { externalOrigin } from "./ExternalOrigin.js";
+import { prepare } from "./Prepare.js";
 
 function doPrep(code)
 {
@@ -3120,38 +3127,38 @@ tests.booleanMath = function()
 tests.booleanShortcircuiting = function()
 {
     let program = doPrep(`
-        bool set(thread int* ptr, int value, bool retValue) 
-        { 
-            *ptr = value; 
-            return retValue; 
+        bool set(thread int* ptr, int value, bool retValue)
+        {
+            *ptr = value;
+            return retValue;
         }
 
         test int andTrue()
         {
             int x;
             bool y = set(&x, 1, true) && set(&x, 2, false);
-            return x; 
+            return x;
         }
 
         test int andFalse()
         {
             int x;
             bool y = set(&x, 1, false) && set(&x, 2, false);
-            return x; 
+            return x;
         }
 
         test int orTrue()
         {
             int x;
             bool y = set(&x, 1, true) || set(&x, 2, false);
-            return x; 
+            return x;
         }
 
         test int orFalse()
         {
             int x;
             bool y = set(&x, 1, false) || set(&x, 2, false);
-            return x; 
+            return x;
         }
     `);
 
@@ -8978,7 +8985,7 @@ tests.textureSample = function() {
     checkFloat(program, callFunction(program, "foo54", [textureDepthCube, makeSampler(program, {minFilter: "linear"}), makeFloat(program, 0), makeFloat(program, 0), makeFloat(program, 1), makeFloat(program, 1)]), (49 + 50) / 2);
     checkFloat(program, callFunction(program, "foo54", [textureDepthCube, makeSampler(program, {minFilter: "linear"}), makeFloat(program, 0), makeFloat(program, 0), makeFloat(program, -1), makeFloat(program, 1)]), (59 + 60) / 2);
 
-    
+
     checkFloat(program, callFunction(program, "foo55", [make2DDepthTexture(program, [[[17]]], "float"), makeSampler(program, {compareFunction: "never"}), makeFloat(program, 0.5), makeFloat(program, 0.5), makeFloat(program, 11)]), 0);
     checkFloat(program, callFunction(program, "foo55", [make2DDepthTexture(program, [[[17]]], "float"), makeSampler(program, {compareFunction: "never"}), makeFloat(program, 0.5), makeFloat(program, 0.5), makeFloat(program, 17)]), 0);
     checkFloat(program, callFunction(program, "foo55", [make2DDepthTexture(program, [[[17]]], "float"), makeSampler(program, {compareFunction: "never"}), makeFloat(program, 0.5), makeFloat(program, 0.5), makeFloat(program, 23)]), 0);
@@ -9831,19 +9838,23 @@ okToTest = true;
 
 let testFilter = /.*/; // run everything by default
 let testExclusionFilter = /^DISABLED_/;
-if (this["arguments"]) {
-    for (let i = 0; i < arguments.length; i++) {
-        switch (arguments[0]) {
-        case "--filter":
-            testFilter = new RegExp(arguments[++i]);
-            break;
-        default:
-            throw new Error("Unknown argument: ", arguments[i]);
+try {
+    if (arguments) {
+        for (let i = 0; i < arguments.length; i++) {
+            switch (arguments[0]) {
+            case "--filter":
+                testFilter = new RegExp(arguments[++i]);
+                break;
+            default:
+                throw new Error("Unknown argument: ", arguments[i]);
+            }
         }
     }
+} catch (e) {
+    // Ignore the ReferenceError (no arguments).
 }
 
-function* doTest(testFilter)
+export function* doTest(testFilter)
 {
     if (!okToTest)
         throw new Error("Test setup is incomplete.");
@@ -9874,8 +9885,16 @@ function* doTest(testFilter)
     print("That took " + (after - before) * 1000 + " ms.");
 }
 
-if (!this.window && !this.runningInCocoaHost) {
-    Error.stackTraceLimit = Infinity;
-    for (let _ of doTest(testFilter)) { }
+let shouldRunTests = true;
+Error.stackTraceLimit = Infinity;
+try {
+    if (window || runningInCocoaHost)
+        shouldRunTests = false;
+} catch (e) {
+    // Ignore the ReferenceError.
 }
 
+if (shouldRunTests)
+    for (let _ of doTest(testFilter)) { }
+
+export { doTest as default };

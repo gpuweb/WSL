@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ArrayType extends Type {
+import { ArrayRefType } from "./ArrayRefType.js";
+import { MakeArrayRefExpression } from "./MakeArrayRefExpression.js";
+import { Type } from "./Type.js";
+
+export default class ArrayType extends Type {
     constructor(origin, elementType, numElements)
     {
         if (!numElements)
@@ -38,13 +41,13 @@ class ArrayType extends Type {
         this._elementType = elementType;
         this._numElements = numElements;
     }
-    
+
     get origin() { return this._origin; }
     get elementType() { return this._elementType; }
     get numElements() { return this._numElements; }
     get isPrimitive() { return this.elementType.isPrimitive; }
     get isArray() { return true; }
-    
+
     get numElementsValue()
     {
         if (!(this.numElements.isLiteral))
@@ -61,38 +64,28 @@ class ArrayType extends Type {
     {
         return this.elementType + "[" + this.numElements + "]";
     }
-    
+
     get size()
     {
         return this.elementType.size * this.numElementsValue;
     }
-    
+
     populateDefaultValue(buffer, offset)
     {
         for (let i = 0; i < this.numElementsValue; ++i)
             this.elementType.populateDefaultValue(buffer, offset + i * this.elementType.size);
     }
-    
+
     unifyImpl(unificationContext, other)
     {
         if (!(other instanceof ArrayType))
             return false;
-        
+
         if (!this.numElements.unify(unificationContext, other.numElements))
             return false;
-        
-        return this.elementType.unify(unificationContext, other.elementType);
-    }
 
-    argumentForAndOverload(origin, value)
-    {
-        let result = new MakeArrayRefExpression(origin, value);
-        result.numElements = this.numElements;
-        return result;
-    }
-    argumentTypeForAndOverload(origin)
-    {
-        return new ArrayRefType(origin, "thread", this.elementType);
+        return this.elementType.unify(unificationContext, other.elementType);
     }
 }
 
+export { ArrayType };

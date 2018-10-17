@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class SwitchStatement extends Node {
+import { Node } from "./Node.js";
+
+export default class SwitchStatement extends Node {
     constructor(origin, value)
     {
         super();
@@ -36,17 +37,17 @@ class SwitchStatement extends Node {
         this._value = value;
         this._switchCases = [];
     }
-    
+
     get origin() { return this._origin; }
     get value() { return this._value; }
-    
+
     add(switchCase)
     {
         this._switchCases.push(switchCase);
     }
-    
+
     get switchCases() { return this._switchCases; }
-    
+
     toString()
     {
         let result = "switch (" + this.value + ") { ";
@@ -56,3 +57,4 @@ class SwitchStatement extends Node {
     }
 }
 
+export { SwitchStatement };

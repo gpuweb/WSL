@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class LoopChecker extends Visitor {
+import { Visitor } from "./Visitor.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class LoopChecker extends Visitor {
     constructor()
     {
         super();
@@ -101,3 +103,4 @@ class LoopChecker extends Visitor {
         super.visitContinue(node);
     }
 }
+export { LoopChecker };

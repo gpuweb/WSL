@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class EnumMember extends Node {
+import { Node } from "./Node.js";
+
+export default class EnumMember extends Node {
     constructor(origin, name, value)
     {
         super();
@@ -36,10 +37,10 @@ class EnumMember extends Node {
         this._name = name;
         this.value = value;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return this._name; }
-    
+
     toString()
     {
         let result = this.name;
@@ -48,3 +49,4 @@ class EnumMember extends Node {
         return result;
     }
 }
+export { EnumMember };

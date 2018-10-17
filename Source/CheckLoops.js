@@ -26,10 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkLoops(program)
+import { LoopChecker } from "./LoopChecker.js";
+
+export function checkLoops(program)
 {
     program.visit(new LoopChecker());
 }
 
+export { checkLoops as default };

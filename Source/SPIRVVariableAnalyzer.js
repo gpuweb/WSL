@@ -28,7 +28,7 @@
  */
 "use strict";
 
-class SPIRVPrimitiveVariableAnalyzer extends Visitor {
+export default class SPIRVPrimitiveVariableAnalyzer extends Visitor {
     constructor(program, typeMap, currentId, currentLocation, startName)
     {
         super();
@@ -155,3 +155,4 @@ class SPIRVPrimitiveVariableAnalyzer extends Visitor {
         }
     }
 }
+export { SPIRVVariableAnalyzer };

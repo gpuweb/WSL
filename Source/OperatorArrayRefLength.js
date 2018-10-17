@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class OperatorArrayRefLength {
+import { EPtr } from "./EPtr.js";
+
+export default class OperatorArrayRefLength {
     constructor(baseTypeName, addressSpace)
     {
         this._baseTypeName = baseTypeName;
@@ -54,3 +55,5 @@ class OperatorArrayRefLength {
         func.implementationData = this;
     }
 }
+
+export { OperatorArrayRefLength };

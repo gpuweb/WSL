@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkTypesWithArguments(program)
+import { Visitor } from "./Visitor.js";
+
+export function checkTypesWithArguments(program)
 {
     class TypeWithArgumentsChecker extends Visitor {
         visitTypeRef(node)
@@ -52,3 +53,4 @@ function checkTypesWithArguments(program)
     program.visit(new TypeWithArgumentsChecker());
 }
 
+export { checkTypesWithArguments as default };

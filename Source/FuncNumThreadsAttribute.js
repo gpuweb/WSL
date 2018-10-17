@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class FuncNumThreadsAttribute extends FuncAttribute {
+import { FuncAttribute } from "./FuncAttribute.js";
+
+export default class FuncNumThreadsAttribute extends FuncAttribute {
     constructor(x, y, z)
     {
         super();
@@ -42,3 +43,4 @@ class FuncNumThreadsAttribute extends FuncAttribute {
     get z() { return this._z; }
 }
 
+export { FuncNumThreadsAttribute };

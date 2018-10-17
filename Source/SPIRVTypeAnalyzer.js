@@ -28,7 +28,7 @@
  */
 "use strict";
 
-class SPIRVTypeAnalyzer extends Visitor {
+export default class SPIRVTypeAnalyzer extends Visitor {
     constructor(program, typeMap, currentId)
     {
         super();
@@ -144,3 +144,4 @@ class SPIRVTypeAnalyzer extends Visitor {
         this._encounterType(id);
     }
 }
+export { SPIRVTypeAnalyzer };

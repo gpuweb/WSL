@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Func extends Node {
+import { LexerToken } from "./LexerToken.js";
+import { Node } from "./Node.js";
+
+export default class Func extends Node {
     constructor(origin, name, returnType, parameters, isCast, shaderType = null, semantic = null, attributeBlock = null)
     {
         if (!(origin instanceof LexerToken))
@@ -49,7 +51,7 @@ class Func extends Node {
         this._semantic = semantic;
         this._attributeBlock = attributeBlock;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return this._name; }
     get returnType() { return this._returnType; }
@@ -61,14 +63,14 @@ class Func extends Node {
     get attributeBlock() { return this._attributeBlock; }
     get isEntryPoint() { return this.shaderType != null; }
     get returnTypeForOverloadResolution() { return this.isCast ? this.returnType : null; }
-    
+
     set parameters(newValue)
     {
         this._parameters = newValue;
     }
 
     get kind() { return Func; }
-    
+
     toDeclString()
     {
         let result = "";
@@ -83,10 +85,11 @@ class Func extends Node {
             result += ": " + this.semantic;
         return result;
     }
-    
+
     toString()
     {
         return this.toDeclString();
     }
 }
 
+export { Func };

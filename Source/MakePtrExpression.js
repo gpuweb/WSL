@@ -26,19 +26,22 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MakePtrExpression extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class MakePtrExpression extends Expression {
     constructor(origin, lValue)
     {
         super(origin);
         this._lValue = lValue;
     }
-    
+
     get lValue() { return this._lValue; }
-    
+
     toString()
     {
         return "&(" + this.lValue + ")";
     }
 }
+
+export { MakePtrExpression };

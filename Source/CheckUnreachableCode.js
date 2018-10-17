@@ -26,10 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkUnreachableCode(program)
+import { UnreachableCodeChecker } from "./UnreachableCodeChecker.js";
+
+export function checkUnreachableCode(program)
 {
     program.visit(new UnreachableCodeChecker(program));
 }
 
+export { checkUnreachableCode as default };

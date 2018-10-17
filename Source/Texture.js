@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Texture {
+export default class Texture {
     constructor(dimension, width, height, depth, levelCount, layerCount, innerType, data)
     {
         this._dimension = dimension;
@@ -74,7 +73,7 @@ class Texture {
     }
 }
 
-class Texture1D extends Texture {
+export class Texture1D extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of mipmaps.
@@ -118,7 +117,7 @@ class Texture1D extends Texture {
     }
 }
 
-class Texture1DArray extends Texture {
+export class Texture1DArray extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of 1D textures.
@@ -159,7 +158,7 @@ class Texture1DArray extends Texture {
     }
 }
 
-class Texture2D extends Texture {
+export class Texture2D extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of mipmaps.
@@ -203,9 +202,9 @@ class Texture2D extends Texture {
     }
 }
 
-let TextureDepth2D = Texture2D;
+export let TextureDepth2D = Texture2D;
 
-class Texture2DArray extends Texture {
+export class Texture2DArray extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of 2D textures.
@@ -246,9 +245,9 @@ class Texture2DArray extends Texture {
     }
 }
 
-let TextureDepth2DArray = Texture2DArray;
+export let TextureDepth2DArray = Texture2DArray;
 
-class Texture3D extends Texture {
+export class Texture3D extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of mipmaps.
@@ -292,7 +291,7 @@ class Texture3D extends Texture {
     }
 }
 
-class TextureCube extends Texture {
+export class TextureCube extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of 6 2D textures.
@@ -333,9 +332,9 @@ class TextureCube extends Texture {
     }
 }
 
-let TextureDepthCube = TextureCube;
+export let TextureDepthCube = TextureCube;
 
-class Texture1DRW extends Texture {
+export class Texture1DRW extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of elements.
@@ -377,7 +376,7 @@ class Texture1DRW extends Texture {
     }
 }
 
-class Texture1DArrayRW extends Texture {
+export class Texture1DArrayRW extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of 1D RW textures.
@@ -418,7 +417,7 @@ class Texture1DArrayRW extends Texture {
     }
 }
 
-class Texture2DRW extends Texture {
+export class Texture2DRW extends Texture {
     constructor(innerType, data)
     {
         // "data" is a rectangular array of rows, where each row is an array of elements.
@@ -460,9 +459,9 @@ class Texture2DRW extends Texture {
     }
 }
 
-let TextureDepth2DRW = Texture2DRW;
+export let TextureDepth2DRW = Texture2DRW;
 
-class Texture2DArrayRW extends Texture {
+export class Texture2DArrayRW extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of 2D RW textures.
@@ -503,9 +502,9 @@ class Texture2DArrayRW extends Texture {
     }
 }
 
-let TextureDepth2DArrayRW = Texture2DArrayRW
+export let TextureDepth2DArrayRW = Texture2DArrayRW;
 
-class Texture3DRW extends Texture {
+export class Texture3DRW extends Texture {
     constructor(innerType, data)
     {
         // "data" is an array of depth slices, each depth slice is an array of rows, and each row is an array of elements.
@@ -546,3 +545,5 @@ class Texture3DRW extends Texture {
         this.data[k][j][i] = value;
     }
 }
+
+export { Texture };

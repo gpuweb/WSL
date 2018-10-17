@@ -26,15 +26,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class EArrayRef {
+export default class EArrayRef {
     constructor(ptr, length)
     {
         this._ptr = ptr;
         this._length = length;
     }
-    
+
     get ptr() { return this._ptr; }
     get length() { return this._length; }
 
@@ -42,10 +41,11 @@ class EArrayRef {
     {
         return this.ptr.equals(other.ptr) && this.length == other.length;
     }
-    
+
     toString()
     {
         return "A:<" + this.ptr + ", " + this.length + ">";
     }
 }
 
+export { EArrayRef };

@@ -26,32 +26,25 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { ReferenceType } from "./ReferenceType.js";
 
 // Note that we say that T[] is "the same type" as T[c] for any T, c. This greatly simplifies the
 // language.
-class ArrayRefType extends ReferenceType {
+
+export default class ArrayRefType extends ReferenceType {
     unifyImpl(unificationContext, other)
     {
         if (!other.isArrayRef)
             return false;
-        
+
         if (this.addressSpace != other.addressSpace)
             return false;
-        
+
         return this.elementType.unify(unificationContext, other.elementType);
     }
-    
-    get isArrayRef() { return true; }
 
-    argumentForAndOverload(origin, value)
-    {
-        return value;
-    }
-    argumentTypeForAndOverload(origin)
-    {
-        return this;
-    }
+    get isArrayRef() { return true; }
 
     toString()
     {
@@ -59,3 +52,4 @@ class ArrayRefType extends ReferenceType {
     }
 }
 
+export { ArrayRefType };

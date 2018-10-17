@@ -26,9 +26,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function synthesizeArrayOperatorLength(program)
+import { EPtr } from "./EPtr.js";
+import { FuncParameter } from "./FuncParameter.js";
+import { NameResolver } from "./NameResolver.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { Type } from "./Type.js";
+import { TypeRef } from "./TypeRef.js";
+import { Visitor } from "./Visitor.js";
+import { resolveOverloadImpl } from "./ResolveOverloadImpl.js";
+
+export function synthesizeArrayOperatorLength(program)
 {
     const arrayTypes = new Set();
 
@@ -68,3 +76,5 @@ function synthesizeArrayOperatorLength(program)
 
     }
 }
+
+export { synthesizeArrayOperatorLength as default };

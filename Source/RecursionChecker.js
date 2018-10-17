@@ -26,22 +26,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class RecursionChecker extends Visitor {
+import { VisitingSet } from "./VisitingSet.js";
+import { Visitor } from "./Visitor.js";
+
+export default class RecursionChecker extends Visitor {
     constructor()
     {
         super();
         this._visiting = new VisitingSet();
     }
-    
+
     visitFuncDef(node)
     {
         this._visiting.doVisit(node, () => super.visitFuncDef(node));
     }
-    
+
     visitCallExpression(node)
     {
         node.func.visit(this);
     }
 }
+
+export { RecursionChecker };

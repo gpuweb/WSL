@@ -26,21 +26,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TypeOverloadResolutionFailure {
+export default class TypeOverloadResolutionFailure {
     constructor(type, reason)
     {
         this._type = type;
         this._reason = reason;
     }
-    
+
     get type() { return this._type; }
     get reason() { return this._reason; }
-    
+
     toString()
     {
         return this.type.toString() + " did not match because: " + this.reason;
     }
 }
 
+export { TypeOverloadResolutionFailure };

@@ -26,14 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class VisitingSet {
+import { WTypeError } from "./WTypeError.js";
+
+export default class VisitingSet {
     constructor(...items)
     {
         this._set = new Set(items);
     }
-    
+
     doVisit(item, callback)
     {
         if (this._set.has(item))
@@ -46,3 +47,4 @@ class VisitingSet {
         }
     }
 }
+export { VisitingSet };

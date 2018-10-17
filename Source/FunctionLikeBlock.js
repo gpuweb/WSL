@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class FunctionLikeBlock extends Value {
+import { Value } from "./Value.js";
+
+export default class FunctionLikeBlock extends Value {
     constructor(origin, func, argumentList)
     {
         super();
@@ -36,16 +37,18 @@ class FunctionLikeBlock extends Value {
         this._func = func;
         this._argumentList = argumentList;
     }
-    
+
     get origin() { return this._origin; }
     get func() { return this._func; }
     get returnType() { return this.func._returnType; }
     get argumentList() { return this._argumentList; }
     get parameters() { return this.func._parameters; }
     get body() { return this.func._body; }
-    
+
     toString()
     {
         return "([&] (" + this.parameters + ") -> " + this.returnType + " { " + this.body + " }(" + this.argumentList + "))";
     }
 }
+
+export { FunctionLikeBlock };

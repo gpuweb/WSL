@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class IfStatement extends Node {
+import { Node } from "./Node.js";
+
+export default class IfStatement extends Node {
     constructor(origin, conditional, body, elseBody)
     {
         super();
@@ -52,3 +53,4 @@ class IfStatement extends Node {
     }
 };
 
+export { IfStatement };

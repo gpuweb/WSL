@@ -26,14 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function createNameResolver(program)
+import { NameResolver } from "./NameResolver.js";
+
+export function createNameResolver(program)
 {
     return new NameResolver(program.globalNameContext);
 }
 
-function resolveNamesInTypes(program, nameResolver)
+export function resolveNamesInTypes(program, nameResolver)
 {
     for (let type of program.types.values()) {
         if (type instanceof Array) {
@@ -44,7 +45,7 @@ function resolveNamesInTypes(program, nameResolver)
     }
 }
 
-function resolveNamesInFunctions(program, nameResolver)
+export function resolveNamesInFunctions(program, nameResolver)
 {
     for (let funcs of program.functions.values()) {
         for (let func of funcs)
@@ -52,3 +53,4 @@ function resolveNamesInFunctions(program, nameResolver)
     }
 }
 
+export { createNameResolver as default };

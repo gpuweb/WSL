@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class DereferenceExpression extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class DereferenceExpression extends Expression {
     constructor(origin, ptr, type = null, addressSpace = null)
     {
         super(origin);
@@ -36,12 +37,13 @@ class DereferenceExpression extends Expression {
         this.type = type;
         this.addressSpace = addressSpace;
     }
-    
+
     get ptr() { return this._ptr; }
     get isLValue() { return true; }
-    
+
     toString()
     {
         return "*(" + this.ptr + ")";
     }
 }
+export { DereferenceExpression };

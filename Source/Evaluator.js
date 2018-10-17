@@ -26,12 +26,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { BreakException, ContinueException } from "./EvaluationCommon.js";
+import { EArrayRef } from "./EArrayRef.js";
+import { EBuffer } from "./EBuffer.js";
+import { EPtr } from "./EPtr.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { ReturnException } from "./ReturnException.js";
+import { Visitor } from "./Visitor.js";
+import { WTrapError } from "./WTrapError.js";
 
 let _lastInvocationDidTrap;
 
 // This is a combined LHS/RHS evaluator that passes around EPtr's to everything.
-class Evaluator extends Visitor {
+export default class Evaluator extends Visitor {
     constructor(program)
     {
         super();
@@ -43,7 +51,7 @@ class Evaluator extends Visitor {
     {
         return lastInvocationDidTrap;
     }
-    
+
     // You must snapshot if you use a value in rvalue context. For example, a call expression will
     // snapshot all of its arguments immediately upon executing them. In general, it should not be
     // possible for a pointer returned from a visit method in rvalue context to live across any effects.
@@ -59,13 +67,13 @@ class Evaluator extends Visitor {
         dstPtr.copyFrom(srcPtr, size);
         return dstPtr;
     }
-    
+
     runFunc(func)
     {
         return EBuffer.disallowAllocation(
             () => this._runBody(func.returnType, func.returnEPtr, func.body, func.isEntryPoint));
     }
-    
+
     _runBody(type, ptr, block, isEntryPoint)
     {
         if (!ptr)
@@ -119,12 +127,12 @@ class Evaluator extends Visitor {
     {
         return this._evaluateFunction(node, node.argumentList, node.parameters, node.body, node.returnType, node.returnEPtr, false);
     }
-    
+
     visitReturn(node)
     {
         throw new ReturnException(node.value ? node.value.visit(this) : null);
     }
-    
+
     visitVariableDecl(node)
     {
         if (!node.ePtr.buffer)
@@ -133,7 +141,7 @@ class Evaluator extends Visitor {
         if (node.initializer)
             node.ePtr.copyFrom(node.initializer.visit(this), node.type.size);
     }
-    
+
     visitAssignment(node)
     {
         let target = node.lhs.visit(this);
@@ -141,12 +149,12 @@ class Evaluator extends Visitor {
         target.copyFrom(source, node.type.size);
         return target;
     }
-    
+
     visitIdentityExpression(node)
     {
         return node.target.visit(this);
     }
-    
+
     visitDereferenceExpression(node)
     {
         let ptr = node.ptr.visit(this).loadValue();
@@ -154,23 +162,23 @@ class Evaluator extends Visitor {
             throw new WTrapError(node.origin.originString, "Null dereference");
         return ptr;
     }
-    
+
     visitMakePtrExpression(node)
     {
         let ptr = node.lValue.visit(this);
         return node.ePtr.box(ptr);
     }
-    
+
     visitMakeArrayRefExpression(node)
     {
         return node.ePtr.box(new EArrayRef(node.lValue.visit(this), node.numElements.visit(this).loadValue()));
     }
-    
+
     visitConvertPtrToArrayRefExpression(node)
     {
         return node.ePtr.box(new EArrayRef(node.lValue.visit(this).loadValue(), 1));
     }
-    
+
     visitCommaExpression(node)
     {
         let result;
@@ -186,27 +194,27 @@ class Evaluator extends Visitor {
             return node.bodyExpression.visit(this);
         return node.elseExpression.visit(this);
     }
-    
+
     visitVariableRef(node)
     {
         return node.variable.ePtr;
     }
-    
+
     visitGenericLiteral(node)
     {
         return node.ePtr.box(node.valueForSelectedType);
     }
-    
+
     visitNullLiteral(node)
     {
         return node.ePtr.box(null);
     }
-    
+
     visitBoolLiteral(node)
     {
         return node.ePtr.box(node.value);
     }
-    
+
     visitEnumLiteral(node)
     {
         return node.ePtr.box(node.member.value.unifyNode.valueForSelectedType);
@@ -289,7 +297,7 @@ class Evaluator extends Visitor {
             }
         }
     }
-    
+
     visitSwitchStatement(node)
     {
         let findAndRunCast = predicate => {
@@ -308,9 +316,9 @@ class Evaluator extends Visitor {
             }
             return false;
         };
-        
+
         let value = node.value.visit(this).loadValue();
-        
+
         let found = findAndRunCast(switchCase => {
             if (switchCase.isDefault)
                 return false;
@@ -319,7 +327,7 @@ class Evaluator extends Visitor {
         });
         if (found)
             return;
-        
+
         found = findAndRunCast(switchCase => switchCase.isDefault);
         if (!found)
             throw new Error("Switch statement did not find case");
@@ -339,12 +347,12 @@ class Evaluator extends Visitor {
     {
         throw new WTrapError(node.origin.originString, "Trap statement");
     }
-    
+
     visitAnonymousVariable(node)
     {
         node.type.populateDefaultValue(node.ePtr.buffer, node.ePtr.offset);
     }
-    
+
     visitCallExpression(node)
     {
         if (node.func instanceof NativeFunc) {
@@ -355,3 +363,4 @@ class Evaluator extends Visitor {
     }
 }
 
+export { Evaluator };

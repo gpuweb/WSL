@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class StructType extends Type {
+import { Type } from "./Type.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class StructType extends Type {
     constructor(origin, name)
     {
         super();
@@ -36,7 +38,7 @@ class StructType extends Type {
         this._name = name;
         this._fields = new Map();
     }
-    
+
     add(field)
     {
         field.struct = this;
@@ -44,10 +46,10 @@ class StructType extends Type {
             throw new WTypeError(field.origin.originString, "Duplicate field name: " + field.name);
         this._fields.set(field.name, field);
     }
-    
+
     get name() { return this._name; }
     get origin() { return this._origin; }
-    
+
     get fieldNames() { return this._fields.keys(); }
     fieldByName(name) { return this._fields.get(name); }
     get fields() { return this._fields.values(); }
@@ -59,7 +61,7 @@ class StructType extends Type {
             result &= field.type.isPrimitive;
         return result;
     }
-    
+
     populateDefaultValue(buffer, offset)
     {
         if (this.size == null)
@@ -67,9 +69,10 @@ class StructType extends Type {
         for (let field of this.fields)
             field.type.populateDefaultValue(buffer, offset + field.offset);
     }
-    
+
     toString()
     {
         return `struct ${this.name} { ${Array.from(this.fields).join("; ")}; }`;
     }
 }
+export { StructType };

@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ReferenceType extends Type {
+import { Type } from "./Type.js";
+import { validateAddressSpace } from "./AddressSpace.js";
+
+export default class ReferenceType extends Type {
     constructor(origin, addressSpace, elementType)
     {
         if (!elementType)
@@ -41,7 +43,7 @@ class ReferenceType extends Type {
         this._addressSpace = addressSpace;
         this._elementType = elementType;
     }
-    
+
     get origin() { return this._origin; }
     get addressSpace() { return this._addressSpace; }
     get elementType() { return this._elementType; }
@@ -54,3 +56,4 @@ class ReferenceType extends Type {
     }
 }
 
+export { ReferenceType };

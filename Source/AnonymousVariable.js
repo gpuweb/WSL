@@ -26,11 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Value } from "./Value.js";
 
 let anonymousVariableCount = 0;
 
-class AnonymousVariable extends Value {
+export default class AnonymousVariable extends Value {
     // You have to initialize the variable's value before use, but that could be quite late.
     constructor(origin, type = null)
     {
@@ -39,13 +40,14 @@ class AnonymousVariable extends Value {
         this.index = anonymousVariableCount++;
         this.type = type;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return "anonVar<" + this.index + ">"; }
-    
+
     toString()
     {
         return this.name;
     }
 }
 
+export { AnonymousVariable };

@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ResourceSemantic extends Semantic {
+import { ArrayType } from "./ArrayType.js";
+import { ReferenceType } from "./ReferenceType.js";
+import { Semantic } from "./Semantic.js";
+
+export default class ResourceSemantic extends Semantic {
     constructor(origin, resourceMode, index, space)
     {
          super(origin);
@@ -71,9 +74,17 @@ class ResourceSemantic extends Semantic {
         return direction == "input";
     }
 
+    equalToOtherSemantic(otherSemantic)
+    {
+        if (!(otherSemantic instanceof ResourceSemantic))
+            return false;
+        return this.resourceMode == otherSemantic.resourceMode && this.index == otherSemantic.index && this.space == otherSemantic.space;
+    }
+
     toString()
     {
         return `register(${this.resourceMode}${this.index}, space${this.space})`;
     }
 }
 
+export { ResourceSemantic };

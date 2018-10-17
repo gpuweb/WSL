@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MatrixType extends NativeType {
+import { NativeType } from "./NativeType.js";
+
+export default class MatrixType extends NativeType {
     constructor(origin, name, typeArguments)
     {
         super(origin, name, typeArguments);
@@ -63,3 +64,5 @@ class MatrixType extends NativeType {
         return `native typedef matrix<${this.elementType}, ${this.numRowsValue}, ${this.numColumnsValue}>`;
     }
 }
+
+export { MatrixType };

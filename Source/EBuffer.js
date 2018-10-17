@@ -26,12 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
 let eBufferCount = 0;
 let canAllocateEBuffers = true;
 
-class EBuffer {
+export default class EBuffer {
     constructor(size)
     {
         if (!canAllocateEBuffers)
@@ -39,7 +38,7 @@ class EBuffer {
         this._index = eBufferCount++;
         this._array = new Array(size);
     }
-    
+
     static setCanAllocateEBuffers(value, callback)
     {
         let oldCanAllocateEBuffers = canAllocateEBuffers;
@@ -50,35 +49,37 @@ class EBuffer {
             canAllocateEBuffers = oldCanAllocateEBuffers;
         }
     }
-    
+
     static disallowAllocation(callback)
     {
         return EBuffer.setCanAllocateEBuffers(false, callback);
     }
-    
+
     static allowAllocation(callback)
     {
         return EBuffer.setCanAllocateEBuffers(true, callback);
     }
-    
+
     get(index)
     {
         if (index < 0 || index >= this._array.length)
             throw new Error("Out of bounds buffer access (buffer = " + this + ", index = " + index + ")");
         return this._array[index];
     }
-    
+
     set(index, value)
     {
         if (index < 0 || index >= this._array.length)
             throw new Error("out of bounds buffer access (buffer = " + this + ", index = " + index + ")");
         this._array[index] = value;
     }
-    
+
     get index() { return this._index; }
-    
+
     toString()
     {
         return "B" + this._index + ":[" + this._array + "]";
     }
 }
+
+export { EBuffer };

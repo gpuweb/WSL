@@ -26,16 +26,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-const Anything = Symbol();
+import { Func } from "./Func.js";
+import { Intrinsics } from "./Intrinsics.js";
+import { Type } from "./Type.js";
+import { WTypeError } from "./WTypeError.js";
+import { resolveOverloadImpl } from "./ResolveOverloadImpl.js";
 
-function isWildcardKind(kind)
+export const Anything = Symbol();
+
+export function isWildcardKind(kind)
 {
     return kind == Anything;
 }
 
-class NameContext {
+export default class NameContext {
     constructor(delegate)
     {
         this._map = new Map();
@@ -45,7 +50,7 @@ class NameContext {
         this._intrinsics = null;
         this._program = null;
     }
-    
+
     add(thing)
     {
         if (!thing.name)
@@ -58,7 +63,7 @@ class NameContext {
                 throw new Error("Native function in a scope that does not recognize intrinsics");
             this._intrinsics.add(thing);
         }
-        
+
         if (thing.kind == Func) {
             this._set.add(thing);
             let array = this._map.get(thing.name);
@@ -93,7 +98,7 @@ class NameContext {
             }
             return;
         }
-        
+
         if (this._map.has(thing.name))
             throw new WTypeError(thing.origin.originString, "Duplicate name: " + thing.name);
 
@@ -101,7 +106,7 @@ class NameContext {
         this._map.set(thing.name, thing);
 
     }
-    
+
     get(kind, name)
     {
         let result = this._map.get(name);
@@ -111,13 +116,13 @@ class NameContext {
             return null;
         return result;
     }
-    
+
     underlyingThings(kind, name)
     {
         let things = this.get(kind, name);
         return NameContext.underlyingThings(things);
     }
-    
+
     static *underlyingThings(thing)
     {
         if (!thing)
@@ -135,16 +140,16 @@ class NameContext {
         }
         yield thing;
     }
-    
+
     resolveFuncOverload(name, argumentTypes, returnType, allowEntryPoint = false)
     {
         let functions = this.get(Func, name);
         if (!functions)
             return {failures: []};
-        
+
         return resolveOverloadImpl(functions, argumentTypes, returnType, allowEntryPoint);
     }
-    
+
     get currentStatement()
     {
         if (this._currentStatement)
@@ -153,19 +158,19 @@ class NameContext {
             return this._delegate.currentStatement;
         return null;
     }
-    
+
     doStatement(statement, callback)
     {
         this._currentStatement = statement;
         callback();
         this._currentStatement = null;
     }
-    
+
     recognizeIntrinsics()
     {
         this._intrinsics = new Intrinsics(this);
     }
-    
+
     get intrinsics()
     {
         if (this._intrinsics)
@@ -174,12 +179,12 @@ class NameContext {
             return this._delegate.intrinsics;
         return null;
     }
-    
+
     set program(value)
     {
         this._program = value;
     }
-    
+
     get program()
     {
         if (this._program)
@@ -188,7 +193,7 @@ class NameContext {
             return this._delegate.program;
         return null;
     }
-    
+
     *[Symbol.iterator]()
     {
         for (let value of this._map.values()) {
@@ -201,3 +206,4 @@ class NameContext {
         }
     }
 }
+export { NameContext };

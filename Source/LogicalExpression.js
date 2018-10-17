@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class LogicalExpression extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class LogicalExpression extends Expression {
     constructor(origin, text, left, right)
     {
         super(origin);
@@ -36,14 +37,15 @@ class LogicalExpression extends Expression {
         this._left = left;
         this._right = right;
     }
-    
+
     get text() { return this._text; }
     get left() { return this._left; }
     get right() { return this._right; }
-    
+
     toString()
     {
         return "(" + this.left + " " + this.text + " " + this.right + ")";
     }
 }
 
+export { LogicalExpression };

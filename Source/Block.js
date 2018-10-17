@@ -26,25 +26,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Block extends Node {
+import { Node } from "./Node.js";
+
+export default class Block extends Node {
     constructor(origin)
     {
         super();
         this._origin = origin;
         this._statements = [];
     }
-    
+
     get origin() { return this._origin; }
-    
+
     add(statement)
     {
         this._statements.push(statement);
     }
-    
+
     get statements() { return this._statements; }
-    
+
     toString()
     {
         if (!this.statements.length)
@@ -53,3 +54,4 @@ class Block extends Node {
     }
 };
 
+export { Block };

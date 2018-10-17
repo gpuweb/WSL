@@ -26,20 +26,23 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-let UintLiteral = createLiteral({
+import { UintLiteralType } from "./UintLiteralType.js";
+import { createLiteral } from "./CreateLiteral.js";
+
+export let UintLiteral = createLiteral({
     literalClassName: "UintLiteral",
     preferredTypeName: "uint",
-    
+
     negConstexpr(origin)
     {
         return new UintLiteral(origin, (-this.value) >>> 0);
     },
-    
+
     createType(origin, value)
     {
         return new UintLiteralType(origin, value);
     }
 });
 
+export { UintLiteral as default };

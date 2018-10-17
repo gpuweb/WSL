@@ -26,33 +26,35 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class EnumLiteral extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class EnumLiteral extends Expression {
     constructor(origin, member)
     {
         super(origin);
         this._member = member;
     }
-    
+
     get member() { return this._member; }
     get type() { return this.member.enumType; }
     get isConstexpr() { return true; }
-    
+
     unifyImpl(unificationContext, other)
     {
         if (!(other instanceof EnumLiteral))
             return false;
         return this.member == other.member;
     }
-    
+
     get valueForSelectedType()
     {
         return this.member.value.unifyNode.valueForSelectedType;
     }
-        
+
     toString()
     {
         return this.member.enumType.name + "." + this.member.name;
     }
 }
+export { EnumLiteral };

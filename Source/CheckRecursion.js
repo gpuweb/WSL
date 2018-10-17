@@ -26,10 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkRecursion(program)
+import { RecursionChecker } from "./RecursionChecker.js";
+
+export function checkRecursion(program)
 {
     program.visit(new RecursionChecker(program));
 }
 
+export { checkRecursion as default };

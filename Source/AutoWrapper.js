@@ -26,44 +26,47 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class AutoWrapper extends Rewriter {
+import { Rewriter } from "./Rewriter.js";
+import { TypeRef } from "./TypeRef.js";
+import { VariableRef } from "./VariableRef.js";
+
+export default class AutoWrapper extends Rewriter {
     visitVariableRef(node)
     {
         return node;
     }
-    
+
     visitTypeRef(node)
     {
         return node;
     }
-    
+
     visitFuncParameter(node)
     {
         return VariableRef.wrap(node);
     }
-    
+
     visitVariableDecl(node)
     {
         return VariableRef.wrap(node);
     }
-    
+
     visitStructType(node)
     {
         return TypeRef.wrap(node);
     }
-    
+
     visitNativeType(node)
     {
         return TypeRef.wrap(node);
     }
-    
+
     visitTypeVariable(node)
     {
         return TypeRef.wrap(node);
     }
-    
+
     visitGenericLiteralType(node)
     {
         return node;
@@ -74,3 +77,4 @@ class AutoWrapper extends Rewriter {
         return node;
     }
 }
+export { AutoWrapper };

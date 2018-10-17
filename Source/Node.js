@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Node {
+import { UnificationContext } from "./UnificationContext.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class Node {
     visit(visitor)
     {
         let visitFunc = visitor["visit" + this.constructor.name];
@@ -37,17 +39,17 @@ class Node {
         let returnValue = visitFunc.call(visitor, this);
         if ("returnValue" in visitor)
             returnValue = visitor.returnValue;
-        
+
         return returnValue;
     }
-    
+
     static visit(node, visitor)
     {
         if (node instanceof Node)
             return node.visit(visitor);
         return node;
     }
-    
+
     unify(unificationContext, other)
     {
         if (!other)
@@ -60,41 +62,41 @@ class Node {
             return true;
         return unifyThis.unifyImpl(unificationContext, unifyOther);
     }
-    
+
     unifyImpl(unificationContext, other)
     {
         if (other.typeVariableUnify(unificationContext, this))
             return true;
         return this == other;
     }
-    
+
     typeVariableUnify(unificationContext, other)
     {
         return false;
     }
-    
+
     _typeVariableUnifyImpl(unificationContext, other)
     {
         let realThis = unificationContext.find(this);
         if (realThis != this)
             return realThis.unify(unificationContext, other);
-        
+
         unificationContext.union(this, other);
         return true;
     }
-    
+
     // Most type variables don't care about this.
     prepareToVerify(unificationContext) { }
     commitUnification(unificationContext) { }
-    
+
     get unifyNode() { return this; }
     get isUnifiable() { return false; }
     get isLiteral() { return false; }
-    
+
     get isNative() { return false; }
-    
+
     conversionCost(unificationContext) { return 0; }
-    
+
     equals(other)
     {
         let unificationContext = new UnificationContext();
@@ -102,7 +104,7 @@ class Node {
             return unificationContext;
         return false;
     }
-    
+
     equalsWithCommit(other)
     {
         let unificationContext = this.equals(other);
@@ -111,15 +113,17 @@ class Node {
         unificationContext.commit();
         return unificationContext;
     }
-    
+
     commit()
     {
         let unificationContext = new UnificationContext();
         unificationContext.addExtraNode(this);
         let result = unificationContext.verify();
         if (!result.result)
-            throw new WError(node.origin.originString, "Could not infer type: " + result.reason);
+            throw new WTypeError(node.origin.originString, "Could not infer type: " + result.reason);
         unificationContext.commit();
         return unificationContext.find(this);
     }
 }
+
+export { Node };

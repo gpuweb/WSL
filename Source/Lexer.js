@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Lexer {
+import { LexerToken } from "./LexerToken.js";
+import { WLexicalError } from "./WLexicalError.js";
+import { isOriginKind } from "./OriginKind.js";
+
+export default class Lexer {
     constructor(origin, originKind, lineNumberOffset, text)
     {
         if (!isOriginKind(originKind))
@@ -48,54 +51,54 @@ class Lexer {
                 ++lineNumber;
         }
     }
-    
+
     get lineNumber()
     {
         return this.lineNumberForIndex(this._index);
     }
-    
+
     get origin() { return this._origin; }
-    
+
     get originString()
     {
         return this._origin + ":" + (this.lineNumber + 1);
     }
-    
+
     get originKind() { return this._originKind; }
-    
+
     lineNumberForIndex(index)
     {
         return this._lineNumbers[index] + this._lineNumberOffset;
     }
-    
+
     get state() { return {index: this._index, stack: this._stack.concat()}; }
     set state(value)
     {
         this._index = value.index;
         this._stack = value.stack;
     }
-    
+
     static _textIsIdentifierImpl(text)
     {
         return /^[^\d\W]\w*/.test(text);
     }
-    
+
     static textIsIdentifier(text)
     {
         return Lexer._textIsIdentifierImpl(text) && !RegExp.rightContext.length;
     }
-    
+
     next()
     {
         if (this._stack.length)
             return this._stack.pop();
-        
+
         if (this._index >= this._text.length)
             return null;
-        
+
         const isCCommentBegin = /\/\*/;
         const isCPlusPlusCommentBegin = /\/\//;
-        
+
         let result = (kind) => {
             let text = RegExp.lastMatch;
             let token = new LexerToken(this, this._index, kind, text);
@@ -123,22 +126,22 @@ class Lexer {
             }
             break;
         }
-        
+
         if (this._index >= this._text.length)
             return null;
 
         // FIXME: Make this handle exp-form literals like 1e1.
         if (/^(([0-9]*\.[0-9]+[fd]?)|([0-9]+\.[0-9]*[fd]?))/.test(relevantText))
             return result("floatLiteral");
-        
+
         // FIXME: Make this do Unicode.
         if (Lexer._textIsIdentifierImpl(relevantText)) {
             if (/^(struct|typedef|if|else|enum|continue|break|switch|case|default|for|while|do|return|constant|device|threadgroup|thread|operator|null|true|false)$/.test(RegExp.lastMatch))
                 return result("keyword");
-            
+
             if (this._originKind == "native" && /^(native|restricted)$/.test(RegExp.lastMatch))
                 return result("keyword");
-            
+
             return result("identifier");
         }
 
@@ -153,30 +156,31 @@ class Lexer {
 
         if (/^[0-9]+/.test(relevantText))
             return result("intLiteral");
-        
+
         if (/^<<|>>|->|>=|<=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|\+\+|--|&&|\|\||([{}()\[\]?:=+*\/,.%!~^&|<>@;-])/.test(relevantText))
             return result("punctuation");
-        
+
         let remaining = relevantText.substring(0, 20).split(/\s/)[0];
         if (!remaining.length)
             remaining = relevantText.substring(0, 20);
         this.fail("Unrecognized token beginning with: " + remaining);
     }
-    
+
     push(token)
     {
         this._stack.push(token);
     }
-    
+
     peek()
     {
         let result = this.next();
         this.push(result);
         return result;
     }
-    
+
     fail(error)
     {
         throw new WLexicalError(this.originString, error);
     }
 }
+export { Lexer };

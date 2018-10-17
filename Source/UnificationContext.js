@@ -26,15 +26,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class UnificationContext {
+export default class UnificationContext {
     constructor()
     {
         this._nextMap = new Map();
         this._extraNodes = new Set();
     }
-    
+
     union(a, b)
     {
         a = this.find(a);
@@ -51,7 +50,7 @@ class UnificationContext {
 
         this._nextMap.set(a, b);
     }
-    
+
     find(node)
     {
         let currentNode = node;
@@ -67,12 +66,12 @@ class UnificationContext {
         this._nextMap.set(node, currentNode);
         return currentNode;
     }
-    
+
     addExtraNode(node)
     {
         this._extraNodes.add(node);
     }
-    
+
     get nodes()
     {
         let result = new Set();
@@ -84,7 +83,7 @@ class UnificationContext {
             result.add(node);
         return result;
     }
-    
+
     *typeArguments()
     {
         for (let typeArgument of this.nodes) {
@@ -93,7 +92,7 @@ class UnificationContext {
             yield typeArgument;
         }
     }
-    
+
     verify()
     {
         // We do a two-phase pre-verification. This gives literals a chance to select a more specific type.
@@ -116,7 +115,7 @@ class UnificationContext {
         }
         return {result: true};
     }
-    
+
     get conversionCost()
     {
         let result = 0;
@@ -124,7 +123,7 @@ class UnificationContext {
             result += typeArgument.conversionCost(this);
         return result;
     }
-    
+
     commit()
     {
         for (let typeArgument of this.typeArguments())
@@ -132,3 +131,4 @@ class UnificationContext {
     }
 }
 
+export { UnificationContext };

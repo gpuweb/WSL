@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function inline(program)
+import { Inliner } from "./Inliner.js";
+import { VisitingSet } from "./VisitingSet.js";
+
+export function inline(program)
 {
     for (let funcList of program.functions.values()) {
         for (let func of funcList)
@@ -36,10 +38,12 @@ function inline(program)
     }
 }
 
-function _inlineFunction(program, func, visiting)
+export function _inlineFunction(program, func, visiting)
 {
     if (func.inlined || func.isNative)
         return;
     func.rewrite(new Inliner(program, func, visiting));
     func.inlined = true;
 }
+
+export { inline as default };

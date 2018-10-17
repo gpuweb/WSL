@@ -26,13 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class ReturnException {
+export default class ReturnException {
     constructor(value)
     {
         this._value = value;
     }
-    
+
     get value() { return this._value; }
 }
+export { ReturnException };

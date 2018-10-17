@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class TernaryExpression extends Expression {
+import { Expression } from "./Expression.js";
+
+export default class TernaryExpression extends Expression {
     constructor(origin, predicate, bodyExpression, elseExpression)
     {
         super(origin);
@@ -36,11 +37,11 @@ class TernaryExpression extends Expression {
         this._bodyExpression = bodyExpression;
         this._elseExpression = elseExpression;
     }
-    
+
     get predicate() { return this._predicate; }
     get bodyExpression() { return this._bodyExpression; }
     get elseExpression() { return this._elseExpression; }
-    
+
     // Like in C, it is not never possible to use a ternary expression as an lValue.
 
     toString()
@@ -48,3 +49,4 @@ class TernaryExpression extends Expression {
         return "(" + this.predicate + ") ? (" + this.bodyExpression + ") : (" + this.elseExpression + ")";
     }
 }
+export { TernaryExpression };

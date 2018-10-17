@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Field extends Node {
+import { Node } from "./Node.js";
+
+export default class Field extends Node {
     constructor(origin, name, type, semantic = null)
     {
         super();
@@ -37,12 +38,12 @@ class Field extends Node {
         this._type = type;
         this._semantic = semantic;
     }
-    
+
     get origin() { return this._origin; }
     get name() { return this._name; }
     get type() { return this._type; }
     get semantic() { return this._semantic; }
-    
+
     toString()
     {
         let result = this.type + " " + this.name;
@@ -51,3 +52,5 @@ class Field extends Node {
         return result;
     }
 }
+
+export { Field };

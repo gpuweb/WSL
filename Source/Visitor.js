@@ -26,15 +26,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Visitor {
+import { Node } from "./Node.js";
+
+export default class Visitor {
     visitProgram(node)
     {
         for (let statement of node.topLevelStatements)
             statement.visit(this);
     }
-    
+
     visitFunc(node)
     {
         node.returnType.visit(this);
@@ -46,120 +47,120 @@ class Visitor {
         }
         Node.visit(node.semantic, this);
     }
-    
+
     visitFuncParameter(node)
     {
         node.type.visit(this);
         Node.visit(node.semantic, this);
     }
-    
+
     visitFuncDef(node)
     {
         this.visitFunc(node);
         node.body.visit(this);
     }
-    
+
     visitNativeFunc(node)
     {
         this.visitFunc(node);
     }
-    
+
     visitBlock(node)
     {
         for (let statement of node.statements)
             statement.visit(this);
     }
-    
+
     visitCommaExpression(node)
     {
         for (let expression of node.list)
             expression.visit(this);
     }
-    
+
     visitTypeRef(node)
     {
         for (let typeArgument of node.typeArguments)
             typeArgument.visit(this);
     }
-    
+
     visitNativeType(node)
     {
         for (let typeArgument of node.typeArguments)
             typeArgument.visit(this);
     }
-    
+
     visitTypeDef(node)
     {
         node.type.visit(this);
     }
-    
+
     visitStructType(node)
     {
         for (let field of node.fields)
             field.visit(this);
     }
-    
+
     visitField(node)
     {
         node.type.visit(this);
         Node.visit(node.semantic, this);
     }
-    
+
     visitEnumType(node)
     {
         node.baseType.visit(this);
         for (let member of node.members)
             member.visit(this);
     }
-    
+
     visitEnumMember(node)
     {
         Node.visit(node.value, this);
     }
-    
+
     visitEnumLiteral(node)
     {
     }
-    
+
     visitElementalType(node)
     {
         node.elementType.visit(this);
     }
-    
+
     visitReferenceType(node)
     {
         this.visitElementalType(node);
     }
-    
+
     visitPtrType(node)
     {
         this.visitReferenceType(node);
     }
-    
+
     visitArrayRefType(node)
     {
         this.visitReferenceType(node);
     }
-    
+
     visitArrayType(node)
     {
         this.visitElementalType(node);
         node.numElements.visit(this);
     }
-    
+
     visitVariableDecl(node)
     {
         node.type.visit(this);
         Node.visit(node.initializer, this);
     }
-    
+
     visitAssignment(node)
     {
         node.lhs.visit(this);
         node.rhs.visit(this);
         Node.visit(node.type, this);
     }
-    
+
     visitReadModifyWriteExpression(node)
     {
         node.lValue.visit(this);
@@ -168,7 +169,7 @@ class Visitor {
         node.newValueExp.visit(this);
         node.resultExp.visit(this);
     }
-    
+
     visitDereferenceExpression(node)
     {
         node.ptr.visit(this);
@@ -180,7 +181,7 @@ class Visitor {
         node.bodyExpression.visit(this);
         node.elseExpression.visit(this);
     }
-    
+
     _handlePropertyAccessExpression(node)
     {
         Node.visit(node.baseType, this);
@@ -190,59 +191,59 @@ class Visitor {
         Node.visit(node.resultTypeForAnd, this);
         Node.visit(node.callForSet, this);
     }
-    
+
     visitDotExpression(node)
     {
         node.struct.visit(this);
         this._handlePropertyAccessExpression(node);
     }
-    
+
     visitIndexExpression(node)
     {
         node.array.visit(this);
         node.index.visit(this);
         this._handlePropertyAccessExpression(node);
     }
-    
+
     visitMakePtrExpression(node)
     {
         node.lValue.visit(this);
     }
-    
+
     visitMakeArrayRefExpression(node)
     {
         node.lValue.visit(this);
         Node.visit(node.numElements, this);
     }
-    
+
     visitConvertPtrToArrayRefExpression(node)
     {
         node.lValue.visit(this);
     }
-    
+
     visitVariableRef(node)
     {
     }
-    
+
     visitIfStatement(node)
     {
         node.conditional.visit(this);
         node.body.visit(this);
         Node.visit(node.elseBody, this);
     }
-    
+
     visitWhileLoop(node)
     {
         node.conditional.visit(this);
         node.body.visit(this);
     }
-    
+
     visitDoWhileLoop(node)
     {
         node.body.visit(this);
         node.conditional.visit(this);
     }
-    
+
     visitForLoop(node)
     {
         Node.visit(node.initialization, this);
@@ -250,14 +251,14 @@ class Visitor {
         Node.visit(node.increment, this);
         node.body.visit(this);
     }
-    
+
     visitSwitchStatement(node)
     {
         node.value.visit(this);
         for (let switchCase of node.switchCases)
             switchCase.visit(this);
     }
-    
+
     visitSwitchCase(node)
     {
         Node.visit(node.value, this);
@@ -280,32 +281,32 @@ class Visitor {
     visitTrapStatement(node)
     {
     }
-    
+
     visitGenericLiteral(node)
     {
         node.type.visit(this);
     }
-    
+
     visitGenericLiteralType(node)
     {
         Node.visit(node.type, this);
         node.preferredType.visit(this);
     }
-    
+
     visitNullLiteral(node)
     {
         node.type.visit(this);
     }
-    
+
     visitBoolLiteral(node)
     {
     }
-    
+
     visitNullType(node)
     {
         Node.visit(node.type, this);
     }
-    
+
     visitCallExpression(node)
     {
         for (let argument of node.argumentList)
@@ -313,18 +314,18 @@ class Visitor {
         Node.visit(node.returnType, this);
         Node.visit(node.resultType, this);
     }
-    
+
     visitLogicalNot(node)
     {
         node.operand.visit(this);
     }
-    
+
     visitLogicalExpression(node)
     {
         node.left.visit(this);
         node.right.visit(this);
     }
-    
+
     visitFunctionLikeBlock(node)
     {
         Node.visit(node.returnType, this);
@@ -335,12 +336,12 @@ class Visitor {
         node.body.visit(this);
         Node.visit(node.resultType, this);
     }
-    
+
     visitAnonymousVariable(node)
     {
         Node.visit(node.type, this);
     }
-    
+
     visitIdentityExpression(node)
     {
         node.target.visit(this);
@@ -380,3 +381,4 @@ class Visitor {
     }
 }
 
+export { Visitor };

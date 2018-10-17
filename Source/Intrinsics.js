@@ -26,9 +26,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Intrinsics {
+import { BuiltinMatrixGetter } from "./BuiltinMatrixGetter.js";
+import { BuiltinMatrixSetter } from "./BuiltinMatrixSetter.js";
+import { BuiltinVectorGetter } from "./BuiltinVectorGetter.js";
+import { BuiltinVectorSetter } from "./BuiltinVectorSetter.js";
+import { EBuffer } from "./EBuffer.js";
+import { EPtr } from "./EPtr.js";
+import { IntLiteral } from "./IntLiteral.js";
+import { WTrapError } from "./WTrapError.js";
+import { WTypeError } from "./WTypeError.js";
+import { allVectorTypeNames, VectorElementSizes, VectorElementTypes } from "./StandardLibrary.js";
+import { cast, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToBool, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
+import { sampleTexture, gatherTexture } from "./TextureOperations.js";
+
+export default class Intrinsics {
     constructor(nameContext)
     {
         this._map = new Map();
@@ -2657,3 +2669,4 @@ class Intrinsics {
     }
 }
 
+export { Intrinsics };

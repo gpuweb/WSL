@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function depthCompareOperation(dref, d, compareFunction)
+import { Texture1D, Texture1DRW, Texture1DArray, Texture1DArrayRW, Texture2D, Texture2DRW, Texture2DArray, Texture2DArrayRW, TextureDepth2D, TextureDepth2DArray, TextureDepth2DRW, TextureDepth2DArrayRW, Texture3D, Texture3DRW, TextureCube, TextureDepthCube } from "./Texture.js";
+import { cast, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToBool, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
+
+export function depthCompareOperation(dref, d, compareFunction)
 {
     // Vulkan 1.1.83 section 15.3.4
     switch (compareFunction) {
@@ -53,7 +55,7 @@ function depthCompareOperation(dref, d, compareFunction)
     }
 }
 
-function conversionToRGBA(value)
+export function conversionToRGBA(value)
 {
     // Vulkan 1.1.83 section 15.3.5
     if (value instanceof Array) {
@@ -67,13 +69,13 @@ function conversionToRGBA(value)
         return [value, 0, 0, 1];
 }
 
-function projectionOperation(s, t, r, dref, q)
+export function projectionOperation(s, t, r, dref, q)
 {
     // Vulkan 1.1.83 section 15.6.1
     return [s / q, t / q, r / q, dref != undefined ? dref / q : undefined];
 }
 
-function cubeMapFaceSelection(s, t, r, partialRxWithRespectToX, partialRxWithRespectToY, partialRyWithRespectToX, partialRyWithRespectToY, partialRzWithRespectToX, partialRzWithRespectToY)
+export function cubeMapFaceSelection(s, t, r, partialRxWithRespectToX, partialRxWithRespectToY, partialRyWithRespectToX, partialRyWithRespectToY, partialRzWithRespectToX, partialRzWithRespectToY)
 {
     // Vulkan 1.1.83 section 15.6.4
     let rx = s;
@@ -165,7 +167,7 @@ function cubeMapFaceSelection(s, t, r, partialRxWithRespectToX, partialRxWithRes
     return [layerNumber, sc, tc, rc, partialScWithRespectToX, partialScWithRespectToY, partialTcWithRespectToX, partialTcWithRespectToY, partialRcWithRespectToX, partialRcWithRespectToY]
 }
 
-function cubeMapCoordinateTransformation(sc, tc, rc)
+export function cubeMapCoordinateTransformation(sc, tc, rc)
 {
     // Vulkan 1.1.83 section 15.6.5
     let sFace = (1 / 2) * sc / Math.abs(rc) + (1 / 2);
@@ -173,7 +175,7 @@ function cubeMapCoordinateTransformation(sc, tc, rc)
     return [sFace, tFace];
 }
 
-function cubeMapDerivativeTransformation(sc, tc, rc, partialScWithRespectToX, partialScWithRespectToY, partialTcWithRespectToX, partialTcWithRespectToY, partialRcWithRespectToX, partialRcWithRespectToY)
+export function cubeMapDerivativeTransformation(sc, tc, rc, partialScWithRespectToX, partialScWithRespectToY, partialTcWithRespectToX, partialTcWithRespectToY, partialRcWithRespectToX, partialRcWithRespectToY)
 {
     // Vulkan 1.1.83 section 15.6.6
     let partialSFaceWithRespectToX = (1 / 2) * ((Math.abs(rc) * partialScWithRespectToX - sc * partialRcWithRespectToX) / Math.pow(rc, 2));
@@ -183,7 +185,7 @@ function cubeMapDerivativeTransformation(sc, tc, rc, partialScWithRespectToX, pa
     return [partialSFaceWithRespectToX, partialSFaceWithRespectToY, partialTFaceWithRespectToX, partialTFaceWithRespectToY];
 }
 
-function scaleFactorOperation(deviceMaxAnisotropy, width, height, depth, samplerMaxAnisotropy, partialSWithRespectToX, partialTWithRespectToX, partialRWithRespectToX, partialSWithRespectToY, partialTWithRespectToY, partialRWithRespectToY)
+export function scaleFactorOperation(deviceMaxAnisotropy, width, height, depth, samplerMaxAnisotropy, partialSWithRespectToX, partialTWithRespectToX, partialRWithRespectToX, partialSWithRespectToY, partialTWithRespectToY, partialRWithRespectToY)
 {
     // Vulkan 1.1.83 section 15.6.7
     let mux = Math.abs(partialSWithRespectToX) * width;
@@ -216,7 +218,7 @@ function scaleFactorOperation(deviceMaxAnisotropy, width, height, depth, sampler
     return [rhoMax, rhoMin, eta, N];
 }
 
-function levelOfDetailOperation(deviceMaxSamplerLodBias, lodFromFunctionOperand, lodMinFromFunctionOperand, biasFromFunctionOperand, samplerBias, samplerLodMin, samplerLodMax, rhoMax, eta)
+export function levelOfDetailOperation(deviceMaxSamplerLodBias, lodFromFunctionOperand, lodMinFromFunctionOperand, biasFromFunctionOperand, samplerBias, samplerLodMin, samplerLodMax, rhoMax, eta)
 {
     // Vulkan 1.1.83 section 15.6.7
     if (biasFromFunctionOperand == undefined)
@@ -238,7 +240,7 @@ function levelOfDetailOperation(deviceMaxSamplerLodBias, lodFromFunctionOperand,
     return lambda;
 }
 
-function imageLevelSelection(baseMipLevel, levelCount, mipmapMode, lambda)
+export function imageLevelSelection(baseMipLevel, levelCount, mipmapMode, lambda)
 {
     // Vulkan 1.1.83 section 15.6.7
     function nearest(dPrime)
@@ -263,7 +265,7 @@ function imageLevelSelection(baseMipLevel, levelCount, mipmapMode, lambda)
     }
 }
 
-function strqaToUVWATransformation(s, t, r, width, height, depth)
+export function strqaToUVWATransformation(s, t, r, width, height, depth)
 {
     // Vulkan 1.1.83 section 15.6.8
     let u = s * width;
@@ -272,7 +274,7 @@ function strqaToUVWATransformation(s, t, r, width, height, depth)
     return [u, v, w];
 }
 
-function uvwaToIJKLNTransformationAndArrayLayerSelection(layerCount, baseArrayLayer, filter, u, v, w, a, deltaI, deltaJ, deltaK)
+export function uvwaToIJKLNTransformationAndArrayLayerSelection(layerCount, baseArrayLayer, filter, u, v, w, a, deltaI, deltaJ, deltaK)
 {
     // Vulkan 1.1.83 section 15.7.1
 
@@ -295,11 +297,11 @@ function uvwaToIJKLNTransformationAndArrayLayerSelection(layerCount, baseArrayLa
         i = Math.floor(u);
         j = Math.floor(v);
         k = Math.floor(w);
-        
+
         i += deltaI;
         j += deltaJ;
         k += deltaK;
-        
+
         return [i, j, k, l];
     } else {
         if (filter != "linear")
@@ -313,19 +315,19 @@ function uvwaToIJKLNTransformationAndArrayLayerSelection(layerCount, baseArrayLa
         let alpha = (u - 0.5) - i0;
         let beta = (v - 0.5) - j0;
         let gamma = (w - 0.5) - k0;
-        
+
         i0 += deltaI;
         i1 += deltaI;
         j0 += deltaJ;
         j1 += deltaJ;
         k0 += deltaK;
         k1 += deltaK;
-        
+
         return [i0, i1, j0, j1, k0, k1, l, alpha, beta, gamma];
     }
 }
 
-function integerTexelCoordinateOperations(baseMipLevel, levelCount, levelBase, lodFromFunctionOperand)
+export function integerTexelCoordinateOperations(baseMipLevel, levelCount, levelBase, lodFromFunctionOperand)
 {
     // Vulkan 1.1.83 section 15.8
     let d = levelBase + lodFromFunctionOperand;
@@ -334,7 +336,7 @@ function integerTexelCoordinateOperations(baseMipLevel, levelCount, levelBase, l
     return d;
 }
 
-function wrappingOperation(width, height, depth, addressModeU, addressModeV, addressModeW, i, j, k)
+export function wrappingOperation(width, height, depth, addressModeU, addressModeV, addressModeW, i, j, k)
 {
     // Vulkan 1.1.83 section 15.9.1
     // FIXME: "Cube images ignore the wrap modes specified in the sampler. Instead, if VK_FILTER_NEAREST is used within a mip level then VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE is used, and if VK_FILTER_LINEAR is used within a mip level then sampling at the edges is performed as described earlier in the Cube map edge handling section."
@@ -362,7 +364,7 @@ function wrappingOperation(width, height, depth, addressModeU, addressModeV, add
     return [transform(addressModeU, width, i), transform(addressModeV, height, j), transform(addressModeW, depth, k)];
 }
 
-function calculateLambda(deviceMaxAnisotropy, deviceMaxSamplerLodBias, texture, sampler, samplerBias, s, t, r, a, lodFromFunctionOperand, lodMinFromFunctionOperand, biasFromFunctionOperand, ddx, ddy)
+export function calculateLambda(deviceMaxAnisotropy, deviceMaxSamplerLodBias, texture, sampler, samplerBias, s, t, r, a, lodFromFunctionOperand, lodMinFromFunctionOperand, biasFromFunctionOperand, ddx, ddy)
 {
     let partialSWithRespectToX = 0;
     let partialTWithRespectToX = 0;
@@ -403,7 +405,7 @@ function calculateLambda(deviceMaxAnisotropy, deviceMaxSamplerLodBias, texture, 
     return [s, t, r, a, lambda];
 }
 
-function computeTau(level, baseArrayLayer, texture, sampler, addressModeU, addressModeV, addressModeW, filter, s, t, r, a, deltaI, deltaJ, deltaK)
+export function computeTau(level, baseArrayLayer, texture, sampler, addressModeU, addressModeV, addressModeW, filter, s, t, r, a, deltaI, deltaJ, deltaK)
 {
     function accessColor(width, height, depth, l, i, j, k)
     {
@@ -441,7 +443,7 @@ function computeTau(level, baseArrayLayer, texture, sampler, addressModeU, addre
     }
 }
 
-function reduce(...values)
+export function reduce(...values)
 {
     if (values.length % 2 != 0)
         throw new Error("Don't have a weight corresponding to each value");
@@ -466,7 +468,7 @@ function reduce(...values)
     return sum;
 }
 
-function texelGathering(
+export function texelGathering(
     deviceMaxAnisotropy,
     deviceMaxSamplerLodBias,
     baseMipLevel,
@@ -523,7 +525,7 @@ function texelGathering(
     }
 }
 
-function texelFiltering(
+export function texelFiltering(
     deviceMaxAnisotropy,
     deviceMaxSamplerLodBias,
     baseMipLevel,
@@ -600,7 +602,7 @@ function texelFiltering(
     }
 }
 
-function castToInnerTypeForGather(value, innerType)
+export function castToInnerTypeForGather(value, innerType)
 {
     switch (innerType) {
         case "uchar":
@@ -648,7 +650,7 @@ function castToInnerTypeForGather(value, innerType)
     }
 }
 
-function gatherTexture(texture, sampler, location, delta, biasFromFunctionOperand, ddx, ddy, lodFromFunctionOperand, dref, channel)
+export function gatherTexture(texture, sampler, location, delta, biasFromFunctionOperand, ddx, ddy, lodFromFunctionOperand, dref, channel)
 {
     let s = location[0];
     let t = location[1];
@@ -688,7 +690,7 @@ function gatherTexture(texture, sampler, location, delta, biasFromFunctionOperan
     // FIXME: Figure out how to do multisampling.
 }
 
-function castToInnerType(value, innerType)
+export function castToInnerType(value, innerType)
 {
     switch (innerType) {
         case "uchar":
@@ -707,7 +709,7 @@ function castToInnerType(value, innerType)
             return castToHalf(value);
         case "float":
             return castToFloat(value);
-        
+
         case "uchar2":
         case "uchar3":
         case "uchar4":
@@ -745,7 +747,7 @@ function castToInnerType(value, innerType)
     }
 }
 
-function sampleTexture(texture, sampler, location, delta, biasFromFunctionOperand, ddx, ddy, lodFromFunctionOperand, dref)
+export function sampleTexture(texture, sampler, location, delta, biasFromFunctionOperand, ddx, ddy, lodFromFunctionOperand, dref)
 {
     let s = location[0];
     let t = location[1];
@@ -786,3 +788,5 @@ function sampleTexture(texture, sampler, location, delta, biasFromFunctionOperan
     // FIXME: Figure out what to do with anisotropy
     // FIXME: Figure out how to do multisampling.
 }
+
+export { sampleTexture as default };

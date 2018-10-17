@@ -26,9 +26,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class SwitchCase extends Node {
+import { Node } from "./Node.js";
+
+export default class SwitchCase extends Node {
     // Null value means default.
     constructor(origin, value, body)
     {
@@ -37,12 +38,12 @@ class SwitchCase extends Node {
         this._value = value;
         this._body = body;
     }
-    
+
     get origin() { return this._origin; }
     get isDefault() { return !this._value; }
     get value() { return this._value; }
     get body() { return this._body; }
-    
+
     toString()
     {
         let result = "";
@@ -54,3 +55,4 @@ class SwitchCase extends Node {
     }
 }
 
+export { SwitchCase };

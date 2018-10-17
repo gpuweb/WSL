@@ -26,18 +26,19 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class IndexExpression extends PropertyAccessExpression {
+import { PropertyAccessExpression } from "./PropertyAccessExpression.js";
+
+export default class IndexExpression extends PropertyAccessExpression {
     constructor(origin, array, index)
     {
         super(origin, array);
         this._index = index;
     }
-    
+
     get array() { return this.base; }
     get index() { return this._index; }
-    
+
     get getFuncName() { return "operator[]"; }
     get andFuncName() { return "operator&[]"; }
     get setFuncName() { return "operator[]="; }
@@ -58,3 +59,5 @@ class IndexExpression extends PropertyAccessExpression {
         return "(" + this.array + "[" + this.index + "])";
     }
 }
+
+export { IndexExpression };

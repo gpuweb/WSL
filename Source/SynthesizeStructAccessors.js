@@ -26,9 +26,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function synthesizeStructAccessorsForStructType(program, type)
+import { EBuffer } from "./EBuffer.js";
+import { EPtr } from "./EPtr.js";
+import { FuncParameter } from "./FuncParameter.js";
+import { NativeFunc } from "./NativeFunc.js";
+import { PtrType } from "./PtrType.js";
+import { StructType } from "./StructType.js";
+import { TypeRef } from "./TypeRef.js";
+import { WTrapError } from "./WTrapError.js";
+
+export function synthesizeStructAccessorsForStructType(program, type)
 {
     for (let field of type.fields) {
         function setupImplementationData(nativeFunc, implementation)
@@ -109,7 +117,7 @@ function synthesizeStructAccessorsForStructType(program, type)
     }
 }
 
-function synthesizeStructAccessors(program)
+export function synthesizeStructAccessors(program)
 {
     for (let type of program.types.values()) {
         if (!(type instanceof StructType))
@@ -118,3 +126,5 @@ function synthesizeStructAccessors(program)
         synthesizeStructAccessorsForStructType(program, type);
     }
 }
+
+export { synthesizeStructAccessors as default };

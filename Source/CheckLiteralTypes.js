@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function checkLiteralTypes(program)
+import { LiteralTypeChecker } from "./LiteralTypeChecker.js";
+
+export function checkLiteralTypes(program)
 {
     program.visit(new LiteralTypeChecker());
 }
+
+export { checkLiteralTypes as default };

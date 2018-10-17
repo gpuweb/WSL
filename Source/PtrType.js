@@ -26,11 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class PtrType extends ReferenceType {
+import { ReferenceType } from "./ReferenceType.js";
+import { WTypeError } from "./WTypeError.js";
+
+export default class PtrType extends ReferenceType {
     get isPtr() { return true; }
-    
+
     unifyImpl(unificationContext, other)
     {
         if (!other.isPtr)
@@ -39,19 +41,6 @@ class PtrType extends ReferenceType {
             return false;
         return this.elementType.unify(unificationContext, other.elementType);
     }
-    
-    argumentForAndOverload(origin, value)
-    {
-        throw new WTypeError(origin.originString, "Pointer subscript is not valid");
-    }
-    argumentTypeForAndOverload(origin, type)
-    {
-        throw new WTypeError(origin.originString, "Pointer subscript is not valid");
-    }
-    returnTypeFromAndOverload(origin)
-    {
-        return this.elementType;
-    }
 
     toString()
     {
@@ -59,3 +48,4 @@ class PtrType extends ReferenceType {
     }
 }
 
+export { PtrType };

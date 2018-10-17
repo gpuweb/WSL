@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function inferTypesForCall(func, argumentTypes, returnType)
+import { OverloadResolutionFailure } from "./OverloadResolutionFailure.js";
+import { TypeOverloadResolutionFailure } from "./TypeOverloadResolutionFailure.js";
+import { UnificationContext } from "./UnificationContext.js";
+
+export function inferTypesForCall(func, argumentTypes, returnType)
 {
     if (argumentTypes.length != func.parameters.length)
         return {failure: new OverloadResolutionFailure(func, "Wrong number of arguments (passed " + argumentTypes.length + ", require " + func.parameters.length + ")")};
@@ -49,7 +52,7 @@ function inferTypesForCall(func, argumentTypes, returnType)
     return {func, unificationContext};
 }
 
-function inferTypesForTypeArguments(type, typeArguments)
+export function inferTypesForTypeArguments(type, typeArguments)
 {
     if (typeArguments.length != type.typeArguments.length)
         return {failure: new TypeOverloadResolutionFailure(type, "Wrong number of arguments (passed " + typeArguments.length + ", require " + type.typeArguments.length + ")")};
@@ -67,3 +70,5 @@ function inferTypesForTypeArguments(type, typeArguments)
 
     return {type, unificationContext};
 }
+
+export { inferTypesForCall as default };

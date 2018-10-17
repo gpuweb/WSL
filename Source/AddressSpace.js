@@ -26,11 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-const addressSpaces = ["constant", "device", "threadgroup", "thread"];
 
-function isAddressSpace(addressSpace)
+export const addressSpaces = ["constant", "device", "threadgroup", "thread"];
+
+export function isAddressSpace(addressSpace)
 {
     switch (addressSpace) {
     case "constant":
@@ -43,8 +43,10 @@ function isAddressSpace(addressSpace)
     }
 }
 
-function validateAddressSpace(addressSpace)
+export function validateAddressSpace(addressSpace)
 {
     if (!isAddressSpace(addressSpace))
         throw new Error("Bad address space: " + addressSpace);
 }
+
+export { isAddressSpace as default };

@@ -26,16 +26,19 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class Inliner extends Rewriter {
+import { FunctionLikeBlock } from "./FunctionLikeBlock.js";
+import { Rewriter } from "./Rewriter.js";
+import { _inlineFunction } from "./Inline.js";
+
+export default class Inliner extends Rewriter {
     constructor(program, func, visiting)
     {
         super();
         this._program = program;
         this._visiting = visiting;
     }
-    
+
     visitCallExpression(node)
     {
         let result = super.visitCallExpression(node);
@@ -53,3 +56,4 @@ class Inliner extends Rewriter {
     }
 }
 
+export { Inliner };

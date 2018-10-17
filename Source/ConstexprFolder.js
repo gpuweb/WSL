@@ -26,24 +26,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Visitor } from "./Visitor.js";
+import { become } from "./Become.js";
 
 // NOTE: This doesn't let you negate constexpr variables. I think that's probably OK for now, but we should
 // fix that eventually.
 // https://bugs.webkit.org/show_bug.cgi?id=177121
 
-class ConstexprFolder extends Visitor {
+export default class ConstexprFolder extends Visitor {
     visitCallExpression(node)
     {
         super.visitCallExpression(node);
-        
+
         if (node.name == "operator-"
             && node.argumentList.length == 1
             && node.argumentList[0].isLiteral
             && node.argumentList[0].negConstexpr) {
-            node.become(node.argumentList[0].negConstexpr(node.origin));
+            become(node, node.argumentList[0].negConstexpr(node.origin));
             return;
         }
     }
 }
 
+export { ConstexprFolder };
