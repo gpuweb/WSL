@@ -51,6 +51,6 @@ export default class IfStatement extends Node {
             return result + " else " + this.elseBody;
         return result;
     }
-};
+}
 
 export { IfStatement };

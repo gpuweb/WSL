@@ -49,7 +49,7 @@ export default class Evaluator extends Visitor {
 
     static lastInvocationDidTrap()
     {
-        return lastInvocationDidTrap;
+        return _lastInvocationDidTrap;
     }
 
     // You must snapshot if you use a value in rvalue context. For example, a call expression will
@@ -109,7 +109,7 @@ export default class Evaluator extends Visitor {
                 throw new Error("Cannot get type or argument; i = " + i + ", argument = " + argument + ", type = " + type);
             let argumentValue = argument.visit(this);
             if (!argumentValue)
-                throw new Error("Null argument value, i = " + i + ", node = " + node);
+                throw new Error("Null argument value, i = " + i);
             callArguments.unshift(EBuffer.allowAllocation(() => this._snapshot(type, null, argumentValue)));
         }
         return callArguments;

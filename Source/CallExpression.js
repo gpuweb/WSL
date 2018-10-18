@@ -167,7 +167,7 @@ export class CallExpression extends Expression {
             const func = new NativeFunc(this.origin, "operator.length", this.resultType, [
                 new FuncParameter(this.origin, null, arrayType)
             ]);
-            func.implementation = (args) => EPtr.box(arrayType.numElementsValue);
+            func.implementation = () => EPtr.box(arrayType.numElementsValue);
             return func;
         } else if (this.argumentTypes[0].isArrayRef) {
             const arrayRefType = this.argumentTypes[0];

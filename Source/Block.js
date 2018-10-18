@@ -52,6 +52,6 @@ export default class Block extends Node {
             return "{ }";
         return "{ " + this.statements.join("; ") + "; }";
     }
-};
+}
 
 export { Block };

@@ -31,13 +31,7 @@ const originKinds = ["native", "user"];
 
 export function isOriginKind(originKind)
 {
-    switch (originKind) {
-    case "native":
-    case "user":
-        return true;
-    default:
-        return false;
-    }
+    return originKinds.includes(originKind);
 }
 
 export { isOriginKind as default };

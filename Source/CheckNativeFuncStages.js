@@ -46,7 +46,7 @@ export function checkNativeFuncStages(program)
             node.func.visit(this);
         }
     }
-    for (let [name, funcDefs] of program.functions) {
+    for (let [, funcDefs] of program.functions) {
         for (let funcDef of funcDefs) {
             if (funcDef.isEntryPoint)
                 funcDef.visit(new CheckNativeFuncStages(funcDef));

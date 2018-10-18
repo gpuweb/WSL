@@ -115,6 +115,7 @@ export default class BuiltInSemantic extends Semantic {
                     return false;
                 }
             }
+            break;
         case "fragment":
             switch (direction) {
             case "input":
@@ -136,6 +137,7 @@ export default class BuiltInSemantic extends Semantic {
                     return false;
                 }
             }
+            break;
         case "compute":
             if (direction != "input")
                 return false;

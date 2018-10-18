@@ -44,8 +44,8 @@ export default class DoWhileLoop extends Node {
 
     toString()
     {
-        return "do " + this.body + " while (" + this.conditional + ");";
+        return `do ${this.body} while (${this.conditional});`;
     }
-};
+}
 
 export { DoWhileLoop };

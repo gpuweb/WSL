@@ -115,6 +115,7 @@
         "no-buffer-constructor": "error",
         "no-caller": "error",
         "no-catch-shadow": "error",
+        "no-cond-assign": "off",
         "no-confusing-arrow": "error",
         "no-constant-condition": [
             "error",
@@ -200,7 +201,13 @@
         "no-underscore-dangle": "off",
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "error",
-        "no-unused-expressions": "off",
+        "no-unused-expressions": "error",
+        "no-unused-vars": [
+            "error",
+            {
+                "args": "none"
+            }
+        ],
         "no-use-before-define": "off",
         "no-useless-call": "error",
         "no-useless-computed-key": "error",

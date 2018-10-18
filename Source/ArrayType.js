@@ -28,7 +28,6 @@
  */
 
 import { ArrayRefType } from "./ArrayRefType.js";
-import { MakeArrayRefExpression } from "./MakeArrayRefExpression.js";
 import { Type } from "./Type.js";
 
 export default class ArrayType extends Type {

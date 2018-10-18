@@ -42,6 +42,6 @@ export default class Break extends Node {
     {
         return "break";
     }
-};
+}
 
 export { Break };

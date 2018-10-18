@@ -50,6 +50,6 @@ export default class ForLoop extends Node {
     {
         return "for (" + (this.initialization ? this.initialization : " ") + "; " + (this.condition ? this.condition : "") + "; " + (this.increment ? this.increment : "") + ") " + this.body;
     }
-};
+}
 
 export { ForLoop };

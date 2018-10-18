@@ -37,7 +37,7 @@ import { IntLiteral } from "./IntLiteral.js";
 import { WTrapError } from "./WTrapError.js";
 import { WTypeError } from "./WTypeError.js";
 import { allVectorTypeNames, VectorElementSizes, VectorElementTypes } from "./StandardLibrary.js";
-import { cast, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToBool, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
+import { bitwiseCast, cast, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
 import { sampleTexture, gatherTexture } from "./TextureOperations.js";
 
 export default class Intrinsics {

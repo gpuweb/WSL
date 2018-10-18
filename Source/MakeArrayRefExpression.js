@@ -38,7 +38,8 @@ export default class MakeArrayRefExpression extends Expression {
 
     get type()
     {
-        return typeOf(this.lValue).arrayRefType;
+        // FIXME: Is this correct?
+        return this._lValue.arrayRefType;
     }
 
     get lValue() { return this._lValue; }

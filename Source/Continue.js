@@ -42,6 +42,6 @@ export default class Continue extends Node {
     {
         return "Continue";
     }
-};
+}
 
 export { Continue };

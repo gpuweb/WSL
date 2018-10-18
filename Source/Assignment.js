@@ -45,6 +45,6 @@ export default class Assignment extends Expression {
     {
         return this.lhs + " = " + this.rhs;
     }
-};
+}
 
 export { Assignment };

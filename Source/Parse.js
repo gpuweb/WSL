@@ -53,6 +53,7 @@ import { IfStatement } from "./IfStatement.js";
 import { IndexExpression } from "./IndexExpression.js";
 import { IntLiteral } from "./IntLiteral.js";
 import { Lexer } from "./Lexer.js";
+import { LexerToken } from "./LexerToken.js";
 import { LogicalExpression } from "./LogicalExpression.js";
 import { LogicalNot } from "./LogicalNot.js";
 import { MakeArrayRefExpression } from "./MakeArrayRefExpression.js";
@@ -560,7 +561,7 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
             case "--":
                 return finishParsingPostIncrement(token, left);
             case ".":
-            case "->":
+            case "->": {
                 if (token.text == "->")
                     left = new DereferenceExpression(token, left);
                 let maybeError = consumeKind("identifier");
@@ -568,6 +569,7 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
                     return maybeError;
                 left = new DotExpression(token, left, maybeError.text);
                 break;
+            }
             case "[": {
                 let index = parseExpression();
                 if (index instanceof WSyntaxError)

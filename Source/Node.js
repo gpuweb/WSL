@@ -120,7 +120,7 @@ export default class Node {
         unificationContext.addExtraNode(this);
         let result = unificationContext.verify();
         if (!result.result)
-            throw new WTypeError(node.origin.originString, "Could not infer type: " + result.reason);
+            throw new WTypeError(this.origin.originString, "Could not infer type: " + result.reason);
         unificationContext.commit();
         return unificationContext.find(this);
     }

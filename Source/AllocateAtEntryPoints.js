@@ -51,7 +51,7 @@ import { synthesizeStructAccessorsForStructType } from "./SynthesizeStructAccess
 function gatherEntryPoints(program)
 {
     const entryPoints = new Set();
-    for (let [name, funcDefs] of program.functions) {
+    for (let [, funcDefs] of program.functions) {
         for (let funcDef of funcDefs) {
             if (funcDef.isEntryPoint)
                 entryPoints.add(funcDef);

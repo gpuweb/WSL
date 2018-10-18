@@ -96,9 +96,6 @@ export default class Lexer {
         if (this._index >= this._text.length)
             return null;
 
-        const isCCommentBegin = /\/\*/;
-        const isCPlusPlusCommentBegin = /\/\//;
-
         let result = (kind) => {
             let text = RegExp.lastMatch;
             let token = new LexerToken(this, this._index, kind, text);
@@ -157,7 +154,7 @@ export default class Lexer {
         if (/^[0-9]+/.test(relevantText))
             return result("intLiteral");
 
-        if (/^<<|>>|->|>=|<=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|\+\+|--|&&|\|\||([{}()\[\]?:=+*\/,.%!~^&|<>@;-])/.test(relevantText))
+        if (/^<<|>>|->|>=|<=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|\+\+|--|&&|\|\||([{}()[\]?:=+*/,.%!~^&|<>@;-])/.test(relevantText))
             return result("punctuation");
 
         let remaining = relevantText.substring(0, 20).split(/\s/)[0];
