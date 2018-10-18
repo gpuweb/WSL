@@ -26,7 +26,6 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
 function generateSPIRV(spirv, program)
 {
@@ -93,19 +92,6 @@ function generateSPIRV(spirv, program)
         else
             reverseTypeMap.set(type[1], type[0]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     function emitTypes(assembler) {
         let emittedTypes = new Set();
@@ -182,17 +168,6 @@ function generateSPIRV(spirv, program)
             doEmitTypes(type)
     }
 
-
-
-
-
-
-
-
-
-
-
-
     let constants = new Map();
     class ConstantFinder extends Visitor {
         visitGenericLiteralType(node)
@@ -226,17 +201,6 @@ function generateSPIRV(spirv, program)
     }
     for (let entryPoint of entryPoints)
         entryPoint.shader.visit(new ConstantFinder());
-
-
-
-
-
-
-
-
-
-
-
 
     let assembler = new SPIRVAssembler();
     // 1. All OpCapability instructions
@@ -327,4 +291,4 @@ function generateSPIRV(spirv, program)
     return { file: assembler.result, locations: locations };
 }
 
-export { SPIRVCodegen };
+export { generateSPIRV as default };
