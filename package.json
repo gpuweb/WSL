@@ -1,0 +1,34 @@
+{
+  "author": "W3C GPU for the Web Community Group",
+  "bugs": {
+    "url": "https://github.com/gpuweb/WHLSL/issues"
+  },
+  "description": "WHLSL Library",
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "eslint": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "homepage": "https://github.com/gpuweb/WHLSL",
+  "keywords": [
+    "gpu",
+    "shader"
+  ],
+  "license": "BSD-3-Clause",
+  "main": "lib/WHLSL.js",
+  "name": "WHLSL",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gpuweb/WHLSL.git"
+  },
+  "scripts": {
+    "build": ". Scripts/build.sh",
+    "lint": "eslint --ext .js .",
+    "prepublishOnly": "npm run build"
+  },
+  "version": "0.0.1"
+}

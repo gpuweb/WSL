@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -rf lib
+npx babel -d lib Source
