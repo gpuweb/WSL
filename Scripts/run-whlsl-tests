@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Resources/jsc --module-file=Source/Test.js
