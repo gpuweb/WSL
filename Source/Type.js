@@ -28,7 +28,6 @@
  */
 
 import { Node } from "./Node.js";
-import { WTypeError } from "./WTypeError.js";
 
 export default class Type extends Node {
     get kind() { return Type; }
@@ -41,11 +40,6 @@ export default class Type extends Node {
     get isFloating() { return false; }
     get isEnum() { return false; }
     get isPrimitive() { return false; }
-
-    get arrayRefType()
-    {
-        return new ArrayRefType(this.origin, "thread", this);
-    }
 }
 
 export { Type };

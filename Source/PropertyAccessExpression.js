@@ -33,6 +33,7 @@ import { CommaExpression } from "./CommaExpression.js";
 import { DereferenceExpression } from "./DereferenceExpression.js";
 import { Expression } from "./Expression.js";
 import { Rewriter } from "./Rewriter.js";
+import { VariableRef } from "./VariableRef.js";
 import { WTypeError } from "./WTypeError.js";
 import { argumentForAndOverload } from "./ForAndOverload.js";
 

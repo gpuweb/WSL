@@ -46,6 +46,6 @@ export default class WhileLoop extends Node {
     {
         return "while (" + this.conditional + ") " + this.body;
     }
-};
+}
 
 export { WhileLoop };

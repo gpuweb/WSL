@@ -27,6 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { EBuffer } from "./EBuffer.js";
 import { EPtr } from "./EPtr.js";
 import { NativeFunc } from "./NativeFunc.js";
 import { TypeRef } from "./TypeRef.js";
@@ -71,7 +72,7 @@ export function synthesizeDefaultConstructorOperator(program)
 
     for (let type of types) {
         let nativeFunc = new NativeFunc(type.origin, "operator cast", TypeRef.wrap(type), [], true);
-        nativeFunc.implementation = ([], node) => {
+        nativeFunc.implementation = (node) => {
             let result = new EPtr(new EBuffer(type.size), 0);
             node.type.populateDefaultValue(result.buffer, 0);
             return result;

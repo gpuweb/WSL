@@ -42,6 +42,6 @@ export default class TrapStatement extends Node {
     {
         return "trap";
     }
-};
+}
 
 export { TrapStatement };

@@ -38,36 +38,57 @@ import { WTrapError } from "./WTrapError.js";
 
 export function synthesizeStructAccessorsForStructType(program, type)
 {
+    let isCast = false;
+    let nativeFunc;
+
+    function setupImplementationData(field, nativeFunc, implementation)
+    {
+        nativeFunc.visitImplementationData = (implementationData, visitor) => {
+            // Visiting the type first ensures that the struct layout builder figures out the field's
+            // offset.
+            implementationData.type.visit(visitor);
+        };
+
+        nativeFunc.implementation = (argumentList, node) => {
+            return implementation(argumentList, field.offset, type.size, field.type.size);
+        };
+
+        nativeFunc.implementationData = {
+            structType: type,
+            name: field.name,
+            type: field.type,
+            offset: field.offset,
+            size: field.type.size
+        };
+    }
+
+    // The ander: operator&.field
+    function setupAnder(field, addressSpace)
+    {
+        nativeFunc = new NativeFunc(
+            field.origin, "operator&." + field.name, new PtrType(field.origin, addressSpace, field.type),
+            [
+                new FuncParameter(
+                    field.origin, null,
+                    new PtrType(field.origin, addressSpace, TypeRef.wrap(type)))
+            ],
+            isCast);
+        setupImplementationData(field, nativeFunc, ([base], offset, structSize, fieldSize) => {
+            base = base.loadValue();
+            if (!base)
+                throw new WTrapError(field.origin.originString, "Null dereference");
+            return EPtr.box(base.plus(offset));
+        });
+        program.add(nativeFunc);
+    }
+
     for (let field of type.fields) {
-        function setupImplementationData(nativeFunc, implementation)
-        {
-            nativeFunc.visitImplementationData = (implementationData, visitor) => {
-                // Visiting the type first ensures that the struct layout builder figures out the field's
-                // offset.
-                implementationData.type.visit(visitor);
-            };
-
-            nativeFunc.implementation = (argumentList, node) => {
-                return implementation(argumentList, field.offset, type.size, field.type.size);
-            };
-
-            nativeFunc.implementationData = {
-                structType: type,
-                name: field.name,
-                type: field.type,
-                offset: field.offset,
-                size: field.type.size
-            };
-        }
-
-        let isCast = false;
-        let nativeFunc;
 
         // The getter: operator.field
         nativeFunc = new NativeFunc(
             field.origin, "operator." + field.name, field.type,
             [new FuncParameter(field.origin, null, TypeRef.wrap(type))], isCast);
-        setupImplementationData(nativeFunc, ([base], offset, structSize, fieldSize) => {
+        setupImplementationData(field, nativeFunc, ([base], offset, structSize, fieldSize) => {
             let result = new EPtr(new EBuffer(fieldSize), 0);
             result.copyFrom(base.plus(offset), fieldSize);
             return result;
@@ -82,7 +103,7 @@ export function synthesizeStructAccessorsForStructType(program, type)
                 new FuncParameter(field.origin, null, field.type)
             ],
             isCast);
-        setupImplementationData(nativeFunc, ([base, value], offset, structSize, fieldSize) => {
+        setupImplementationData(field, nativeFunc, ([base, value], offset, structSize, fieldSize) => {
             let result = new EPtr(new EBuffer(structSize), 0);
             result.copyFrom(base, structSize);
             result.plus(offset).copyFrom(value, fieldSize);
@@ -90,30 +111,10 @@ export function synthesizeStructAccessorsForStructType(program, type)
         });
         program.add(nativeFunc);
 
-        // The ander: operator&.field
-        function setupAnder(addressSpace)
-        {
-            nativeFunc = new NativeFunc(
-                field.origin, "operator&." + field.name, new PtrType(field.origin, addressSpace, field.type),
-                [
-                    new FuncParameter(
-                        field.origin, null,
-                        new PtrType(field.origin, addressSpace, TypeRef.wrap(type)))
-                ],
-                isCast);
-            setupImplementationData(nativeFunc, ([base], offset, structSize, fieldSize) => {
-                base = base.loadValue();
-                if (!base)
-                    throw new WTrapError(field.origin.originString, "Null dereference");
-                return EPtr.box(base.plus(offset));
-            });
-            program.add(nativeFunc);
-        }
-
-        setupAnder("thread");
-        setupAnder("threadgroup");
-        setupAnder("device");
-        setupAnder("constant");
+        setupAnder(field, "thread");
+        setupAnder(field, "threadgroup");
+        setupAnder(field, "device");
+        setupAnder(field, "constant");
     }
 }
 

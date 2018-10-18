@@ -1,7 +1,7 @@
 tabSize = 4
-includeInFileChooser = "{$includeInFileChooser,.babelrc}"
-includeInBrowser = "{$includeInBrowser,.babelrc}"
-includeInFolderSearch = "{$includeInFolderSearch,.babelrc}"
+includeInFileChooser = "{$includeInFileChooser,.babelrc,.es*}"
+includeInBrowser = "{$includeInBrowser,.babelrc,.es*}"
+includeInFolderSearch = "{$includeInFolderSearch,.babelrc,.es*}"
 excludeInFileChooser = "{$excludeInFileChooser,node_modules,lib}"
 excludeInBrowser = "{$excludeInBrowser,node_modules,lib}"
 excludeInFolderSearch = "{$excludeInFolderSearch,node_modules,lib}"

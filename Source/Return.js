@@ -46,6 +46,6 @@ export default class Return extends Node {
             return "return " + this.value;
         return "return";
     }
-};
+}
 
 export { Return };

@@ -121,15 +121,9 @@ export default class ReturnChecker extends Visitor {
 
     visitDoWhileLoop(node)
     {
-        let result = this.returnStyle.HasntReturnedYet;
-        switch (node.body.visit(this)) {
-        case this.returnStyle.DefinitelyReturns:
-            result = this.returnStyle.DefinitelyReturns;
-        case this.returnStyle.DefinitelyDoesntReturn:
-        case this.returnStyle.HasntReturnedYet:
-            result = this.returnStyle.HasntReturnedYet;
-        }
-        return result;
+        if (node.body.visit(this) == this.returnStyle.DefinitelyReturns)
+            return this.returnStyle.DefinitelyReturns;
+        return this.returnStyle.HasntReturnedYet;
     }
 
     visitForLoop(node)

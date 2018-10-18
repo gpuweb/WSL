@@ -27,8 +27,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { Texture1D, Texture1DRW, Texture1DArray, Texture1DArrayRW, Texture2D, Texture2DRW, Texture2DArray, Texture2DArrayRW, TextureDepth2D, TextureDepth2DArray, TextureDepth2DRW, TextureDepth2DArrayRW, Texture3D, Texture3DRW, TextureCube, TextureDepthCube } from "./Texture.js";
-import { cast, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToBool, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
+import { TextureCube } from "./Texture.js";
+import { castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToHalf, castToFloat } from "./Casts.js";
 
 export function depthCompareOperation(dref, d, compareFunction)
 {
@@ -400,7 +400,7 @@ export function calculateLambda(deviceMaxAnisotropy, deviceMaxSamplerLodBias, te
         partialRWithRespectToY = 0;
     }
 
-    let [rhoMax, rhoMin, eta, N] = scaleFactorOperation(deviceMaxAnisotropy, texture.width, texture.height, texture.depth, sampler.maxAnisotropy, partialSWithRespectToX, partialTWithRespectToX, partialRWithRespectToX, partialSWithRespectToY, partialTWithRespectToY, partialRWithRespectToY);
+    let [rhoMax, , eta, ] = scaleFactorOperation(deviceMaxAnisotropy, texture.width, texture.height, texture.depth, sampler.maxAnisotropy, partialSWithRespectToX, partialTWithRespectToX, partialRWithRespectToX, partialSWithRespectToY, partialTWithRespectToY, partialRWithRespectToY);
     let lambda = levelOfDetailOperation(deviceMaxSamplerLodBias, lodFromFunctionOperand, lodMinFromFunctionOperand, biasFromFunctionOperand, samplerBias, sampler.lodMinClamp, sampler.lodMaxClamp, rhoMax, eta);
     return [s, t, r, a, lambda];
 }
@@ -498,7 +498,7 @@ export function texelGathering(
 
     let imageLevel = imageLevelSelection(baseMipLevel, texture.levelCount, "nearest", lambda);
 
-    let [color000, color100, color010, color110, color001, color101, color011, color111, alpha, beta, gamma] = computeTau(imageLevel, baseArrayLayer, texture, sampler, addressModeU, addressModeV, addressModeW, filter, s, t, r, a, deltaI, deltaJ, deltaK);
+    let [, , , , color001, color101, color011, color111, , , ] = computeTau(imageLevel, baseArrayLayer, texture, sampler, addressModeU, addressModeV, addressModeW, filter, s, t, r, a, deltaI, deltaJ, deltaK);
 
     if (texture.dimension != 2)
         throw new Error("Cannot gather from a non-2D image");
@@ -565,16 +565,18 @@ export function texelFiltering(
                 throw new Error("Unknown filter");
             let [color000, color100, color010, color110, color001, color101, color011, color111, alpha, beta, gamma] = computeTau(level, baseArrayLayer, texture, sampler, addressModeU, addressModeV, addressModeW, filter, s, t, r, a, deltaI, deltaJ, deltaK);
             switch (texture.dimension) {
-                case 1:
+                case 1: {
                     let color0 = color011;
                     let color1 = color111;
                     return reduce(1 - alpha, color0, alpha, color1);
-                case 2:
+                }
+                case 2: {
                     let color00 = color001;
                     let color10 = color101;
                     let color01 = color011;
                     let color11 = color111;
                     return reduce((1 - alpha) * (1 - beta), color00, alpha * (1 - beta), color10, (1 - alpha) * beta, color01, alpha * beta, color11);
+                }
                 case 3:
                     return reduce(
                         (1 - alpha) * (1 - beta) * (1 - gamma), color000,

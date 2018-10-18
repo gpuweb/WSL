@@ -65,7 +65,7 @@ export default class StructType extends Type {
     populateDefaultValue(buffer, offset)
     {
         if (this.size == null)
-            throw new Error("Struct does not have layout: " + this + " " + describe(this));
+            throw new Error("Struct does not have layout: " + this);
         for (let field of this.fields)
             field.type.populateDefaultValue(buffer, offset + field.offset);
     }

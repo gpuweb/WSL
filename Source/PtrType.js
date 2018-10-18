@@ -28,7 +28,6 @@
  */
 
 import { ReferenceType } from "./ReferenceType.js";
-import { WTypeError } from "./WTypeError.js";
 
 export default class PtrType extends ReferenceType {
     get isPtr() { return true; }

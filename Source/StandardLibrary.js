@@ -27,7 +27,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 export let standardLibrary = (function() {
     let result = "";
     function print(s)
@@ -735,7 +734,7 @@ export let standardLibrary = (function() {
                 case 3:
                     return `w`;
                 default:
-                    fatalError();
+                    throw new Error("Fatal Error: component out of range");
             }
         }
 
@@ -759,7 +758,7 @@ export let standardLibrary = (function() {
                         has3 = true;
                         break;
                     default:
-                        fatalError();
+                        throw new Error("Fatal Error: swizzle length out of range");
                 }
             }
             let result = 0;

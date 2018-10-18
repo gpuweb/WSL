@@ -52,7 +52,7 @@ export default class SwitchStatement extends Node {
     {
         let result = "switch (" + this.value + ") { ";
         if (this.switchCases.length)
-            result += this.switchCases.join("; "); + "; ";
+            result += this.switchCases.join("; ");
         return result + "}";
     }
 }

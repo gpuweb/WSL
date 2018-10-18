@@ -42,7 +42,7 @@ import { WLexicalError } from "./WLexicalError.js";
 import { WSyntaxError } from "./WSyntaxError.js";
 import { WTypeError } from "./WTypeError.js";
 import { callFunction } from "./CallFunction.js";
-import { castAndCheckValue, castToInt, castToUint, castToChar, castToUchar, castToShort, castToUshort, castToBool, castToHalf, castToFloat, isBitwiseEquivalent } from "./Casts.js";
+import { castAndCheckValue, castToInt, castToUint, castToUchar, castToBool, castToHalf, castToFloat } from "./Casts.js";
 import { externalOrigin } from "./ExternalOrigin.js";
 import { prepare } from "./Prepare.js";
 
@@ -58,7 +58,7 @@ function doLex(code)
     for (;;) {
         let next = lexer.next();
         if (!next)
-            return result;
+            break;
         result.push(next);
     }
     return result;
@@ -2575,7 +2575,6 @@ tests.lotsOfLocalVariables = function()
     let target = 0;
     const numVars = 50;
     for (let i = 0; i < numVars; i++) {
-        const value = i * 3;
         src += `   i = ${i};\n`;
         src += `   int V${i} = (i + 3) * (i + 3);\n`;
         target += (i + 3) * (i + 3);
@@ -7923,7 +7922,7 @@ tests.textureLoad = function() {
             return Load(texture, int3(x, y, layer));
         }
     `);
-    let [texture1D, texture1DArray, texture2D, texture2DArray, texture3D, textureCube, rwTexture1D, rwTexture1DArray, rwTexture2D, rwTexture2DArray, rwTexture3D, textureDepth2D, textureDepth2DArray, textureDepthCube, rwTextureDepth2D, rwTextureDepth2DArray] = createTexturesForTesting(program);
+    let [texture1D, texture1DArray, texture2D, texture2DArray, texture3D, , rwTexture1D, rwTexture1DArray, rwTexture2D, rwTexture2DArray, rwTexture3D, textureDepth2D, textureDepth2DArray, , rwTextureDepth2D, rwTextureDepth2DArray] = createTexturesForTesting(program);
     checkFloat(program, callFunction(program, "foo1", [texture1D, makeInt(program, 0), makeInt(program, 0)]), 1);
     checkFloat(program, callFunction(program, "foo1", [texture1D, makeInt(program, 1), makeInt(program, 0)]), 7);
     checkFloat(program, callFunction(program, "foo1", [texture1D, makeInt(program, 0), makeInt(program, 1)]), 13);
@@ -8289,7 +8288,7 @@ tests.textureStore = function() {
             return Load(texture, int3(int(x), int(y), int(layer)));
         }
     `);
-    let [texture1D, texture1DArray, texture2D, texture2DArray, texture3D, textureCube, rwTexture1D, rwTexture1DArray, rwTexture2D, rwTexture2DArray, rwTexture3D, textureDepth2D, textureDepth2DArray, textureDepthCube, rwTextureDepth2D, rwTextureDepth2DArray] = createTexturesForTesting(program);
+    let [, , , , , , rwTexture1D, rwTexture1DArray, rwTexture2D, rwTexture2DArray, rwTexture3D, , , , rwTextureDepth2D, rwTextureDepth2DArray] = createTexturesForTesting(program);
     checkFloat(program, callFunction(program, "foo1", [rwTexture1D, makeUint(program, 0), makeFloat(program, 999)]), 999);
     checkFloat(program, callFunction(program, "foo1", [rwTexture1D, makeUint(program, 1), makeFloat(program, 999)]), 999);
     checkFloat(program, callFunction(program, "foo1", [rwTexture1D, makeUint(program, 2), makeFloat(program, 999)]), 999);
@@ -8595,7 +8594,7 @@ tests.textureSample = function() {
             return SampleCmpLevelZero(texture, s, float3(x, y, z), compareValue);
         }
     `);
-    let [texture1D, texture1DArray, texture2D, texture2DArray, texture3D, textureCube, rwTexture1D, rwTexture1DArray, rwTexture2D, rwTexture2DArray, rwTexture3D, textureDepth2D, textureDepth2DArray, textureDepthCube, rwTextureDepth2D, rwTextureDepth2DArray] = createTexturesForTesting(program);
+    let [texture1D, texture1DArray, texture2D, texture2DArray, texture3D, textureCube, , , , , , textureDepth2D, textureDepth2DArray, textureDepthCube, , ] = createTexturesForTesting(program);
     checkFloat(program, callFunction(program, "foo1", [texture1D, makeSampler(program, {}), makeFloat(program, 0.375)]), 7);
     checkFloat(program, callFunction(program, "foo1", [texture1D, makeSampler(program, {}), makeFloat(program, 0.4375)]), 7);
     checkFloat(program, callFunction(program, "foo1", [texture1D, makeSampler(program, {}), makeFloat(program, 0.5625)]), 14);
@@ -9129,7 +9128,7 @@ tests.textureGather = function() {
             return GatherCmp(texture, s, float3(x, y, layer), compareValue, int2(offsetX, offsetY));
         }
     `);
-    let [texture1D, texture1DArray, texture2D, texture2DArray, texture3D, textureCube, rwTexture1D, rwTexture1DArray, rwTexture2D, rwTexture2DArray, rwTexture3D, textureDepth2D, textureDepth2DArray, textureDepthCube, rwTextureDepth2D, rwTextureDepth2DArray] = createTexturesForTesting(program);
+    let [, , texture2D, texture2DArray, , textureCube, , , , , , textureDepth2D, textureDepth2DArray, textureDepthCube, , ] = createTexturesForTesting(program);
     checkFloat4(program, callFunction(program, "foo1", [texture2D, makeSampler(program, {magFilter: "linear"}), makeFloat(program, 0.5), makeFloat(program, 0.5)]), [20, 21, 13, 12]);
     checkFloat4(program, callFunction(program, "foo1", [texture2D, makeSampler(program, {magFilter: "linear"}), makeFloat(program, 10 / 16), makeFloat(program, 0.5)]), [21, 22, 14, 13]);
     checkFloat4(program, callFunction(program, "foo1", [texture2D, makeSampler(program, {magFilter: "linear"}), makeFloat(program, 0.5), makeFloat(program, 6 / 8)]), [28, 29, 21, 20]);
@@ -9744,7 +9743,7 @@ tests.passingArrayToFunction = function()
 
 tests.returnAnArrayFromAFunction = function()
 {
-    let program = doPrep(`
+    doPrep(`
         test int foo()
         {
             int[5] ys = bar();
