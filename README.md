@@ -19,7 +19,7 @@ To run the tests:
 prompt> cd Source
 prompt> run-jsc --module-file=Test.js
 ```
-Or, load Test.html in your browser (assuming it supports modules, which most modern browsers do).
+Or, load Test.html in your browser (assuming your browser supports modules, which most modern browsers do).
 
 ## Coming Soon
 
