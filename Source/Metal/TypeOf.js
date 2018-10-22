@@ -28,6 +28,7 @@
  */
 
 import { ArrayRefType } from "../ArrayRefType.js";
+import { PtrType } from "../PtrType.js";
 import { Visitor } from "../Visitor.js";
 
 // FIXME: Rather than being a separate function this should instead happen in the Checker phase that annotates

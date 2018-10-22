@@ -34,6 +34,7 @@ import { EnumType } from "../EnumType.js";
 import { MatrixType } from "../MatrixType.js";
 import { MSLNameMangler } from "./MSLNameMangler.js";
 import { NativeType } from "../NativeType.js";
+import { PtrType } from "../PtrType.js";
 import { VectorType } from "../VectorType.js";
 import { Visitor } from "../Visitor.js";
 

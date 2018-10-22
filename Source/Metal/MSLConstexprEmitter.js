@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { Visitor } as "../Visitor.js";
+import { Visitor } from "../Visitor.js";
 
 // Used in scenarios where having an auxiliary variable is not possible (e.g. switch cases).
 export class MSLConstexprEmitter extends Visitor

@@ -27,9 +27,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { MSLConstexprEmitter } from "./MSLConstexprEmitter.js";
 import { typeOf } from "./TypeOf.js";
 import { mslNativeFunctionCall } from "./MSLNativeFunctionCall.js";
 
+import { ArrayRefType } from "../ArrayRefType.js";
 import { ArrayType } from "../ArrayType.js";
 import { BuiltinMatrixGetter } from "../BuiltinMatrixGetter.js";
 import { BuiltinMatrixSetter } from "../BuiltinMatrixSetter.js";
@@ -292,7 +294,7 @@ export class MSLStatementEmitter extends Visitor {
 
     _isOperatorAnder(node)
     {
-        const anderRegex = /^operator\&\.(.*?)$/;
+        const anderRegex = /^operator&\.(.*?)$/;
         return node instanceof NativeFunc && anderRegex.test(node.name);
     }
 
@@ -320,13 +322,13 @@ export class MSLStatementEmitter extends Visitor {
 
     _isUnaryOperator(node)
     {
-        const operatorRegex = /^operator\~$/;
+        const operatorRegex = /^operator~$/;
         return node instanceof NativeFunc && operatorRegex.test(node.name);
     }
 
     _isBinaryOperator(node)
     {
-        const operatorRegex = /operator(\+|\-|\*|\/|\^|\&|\||\&\&|\|\||\<\<|\>\>|\<|\<\=|\>|\>\=|\=\=|\!\=)$/;
+        const operatorRegex = /operator(\+|-|\*|\/|\^|&|\||&&|\|\||<<|>>|<|<=|>|>=|==|!=)$/;
         return node instanceof NativeFunc && operatorRegex.test(node.name);
     }
 

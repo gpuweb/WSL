@@ -127,7 +127,7 @@ export class MSLBackend {
     _findFunctionsToCompile()
     {
         const entryPointFunctions = [];
-        for (let [name, instances] of this._program.functions) {
+        for (let [, instances] of this._program.functions) {
             for (let instance of instances) {
                 if (instance.isEntryPoint)
                     entryPointFunctions.push(instance);
@@ -311,7 +311,7 @@ export class MSLBackend {
     // Also removes #pragma marks.
     _removeCommentsAndEmptyLines(src)
     {
-        const singleLineCommentRegex = /(\/\/|\#pragma)(.*?)($|\n)/;
+        const singleLineCommentRegex = /(\/\/|#pragma)(.*?)($|\n)/;
         const lines = src.split('\n')
             .map(line => line.replace(singleLineCommentRegex, '').trimEnd())
             .filter(line => line.length > 0);

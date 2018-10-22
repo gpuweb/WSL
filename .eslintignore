@@ -1,6 +1,5 @@
 Source/Test.js
-Source/Metal
-Source/SPIR*
+Source/spirv
 node_modules
 lib
 Scripts
