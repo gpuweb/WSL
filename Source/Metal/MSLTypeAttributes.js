@@ -26,9 +26,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MSLTypeAttributes {
+import { MSLNameMangler } from "./MSLNameMangler.js";
+
+import { StructType } from "../StructType.js";
+
+export class MSLTypeAttributes {
 
     constructor(type)
     {
@@ -89,3 +92,5 @@ class MSLTypeAttributes {
         return this.fieldMangler.mangle(fieldName);
     }
 }
+
+export { MSLTypeAttributes as default };

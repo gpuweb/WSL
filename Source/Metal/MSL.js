@@ -26,20 +26,36 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-load("MSLBackend.js");
-load("MSLCompileResult.js");
-load("MSLConstexprEmitter.js");
-load("MSLFunctionDeclaration.js");
-load("MSLFunctionDefinition.js");
-load("MSLFunctionForwardDeclaration.js");
-load("MSLInsertTrapParameter.js");
-load("MSLNameMangler.js");
-load("MSLNativeFunctionCall.js");
-load("MSLStatementEmitter.js");
-load("MSLTypeAttributesMap.js");
-load("MSLTypeAttributes.js");
-load("MSLTypeUnifier.js");
-load("TypeOf.js");
-load("WhlslToMsl.js");
+import { MSLBackend } from "./MSLBackend.js";
+import { MSLCompileResult } from "./MSLCompileResult.js";
+
+import { Program } from "../Program.js";
+
+export function programToMSL(program)
+{
+    if (!(program instanceof Program))
+        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+
+    const compiler = new MSLBackend(program);
+    return compiler.compile();
+}
+
+export { programToMSL as default };
+
+// // Main wrapper for the compiler. Clients should use this function to compile WHLSL.
+// function whlslToMsl(src)
+// {
+//     let parsedProgram;
+//     try {
+//         parsedProgram = prepare("/internal/test", 0, src);
+//     } catch (e) {
+//         return new MSLCompileResult(null, e, null, null);
+//     }
+//
+//     if (!(parsedProgram instanceof Program))
+//         return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+//
+//     const compiler = new MSLBackend(parsedProgram);
+//     return compiler.compile();
+// }

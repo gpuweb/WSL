@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function mslNativeFunctionCall(node, resultVariable, args)
+export function mslNativeFunctionCall(node, resultVariable, args)
 {
     const key = node.toString();
 
@@ -83,3 +82,5 @@ function mslNativeFunctionCall(node, resultVariable, args)
 
     throw new Error(`${node} doesn't have mapping to a native Metal function.`);
 }
+
+export { mslNativeFunctionCall as default };

@@ -26,10 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { MSLTypeAttributes } from "./MSLTypeAttributes.js";
 
 // Provides lookup for all the top level types in the program.
-class MSLTypeAttributesMap {
+export class MSLTypeAttributesMap {
 
     constructor(functionDefs, typeUnifier)
     {
@@ -69,3 +70,5 @@ class MSLTypeAttributesMap {
 
     // FIXME: Support compute shaders.
 }
+
+export { MSLTypeAttributesMap as default };

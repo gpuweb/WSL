@@ -26,10 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { Visitor } as "../Visitor.js";
 
 // Used in scenarios where having an auxiliary variable is not possible (e.g. switch cases).
-class MSLConstexprEmitter extends Visitor
+export class MSLConstexprEmitter extends Visitor
 {
     visitIdentityExpression(node)
     {
@@ -57,3 +58,5 @@ class MSLConstexprEmitter extends Visitor
         return "nullptr";
     }
 }
+
+export { MSLConstexprEmitter as default };

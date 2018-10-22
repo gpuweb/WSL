@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MSLCompileResult {
+export class MSLCompileResult {
 
     constructor(src, err, mangledNameMap, functionSources)
     {
@@ -63,3 +62,5 @@ class MSLCompileResult {
         return !this.error;
     }
 }
+
+export { MSLCompileResult as default };

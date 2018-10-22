@@ -26,9 +26,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MSLFunctionDefinition extends MSLFunctionDeclaration
+import { MSLFunctionDeclaration } from "./MSLFunctionDeclaration.js";
+import { MSLStatementEmitter } from "./MSLStatementEmitter.js";
+
+export class MSLFunctionDefinition extends MSLFunctionDeclaration
 {
     toString()
     {
@@ -40,3 +42,5 @@ class MSLFunctionDefinition extends MSLFunctionDeclaration
         return src;
     }
 }
+
+export { MSLFunctionDeclaration as default };

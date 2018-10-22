@@ -26,9 +26,22 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MSLStatementEmitter extends Visitor {
+import { typeOf } from "./TypeOf.js";
+import { mslNativeFunctionCall } from "./MSLNativeFunctionCall.js";
+
+import { ArrayType } from "../ArrayType.js";
+import { BuiltinMatrixGetter } from "../BuiltinMatrixGetter.js";
+import { BuiltinMatrixSetter } from "../BuiltinMatrixSetter.js";
+import { BuiltinVectorGetter } from "../BuiltinVectorGetter.js";
+import { BuiltinVectorSetter } from "../BuiltinVectorSetter.js";
+import { DereferenceExpression } from "../DereferenceExpression.js";
+import { FuncDef } from "../FuncDef.js";
+import { NativeFunc } from "../NativeFunc.js";
+import { Node } from "../Node.js";
+import { Visitor } from "../Visitor.js";
+
+export class MSLStatementEmitter extends Visitor {
 
     constructor(program, funcMangler, typeUnifier, func, paramMap, debugName, typeAttributes)
     {
@@ -819,3 +832,5 @@ class MSLStatementEmitter extends Visitor {
         return result;
     }
 }
+
+export { MSLStatementEmitter as default };

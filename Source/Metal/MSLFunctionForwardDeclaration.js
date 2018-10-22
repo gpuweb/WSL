@@ -26,12 +26,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MSLFunctionForwardDeclaration extends MSLFunctionDeclaration
+import { MSLFunctionDeclaration } from "./MSLFunctionDeclaration.js";
+
+export class MSLFunctionForwardDeclaration extends MSLFunctionDeclaration
 {
     toString()
     {
         return this.commentLine() + "\n" + super.toString() + ";"
     }
 }
+
+export { MSLFunctionForwardDeclaration as default };

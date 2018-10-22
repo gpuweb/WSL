@@ -26,10 +26,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
+import { typeOf } from "./TypeOf.js";
 
-class MSLTypeUnifier extends Visitor {
+import { ArrayType } from "../ArrayType.js";
+import { EnumType } from "../EnumType.js";
+import { MatrixType } from "../MatrixType.js";
+import { MSLNameMangler } from "./MSLNameMangler.js";
+import { NativeType } from "../NativeType.js";
+import { VectorType } from "../VectorType.js";
+import { Visitor } from "../Visitor.js";
+
+export class MSLTypeUnifier extends Visitor {
 
     constructor()
     {
@@ -162,3 +170,5 @@ class MSLTypeUnifier extends Visitor {
         return declSet;
     }
 }
+
+export { MSLTypeUnifier as default };

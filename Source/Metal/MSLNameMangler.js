@@ -26,9 +26,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-class MSLNameMangler {
+export class MSLNameMangler {
 
     constructor(prefix)
     {
@@ -44,3 +43,5 @@ class MSLNameMangler {
         return this._mangledNameMap.get(key);
     }
 }
+
+export { MSLNameMangler as default };

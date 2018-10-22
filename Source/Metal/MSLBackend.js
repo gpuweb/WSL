@@ -26,7 +26,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { insertTrapParameter } from "./MSLInsertTrapParameter.js";
+import { MSLCompileResult } from "./MSLCompileResult.js";
+import { MSLFunctionDefinition } from "./MSLFunctionDefinition.js";
+import { MSLFunctionForwardDeclaration } from "./MSLFunctionForwardDeclaration.js";
+import { MSLNameMangler } from "./MSLNameMangler.js";
+import { MSLTypeAttributesMap } from "./MSLTypeAttributesMap.js";
+import { MSLTypeUnifier } from "./MSLTypeUnifier.js";
+
+import { ArrayRefType } from "../ArrayRefType.js";
+import { FuncDef } from "../FuncDef.js";
+import { PtrType } from "../PtrType.js";
+import { StructType } from "../StructType.js";
+import { Visitor } from "../Visitor.js";
 
 const DefaultMetalSource = `#include <metal_stdlib>
 using namespace metal;
@@ -36,7 +49,7 @@ using namespace metal;
 // Handles the compilation of Program AST instances to MSLCompileResult instances, which
 // include the raw MSL. In general clients should call |whlslToMsl|, which parses,
 // typechecks, and inlines the WHLSL before passing it to this compiler.
-class MSLBackend {
+export class MSLBackend {
 
     constructor(program)
     {
@@ -424,3 +437,5 @@ class MSLBackend {
         }
     }
 }
+
+export { MSLBackend as default };

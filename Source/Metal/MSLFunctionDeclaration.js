@@ -26,10 +26,9 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
 // Emits code for the first line of a function declaration or definition.
-class MSLFunctionDeclaration {
+export class MSLFunctionDeclaration {
 
     constructor(program, funcMangler, funcDef, typeUnifier, typeAttributes)
     {
@@ -133,3 +132,5 @@ class MSLFunctionDeclaration {
         return this.isVertexShader && node.name == "wsl_vertexID" && node.type.name == "uint32";
     }
 }
+
+export { MSLFunctionDeclaration as default };

@@ -26,9 +26,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
 
-function insertTrapParameter(program)
+import { BoolLiteral } from "../BoolLiteral.js";
+import { FuncDef } from "../FuncDef.js";
+import { FuncParameter } from "../FuncParameter.js";
+import { MakePtrExpression } from "../MakePtrExpression.js";
+import { PtrType } from "../PtrType.js";
+import { TypeRef } from "../TypeRef.js";
+import { VariableDecl } from "../VariableDecl.js";
+import { VariableRef } from "../VariableRef.js";
+import { Visitor } from "../Visitor.js";
+
+export function insertTrapParameter(program)
 {
     const functionVisitedOrder = [];
     const entryPointFunctions = new Set();
@@ -95,3 +104,5 @@ function insertTrapParameter(program)
     for (let entryPoint of entryPointFunctions)
         new UpdateCallExpressions(entryPoint);
 }
+
+export { insertTrapParameter as default };

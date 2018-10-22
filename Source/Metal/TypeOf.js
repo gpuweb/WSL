@@ -26,11 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { ArrayRefType } from "../ArrayRefType.js";
+import { Visitor } from "../Visitor.js";
 
 // FIXME: Rather than being a separate function this should instead happen in the Checker phase that annotates
 // each Node instance with a "type" property. https://bugs.webkit.org/show_bug.cgi?id=189611
-function typeOf(node) {
+export function typeOf(node) {
     class TypeVisitor extends Visitor {
         visitAnonymousVariable(node)
         {
@@ -328,3 +330,5 @@ function typeOf(node) {
     }
     return node.visit(new TypeVisitor());
 }
+
+export { typeOf as default };
