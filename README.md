@@ -9,6 +9,10 @@ for the WebGPU API.
 - C-like syntax that is similar to Microsoft's HLSL, and thus compatible with the majority of the world's existing shaders.
 - Supports a restricted form of pointers.
 
+## Examples
+
+The Examples directory has some WHLSL sample code.
+
 ## Running the Tests
 
 The WHSL source code is exposed as an ES6 Module.
@@ -16,13 +20,15 @@ The WHSL source code is exposed as an ES6 Module.
 To run the tests:
 
 ```bash
-prompt> cd Source
-prompt> run-jsc --module-file=Test.js
+prompt> run-jsc --module-file=Source/Test.js
 ```
-Or, load Test.html in your browser (assuming your browser supports modules, which most modern browsers do).
+Or, load Source/Test.html in your browser (assuming your browser supports modules, which most modern browsers do).
 
-## Coming Soon
+## Generating Metal Shading Language (MSL) Output
 
-- Translation of WHLSL source into Metal Shading Language and SPIR-V.
+```bash
+prompt> run-jsc --module-file=Scripts/WHLSLtoMSL.js -- file.whlsl
+```
 
+Or, load Source/metal/MSL.html in your browser.
 
