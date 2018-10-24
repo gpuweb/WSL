@@ -3273,6 +3273,19 @@ tests.shaderTypes = function()
             return result;
         }
     `);
+    doPrep(`
+        struct VertexInOut {
+            float4 position : SV_Position;
+        }
+        vertex VertexInOut vertex_main(device VertexInOut[] vertices : register(u0), uint vid : SV_VertexID) {
+            VertexInOut result;
+            result.position = vertices[vid].position;
+            return result;
+        }
+        fragment float4 fragment_main(VertexInOut vertex) : SV_Target0 {
+            return float4(1, 0, 0, 1);
+        }
+    `);
     checkFail(
         () => doPrep(`
             vertex void foo() : SV_Position {

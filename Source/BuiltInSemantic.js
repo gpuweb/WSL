@@ -121,6 +121,7 @@ export default class BuiltInSemantic extends Semantic {
             case "input":
                 switch (this.name) {
                 case "SV_IsFrontFace":
+                case "SV_Position":
                 case "SV_SampleIndex":
                 case "SV_InnerCoverage":
                     return true;
