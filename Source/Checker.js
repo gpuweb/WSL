@@ -262,6 +262,11 @@ export default class Checker extends Visitor {
             {
                 return node.type.visit(this);
             }
+
+            visitField(node)
+            {
+                return node.type.visit(this);
+            }
         }
         function checkPODData(items) {
             for (let item of items) {

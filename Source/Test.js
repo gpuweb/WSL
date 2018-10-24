@@ -3257,6 +3257,22 @@ tests.shaderTypes = function()
         fragment float4 foo(Texture1D<float4> t : register(t0), sampler s : register(s0)) : SV_Target0 {
             return Sample(t, s, 0.4);
         }`);
+    doPrep(`
+        struct Vertex1 {
+            float4 position;
+        }
+        struct Vertex2 {
+            float4 position : SV_Position;
+        }
+        struct Uniform {
+            float2 resolution;
+            float2 time;
+        }
+        vertex Vertex2 vertex_main(device Vertex1[] vertices : register(u0), constant Uniform[] uniforms : register(b0), uint vid : SV_VertexID) {
+            Vertex2 result;
+            return result;
+        }
+    `);
     checkFail(
         () => doPrep(`
             vertex void foo() : SV_Position {
