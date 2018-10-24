@@ -1418,7 +1418,7 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
             let indexString = origin.text.substring("SV_Target".length);
             let uintVersion = indexString >>> 0;
             if (uintVersion.toString() !== indexString)
-                return fail("Semantic  is not 32-bit unsigned integer: " + indexString);
+                return fail("Semantic is not 32-bit unsigned integer: " + indexString);
             return new BuiltInSemantic(origin, "SV_Target", uintVersion);
         } else
             return fail(`Unknown semantic: ${origin.text}`);
