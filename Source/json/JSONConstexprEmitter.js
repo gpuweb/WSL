@@ -27,18 +27,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+import { Visitor } from "../Visitor.js";
 
-import { Program } from "../Program.js";
-
-export function programToMSL(program)
+// Used in scenarios where having an auxiliary variable is not possible (e.g. switch cases).
+export class JSONConstexprEmitter extends Visitor
 {
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+    visitIdentityExpression(node)
+    {
+        return node.target.visit(this);
+    }
 
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+    visitBoolLiteral(node)
+    {
+        return node.value.toString();
+    }
+
+    visitEnumLiteral(node)
+    {
+        return node.member.value.visit(this);
+    }
+
+    visitGenericLiteral(node)
+    {
+        // FIXME: What happens in the case of halfs/floats/etc
+        return node.value.toString();
+    }
+
+    visitNullLiteral(node)
+    {
+        return "nullptr";
+    }
 }
 
-export { programToMSL as default };
+export { JSONConstexprEmitter as default };

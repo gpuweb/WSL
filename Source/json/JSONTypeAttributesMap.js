@@ -27,18 +27,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+import { JSONTypeAttributes } from "./JSONTypeAttributes.js";
 
-import { Program } from "../Program.js";
+// Provides lookup for all the top level types in the program.
+export class JSONTypeAttributesMap {
 
-export function programToMSL(program)
-{
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+    constructor(functionDefs, typeUnifier)
+    {
+        this._typeUnifier = typeUnifier;
+        this._typeAttributeMap = new Map();
 
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+        for (let funcDef of functionDefs) {
+            if (funcDef.shaderType == "vertex")
+                this._visitVertexShader(funcDef);
+            else if (funcDef.shaderType == "fragment")
+                this._visitFragmentShader(funcDef);
+        }
+    }
+
+    attributesForType(type)
+    {
+        const key = this._typeUnifier.uniqueTypeId(type);
+        let attrs = this._typeAttributeMap.get(key);
+        if (!attrs)
+            this._typeAttributeMap.set(key, attrs = new JSONTypeAttributes(type));
+        return attrs;
+    }
+
+    _visitVertexShader(func)
+    {
+        this.attributesForType(func.returnType).isVertexOutputOrFragmentInput = true;
+        for (let param of func.parameters)
+            this.attributesForType(param.type).isVertexAttribute = true;
+    }
+
+    _visitFragmentShader(func)
+    {
+        this.attributesForType(func.returnType).isFragmentOutput = true;
+        for (let param of func.parameters)
+            this.attributesForType(param.type).isVertexOutputOrFragmentInput = true;
+    }
+
+    // FIXME: Support compute shaders.
 }
 
-export { programToMSL as default };
+export { JSONTypeAttributesMap as default };

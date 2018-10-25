@@ -27,18 +27,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+import { JSONBackend } from "./JSONBackend.js";
 
+import { GeneratorResult } from "../GeneratorResult.js";
 import { Program } from "../Program.js";
 
-export function programToMSL(program)
+export function programToJSON(program)
 {
     if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+        return new GeneratorResult(null, new Error("Compilation failed"), null, null);
 
-    const compiler = new MSLBackend(program);
+    const compiler = new JSONBackend(program);
     return compiler.compile();
 }
 
-export { programToMSL as default };
+export { programToJSON as default };

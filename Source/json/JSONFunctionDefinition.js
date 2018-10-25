@@ -27,18 +27,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+import { JSONFunctionDeclaration } from "./JSONFunctionDeclaration.js";
+import { JSONStatementEmitter } from "./JSONStatementEmitter.js";
 
-import { Program } from "../Program.js";
-
-export function programToMSL(program)
+export class JSONFunctionDefinition extends JSONFunctionDeclaration
 {
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
-
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+    toString()
+    {
+        let src = this.commentLine() + "\n" + super.toString();
+        src += "\n{\n";
+        let emitter = new JSONStatementEmitter(this.program, this.funcMangler, this.typeUnifier, this.func, this.paramMap, this.func.name, this.typeAttributes);
+        src += emitter.indentedSource();
+        src += "}";
+        return src;
+    }
 }
 
-export { programToMSL as default };
+export { JSONFunctionDeclaration as default };

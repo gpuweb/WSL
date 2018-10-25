@@ -27,18 +27,70 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+import { JSONNameMangler } from "./JSONNameMangler.js";
 
-import { Program } from "../Program.js";
+import { StructType } from "../StructType.js";
 
-export function programToMSL(program)
-{
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+export class JSONTypeAttributes {
 
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+    constructor(type)
+    {
+        this._type = type;
+        this._isVertexAttribute = false;
+        this._isVertexOutputOrFragmentInput = false;
+        this._isFragmentOutput = false;
+        this._fieldMangler = new JSONNameMangler('field');
+
+        if (type instanceof StructType) {
+            for (let field of type.fields)
+                this._fieldMangler.mangle(field.name)
+        }
+    }
+
+    get type()
+    {
+        return this._type;
+    }
+
+    get isVertexAttribute()
+    {
+        return this._isVertexAttribute;
+    }
+
+    set isVertexAttribute(va)
+    {
+        this._isVertexAttribute = va;
+    }
+
+    get isVertexOutputOrFragmentInput()
+    {
+        return this._isVertexOutputOrFragmentInput;
+    }
+
+    set isVertexOutputOrFragmentInput(vo)
+    {
+        this._isVertexOutputOrFragmentInput = vo;
+    }
+
+    get isFragmentOutput()
+    {
+        return this._isFragmentOutput;
+    }
+
+    set isFragmentOutput(fo)
+    {
+        this._isFragmentOutput = fo;
+    }
+
+    get fieldMangler()
+    {
+        return this._fieldMangler;
+    }
+
+    mangledFieldName(fieldName)
+    {
+        return this.fieldMangler.mangle(fieldName);
+    }
 }
 
-export { programToMSL as default };
+export { JSONTypeAttributes as default };

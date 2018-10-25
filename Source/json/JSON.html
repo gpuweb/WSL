@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!--
+Copyright 2018 Apple Inc.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+   3. Neither the name of the copyright holder nor the names of its
+      contributors may be used to endorse or promote products derived from this
+      software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<html>
+<head>
+<style type="text/css">
+body {
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system;
+}
+h1 {
+    padding: 20px 20px;
+    text-align: center;
+    font-size: 50px;
+}
+main {
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 45% 45%;
+    grid-column-gap: 10px;
+    grid-template-rows: auto 500px auto;
+    grid-row-gap: 10px;
+    justify-content: center;
+}
+textarea {
+    padding: 5px;
+    margin: 0;
+    font-family: monospace;
+    font-size: 20px;
+    overflow: scroll;
+}
+#output {
+    padding: 5px;
+    margin: 0;
+    font-family: monospace;
+    overflow: scroll;
+    border: 1px solid #888;
+    box-sizing: border-box;
+    font-size: 20px;
+}
+#controls {
+    padding: 5px;
+    margin: 0;
+    text-align: center;
+}
+button {
+    width: 200px;
+    font-size: 20px;
+    background: linear-gradient(to bottom, #aae, #aaf);
+    border: 1px solid #ccd;
+    border-radius: 3px;
+}
+button:active {
+    background: linear-gradient(to bottom, #dde, #eef);
+    color: black;
+}
+</style>
+<script type="module">
+import { prepare } from "../Prepare.js";
+import { programToJSON } from "./JSON.js";
+
+function init() {
+    let b = document.querySelector("button");
+    b.addEventListener("click", compile);
+}
+
+function compile() {
+    let source = document.querySelector("textarea").value;
+    let output = document.querySelector("#output");
+    output.textContent = "Compiling...";
+    let program = prepare("/internal/test", 0, source);
+    let result = programToJSON(program);
+    if (!result._error) {
+        output.textContent = result._metalShaderLanguageSource;
+    } else {
+        output.textContent = `Error: ${result._error.originString}\n${result._error.syntaxErrorMessage}`;
+    }
+}
+
+window.addEventListener("load", init, false);
+</script>
+</head>
+<body>
+<header>
+<h1>WHLSL to JSON</h1>
+</header>
+<main>
+<h2>WHSL Source</h2>
+<h2>Compiled Output</h2>
+<textarea id="source">
+struct VertexInput {
+    float2 position : attribute(0);
+    float2 uv : attribute(1);
+}
+
+struct VertexOutput {
+    float4 position : SV_Position;
+    float4 color : attribute(0);
+}
+
+struct FragmentInput {
+    float4 color : attribute(0);
+}
+
+struct FragmentOutput {
+    float4 color : SV_Target0;
+}
+
+vertex VertexOutput vertexShader(VertexInput vertexInput) {
+    VertexOutput result;
+    result.position = float4(vertexInput.position, 0., 1.);
+    result.color = float4(vertexInput.uv, 0.0, 1.0);
+    return result;
+}
+
+fragment FragmentOutput fragmentShader(FragmentInput fragmentInput) {
+    FragmentOutput result;
+    result.color = fragmentInput.color;
+    return result;
+}
+</textarea>
+<pre id="output">
+No compiled output.
+</pre>
+<div id="controls">
+<button>Compile</button>
+</div>
+</main>
+</body>
+</html>

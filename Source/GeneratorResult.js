@@ -27,18 +27,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+export class GeneratorResult {
 
-import { Program } from "../Program.js";
+    constructor(src, err, mangledNameMap, functionSources)
+    {
+        this._source = src;
+        this._error = err;
+        this._originalFunctionNameToMangledNames = mangledNameMap;
+        this._functionSources = functionSources;
+    }
 
-export function programToMSL(program)
-{
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+    get source()
+    {
+        return this._source;
+    }
 
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+    get error()
+    {
+        return this._error;
+    }
+
+    get originalFunctionNameToMangledNames()
+    {
+        return this._originalFunctionNameToMangledNames;
+    }
+
+    get functionSources()
+    {
+        return this._functionSources;
+    }
+
+    get didSucceed()
+    {
+        return !this.error;
+    }
 }
 
-export { programToMSL as default };
+export { GeneratorResult as default };

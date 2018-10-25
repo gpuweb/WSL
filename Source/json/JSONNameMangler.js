@@ -27,18 +27,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+export class JSONNameMangler {
 
-import { Program } from "../Program.js";
+    constructor(prefix)
+    {
+        this._prefix = prefix;
+        this._counter = 0;
+        this._mangledNameMap = new Map();
+    }
 
-export function programToMSL(program)
-{
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
-
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+    mangle(key)
+    {
+        if (!this._mangledNameMap.has(key))
+            this._mangledNameMap.set(key, `${this._prefix}${this._counter++}`);
+        return this._mangledNameMap.get(key);
+    }
 }
 
-export { programToMSL as default };
+export { JSONNameMangler as default };

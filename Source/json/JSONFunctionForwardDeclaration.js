@@ -27,18 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
+import { JSONFunctionDeclaration } from "./JSONFunctionDeclaration.js";
 
-import { Program } from "../Program.js";
-
-export function programToMSL(program)
+export class JSONFunctionForwardDeclaration extends JSONFunctionDeclaration
 {
-    if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
-
-    const compiler = new MSLBackend(program);
-    return compiler.compile();
+    toString()
+    {
+        return this.commentLine() + "\n" + super.toString() + ";"
+    }
 }
 
-export { programToMSL as default };
+export { JSONFunctionForwardDeclaration as default };
