@@ -15,11 +15,7 @@ try {
             const source = readFile(arguments[0]);
             const program = prepare("/internal/test", 0, source);
             const result = programToJSON(program);
-            if (result.didSucceed())
-                print(JSON.stringify(result));
-            else
-                print("ERROR");
-                print(result.error);
+            print(JSON.stringify(result));
         } catch (e) {
             print(e);
         }

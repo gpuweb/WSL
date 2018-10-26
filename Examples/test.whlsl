@@ -1,0 +1,3 @@
+test int stupid(float inputParameter) {
+    return 10;
+}

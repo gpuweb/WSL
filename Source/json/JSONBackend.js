@@ -27,7 +27,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { insertTrapParameter } from "./JSONInsertTrapParameter.js";
 import { JSONFunctionDefinition } from "./JSONFunctionDefinition.js";
 import { JSONFunctionForwardDeclaration } from "./JSONFunctionForwardDeclaration.js";
 import { JSONNameMangler } from "./JSONNameMangler.js";
@@ -40,6 +39,344 @@ import { GeneratorResult } from "../GeneratorResult.js";
 import { PtrType } from "../PtrType.js";
 import { StructType } from "../StructType.js";
 import { Visitor } from "../Visitor.js";
+
+class Describer {
+
+    describeFunc(func)
+    {
+        if (func.isCast) {
+            let result = {
+                name: func.name,
+                cast: true,
+            };
+            return result;
+        } else {
+            let result = {
+                name: func.name,
+                parameters: [],
+            };
+            result.returnType = this.describeTypeRef(func.returnType);
+
+            if (func.semantic)
+                result.semantic = func.semantic;
+
+            for (let parameter of func.parameters) {
+                result.parameters.push(this.describeFuncParameter(parameter));
+            }
+            if (func.attributeBlock) {
+                result.attributeBlock = [];
+                for (let attribute of func.attributeBlock) {
+                    print("FIXME: attributeBlock");
+                }
+            }
+            return result;
+        }
+    }
+
+    describeFuncParameter(param)
+    {
+        let result = {
+            name: param.name
+        };
+        result.type = this.describeTypeRef(param.type);
+        if (param.semantic)
+            result.semantic = param.semantic;
+        return result;
+    }
+
+    describeFuncDef(def)
+    {
+        let result = this.describeFunc(def);
+        result.body = this.describeBlock(def.body);
+        return result;
+    }
+
+    describeNativeFunc(node)
+    {
+        print(`NativeFunc`);
+    }
+
+    describeBlock(block)
+    {
+        return block.statements.map(this.describeStatement);
+    }
+
+    describeStatement(statement)
+    {
+        return statement.toString();
+    }
+
+    describeCommaExpression(node)
+    {
+        print("CommaExpression");
+    }
+
+    describeTypeRef(typeRef)
+    {
+        let result = {
+            name: typeRef.name
+        };
+        if (typeRef.typeArguments.length > 0)
+            result.typeArguments = typeRef.typeArguments.map(argument => argument.toString());
+
+        return result;
+    }
+
+    describeNativeType(node)
+    {
+        print("NativeType");
+    }
+
+    describeTypeDef(node)
+    {
+        print("TypeDef");
+    }
+
+    describeStructType(node)
+    {
+        print("StructType");
+    }
+
+    describeField(node)
+    {
+        print("Field");
+    }
+
+    describeEnumType(node)
+    {
+        print("EnumType");
+    }
+
+    describeEnumMember(node)
+    {
+        print("EnumMember");
+    }
+
+    describeEnumLiteral(node)
+    {
+        print("EnumLiteral");
+    }
+
+    describeElementalType(node)
+    {
+        print("ElementalType");
+    }
+
+    describeReferenceType(node)
+    {
+        print("ReferenceType");
+    }
+
+    describePtrType(node)
+    {
+        print("PtrType");
+    }
+
+    describeArrayRefType(node)
+    {
+        print("ArrayRefType");
+    }
+
+    describeArrayType(node)
+    {
+        print("ArrayType");
+    }
+
+    describeVariableDecl(node)
+    {
+        print("VariableDecl");
+    }
+
+    describeAssignment(node)
+    {
+        print("Assignment");
+    }
+
+    describeReadModifyWriteExpression(node)
+    {
+        print("ReadModifyWriteExpression");
+    }
+
+    describeDereferenceExpression(node)
+    {
+        print("DereferenceExpression");
+    }
+
+    describeTernaryExpression(node)
+    {
+        print("TernaryExpression");
+    }
+
+    describeDotExpression(node)
+    {
+        print("DotExpression");
+    }
+
+    describeIndexExpression(node)
+    {
+        print("IndexExpression");
+    }
+
+    describeMakePtrExpression(node)
+    {
+        print("MakePtrExpression");
+    }
+
+    describeMakeArrayRefExpression(node)
+    {
+        print("MakeArrayRefExpression");
+    }
+
+    describeConvertPtrToArrayRefExpression(node)
+    {
+        print("ConvertPtrToArrayRefExpression");
+    }
+
+    describeVariableRef(node)
+    {
+        print("VariableRef");
+    }
+
+    describeIfStatement(node)
+    {
+        print("IfStatement");
+    }
+
+    describeWhileLoop(node)
+    {
+        print("WhileLoop");
+    }
+
+    describeDoWhileLoop(node)
+    {
+        print("DoWhileLoop");
+    }
+
+    describeForLoop(node)
+    {
+        print("ForLoop");
+    }
+
+    describeSwitchStatement(node)
+    {
+        print("SwitchStatement");
+    }
+
+    describeSwitchCase(node)
+    {
+        print("SwitchCase");
+    }
+
+    describeReturn(node)
+    {
+        print("Return");
+    }
+
+    describeContinue(node)
+    {
+        print("Continue");
+    }
+
+    describeBreak(node)
+    {
+        print("Break");
+    }
+
+    describeTrapStatement(node)
+    {
+        print("TrapStatement");
+    }
+
+    describeGenericLiteral(node)
+    {
+        print("GenericLiteral");
+    }
+
+    describeGenericLiteralType(node)
+    {
+        print("GenericLiteralType");
+    }
+
+    describeNullLiteral(node)
+    {
+        print("NullLiteral");
+    }
+
+    describeBoolLiteral(node)
+    {
+        print("BoolLiteral");
+    }
+
+    describeNullType(node)
+    {
+        print("NullType");
+    }
+
+    describeCallExpression(node)
+    {
+        print("CallExpression");
+    }
+
+    describeLogicalNot(node)
+    {
+        print("LogicalNot");
+    }
+
+    describeLogicalExpression(node)
+    {
+        print("LogicalExpression");
+    }
+
+    describeFunctionLikeBlock(node)
+    {
+        print("FunctionLikeBlock");
+    }
+
+    describeAnonymousVariable(node)
+    {
+        print("AnonymousVariable");
+    }
+
+    describeIdentityExpression(node)
+    {
+        print("IdentityExpression");
+    }
+
+    describeVectorType(node)
+    {
+        print("VectorType");
+    }
+
+    describeMatrixType(node)
+    {
+        print("MatrixType");
+    }
+
+    describeFuncNumThreadsAttribute(node)
+    {
+        print("FuncNumThreadsAttribute");
+    }
+
+    describeBuiltInSemantic(node)
+    {
+        print("BuiltInSemantic");
+    }
+
+    describeResourceSemantic(node)
+    {
+        print("ResourceSemantic");
+    }
+
+    describeStageInOutSemantic(node)
+    {
+        print("StageInOutSemantic");
+    }
+
+    describeSpecializationConstantSemantic(node)
+    {
+        print("SpecializationConstantSemantic");
+    }
+}
 
 export class JSONBackend {
 
@@ -89,34 +426,43 @@ export class JSONBackend {
 
     _compile()
     {
-        insertTrapParameter(this.program);
-
-        const functionsToCompile = this._findFunctionsToCompile();
-        for (let func of functionsToCompile)
-            func.visit(this._typeUnifier);
-
-        this._allTypeAttributes = new JSONTypeAttributesMap(functionsToCompile, this._typeUnifier);
-        this._createTypeDecls();
-        this._createFunctionDecls(functionsToCompile);
-
-        let outputStr = "";
-
-        const addSection = (title, decls) => {
-            outputStr += `#pragma mark - ${title}\n\n${decls.join("\n\n")}\n\n`;
+        let output = {
+            language: "whlsl",
+            entryPoints: [],
+            functions: []
         };
 
-        addSection("Forward type declarations", this._forwardTypeDecls);
-        addSection("Type definitions", this._typeDefinitions);
-        addSection("Forward function declarations", this._forwardFunctionDecls);
-        addSection("Function definitions", this._functionDefintions);
+        const entryPoints = this._findEntryPoints();
+        for (let func of entryPoints) {
+            output.entryPoints.push({ name: func.name, type: func.shaderType });
+        }
 
-        if (!this._allowComments)
-            outputStr = this._removeCommentsAndEmptyLines(outputStr);
+        let describer = new Describer();
+        const usedFunctions = this._findUsedFunctions();
+        for (let func of usedFunctions) {
+            output.functions.push(describer.describeFuncDef(func));
+        }
+        //
+        // this._allTypeAttributes = new JSONTypeAttributesMap(usedFunctions, this._typeUnifier);
+        // this._createTypeDecls();
+        // this._createFunctionDecls(functionsToCompile);
+        //
+        // const addSection = (title, decls) => {
+        //     outputStr += `#pragma mark - ${title}\n\n${decls.join("\n\n")}\n\n`;
+        // };
+        //
+        // addSection("Forward type declarations", this._forwardTypeDecls);
+        // addSection("Type definitions", this._typeDefinitions);
+        // addSection("Forward function declarations", this._forwardFunctionDecls);
+        // addSection("Function definitions", this._functionDefintions);
+        //
+        // if (!this._allowComments)
+        //     outputStr = this._removeCommentsAndEmptyLines(outputStr);
 
-        return outputStr;
+        return output;
     }
 
-    _findFunctionsToCompile()
+    _findEntryPoints()
     {
         const entryPointFunctions = [];
         for (let [, instances] of this._program.functions) {
@@ -125,22 +471,28 @@ export class JSONBackend {
                     entryPointFunctions.push(instance);
             }
         }
-        const functions = new Set(entryPointFunctions);
+        return new Set(entryPointFunctions);
+    }
+
+    _findUsedFunctions()
+    {
+        const entryPoints = this._findEntryPoints();
+        const usedFunctions = new Set(entryPoints);
 
         class FindFunctionsThatGetCalled extends Visitor {
             visitCallExpression(node)
             {
                 super.visitCallExpression(node);
                 if (node.func instanceof FuncDef) {
-                    functions.add(node.func);
+                    usedFunctions.add(node.func);
                     node.func.visit(this);
                 }
             }
         }
         const findFunctionsThatGetCalledVisitor = new FindFunctionsThatGetCalled();
-        for (let entryPoint of entryPointFunctions)
+        for (let entryPoint of entryPoints)
             entryPoint.visit(findFunctionsThatGetCalledVisitor);
-        return Array.from(functions);
+        return Array.from(usedFunctions);
     }
 
     _createTypeDecls()

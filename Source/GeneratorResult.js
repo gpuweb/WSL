@@ -61,6 +61,19 @@ export class GeneratorResult {
     {
         return !this.error;
     }
+
+    toJSON()
+    {
+        if (this.didSucceed) {
+            return {
+                nameMap: this._originalFunctionNameToMangledNames,
+                source: this._source
+            };
+        }
+        return {
+            error: this._error
+        };
+    }
 }
 
 export { GeneratorResult as default };
