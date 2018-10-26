@@ -28,7 +28,6 @@
  */
 
 import { insertTrapParameter } from "./MSLInsertTrapParameter.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
 import { MSLFunctionDefinition } from "./MSLFunctionDefinition.js";
 import { MSLFunctionForwardDeclaration } from "./MSLFunctionForwardDeclaration.js";
 import { MSLNameMangler } from "./MSLNameMangler.js";
@@ -37,6 +36,7 @@ import { MSLTypeUnifier } from "./MSLTypeUnifier.js";
 
 import { ArrayRefType } from "../ArrayRefType.js";
 import { FuncDef } from "../FuncDef.js";
+import { GeneratorResult } from "../GeneratorResult.js";
 import { PtrType } from "../PtrType.js";
 import { StructType } from "../StructType.js";
 import { Visitor } from "../Visitor.js";
@@ -46,7 +46,7 @@ using namespace metal;
 
 `;
 
-// Handles the compilation of Program AST instances to MSLCompileResult instances, which
+// Handles the compilation of Program AST instances to GeneratorResult instances, which
 // include the raw MSL. In general clients should call |whlslToMsl|, which parses,
 // typechecks, and inlines the WHLSL before passing it to this compiler.
 export class MSLBackend {
@@ -89,9 +89,9 @@ export class MSLBackend {
                 mangledMap[key] = value;
             }
 
-            return new MSLCompileResult(src, null, mangledMap, this._functionSources);
+            return new GeneratorResult(src, null, mangledMap, this._functionSources);
         } catch (e) {
-            return new MSLCompileResult(null, e, null, null);
+            return new GeneratorResult(null, e, null, null);
         }
     }
 

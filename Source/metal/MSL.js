@@ -28,14 +28,14 @@
  */
 
 import { MSLBackend } from "./MSLBackend.js";
-import { MSLCompileResult } from "./MSLCompileResult.js";
 
+import { GeneratorResult } from "../GeneratorResult.js";
 import { Program } from "../Program.js";
 
 export function programToMSL(program)
 {
     if (!(program instanceof Program))
-        return new MSLCompileResult(null, new Error("Compilation failed"), null, null);
+        return new GeneratorResult(null, new Error("Compilation failed"), null, null);
 
     const compiler = new MSLBackend(program);
     return compiler.compile();

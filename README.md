@@ -22,13 +22,16 @@ To run the tests:
 ```bash
 prompt> run-jsc --module-file=Source/Test.js
 ```
+
 Or, load Source/Test.html in your browser (assuming your browser supports modules, which most modern browsers do).
 
-## Generating Metal Shading Language (MSL) Output
+## Generating Output
+
+We currently support Metal Shading Language as an output format, as well as a debug mode (JSON).
 
 ```bash
-prompt> run-jsc --module-file=Scripts/WHLSLtoMSL.js -- file.whlsl
+prompt> run-jsc --module-file=Scripts/generate.js -- [json|msl] file.whlsl
 ```
 
-Or, load Source/metal/MSL.html in your browser.
+Alternatively, for MSL load Source/metal/MSL.html in your browser.
 
