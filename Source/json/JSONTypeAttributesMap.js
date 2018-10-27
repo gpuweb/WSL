@@ -29,7 +29,6 @@
 
 import { JSONTypeAttributes } from "./JSONTypeAttributes.js";
 
-// Provides lookup for all the top level types in the program.
 export class JSONTypeAttributesMap {
 
     constructor(functionDefs, typeUnifier)
@@ -42,7 +41,14 @@ export class JSONTypeAttributesMap {
                 this._visitVertexShader(funcDef);
             else if (funcDef.shaderType == "fragment")
                 this._visitFragmentShader(funcDef);
+            else if (funcDef.shaderType == "test")
+                this._visitTestFunction(funcDef);
         }
+    }
+
+    get types()
+    {
+        return this._typeAttributeMap;
     }
 
     attributesForType(type)
@@ -58,7 +64,7 @@ export class JSONTypeAttributesMap {
     {
         this.attributesForType(func.returnType).isVertexOutputOrFragmentInput = true;
         for (let param of func.parameters)
-            this.attributesForType(param.type).isVertexAttribute = true;
+            this.attributesForType(param.type).isVertexInput = true;
     }
 
     _visitFragmentShader(func)
@@ -66,6 +72,14 @@ export class JSONTypeAttributesMap {
         this.attributesForType(func.returnType).isFragmentOutput = true;
         for (let param of func.parameters)
             this.attributesForType(param.type).isVertexOutputOrFragmentInput = true;
+    }
+
+    _visitTestFunction(func)
+    {
+        // FIXME: Should be a setter, like setAttributesForType.
+        this.attributesForType(func.returnType);
+        for (let param of func.parameters)
+            this.attributesForType(param.type);
     }
 
     // FIXME: Support compute shaders.

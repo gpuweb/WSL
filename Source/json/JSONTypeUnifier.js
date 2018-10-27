@@ -44,7 +44,6 @@ export class JSONTypeUnifier extends Visitor {
     {
         super();
 
-        this._typeNameMangler = new JSONNameMangler('T');
         this._allTypes = new Set();
     }
 
@@ -75,7 +74,7 @@ export class JSONTypeUnifier extends Visitor {
         if (baseType instanceof NativeType || baseType instanceof VectorType || baseType instanceof MatrixType || baseType instanceof EnumType || baseType instanceof ArrayType)
             return baseType.visit(this);
 
-        return this._typeNameMangler.mangle(node.name);
+        return node.name;
     }
 
     visitStructType(node)
@@ -83,7 +82,7 @@ export class JSONTypeUnifier extends Visitor {
         this._allTypes.add(node);
         for (let field of node.fields)
             field.visit(this);
-        node._typeID = this._typeNameMangler.mangle(node.name);
+        node._typeID = node.name;
         return node._typeID;
     }
 
@@ -97,7 +96,7 @@ export class JSONTypeUnifier extends Visitor {
     visitNativeType(node)
     {
         this._allTypes.add(node);
-        node._typeID = this._typeNameMangler.mangle(node.name);
+        node._typeID = node.name;
         return node._typeID;
     }
 
@@ -105,7 +104,7 @@ export class JSONTypeUnifier extends Visitor {
     {
         this._allTypes.add(node);
         node.elementType.visit(this);
-        node._typeID = this._typeNameMangler.mangle(`${node.elementType.visit(this)}* ${node.addressSpace}`);
+        node._typeID = `${node.elementType.visit(this)}* ${node.addressSpace}`;
         return node._typeID;
     }
 
@@ -113,30 +112,28 @@ export class JSONTypeUnifier extends Visitor {
     {
         this._allTypes.add(node);
         node.elementType.visit(this);
-        node._typeID = this._typeNameMangler.mangle(`${node.elementType.visit(this)}[${node.numElements}]`);
+        node._typeID = `${node.elementType.visit(this)}[${node.numElements}]`;
         return node._typeID;
     }
 
     visitArrayRefType(node)
     {
         this._allTypes.add(node);
-        // The name mangler is used here because array refs are "user-defined" types in the sense
-        // that they will need to be defined as structs in the Metal output.
-        node._typeID = this._typeNameMangler.mangle(`${node.elementType.visit(this)}[] ${node.addressSpace}`);
+        node._typeID = `${node.elementType.visit(this)}[] ${node.addressSpace}`;
         return node._typeID;
     }
 
     visitVectorType(node)
     {
         this._allTypes.add(node);
-        node._typeID = this._typeNameMangler.mangle(node.toString());
+        node._typeID = node.toString();
         return node._typeID;
     }
 
     visitMatrixType(node)
     {
         this._allTypes.add(node);
-        node._typeID = this._typeNameMangler.mangle(node.toString());
+        node._typeID = node.toString();
         return node._typeID;
     }
 

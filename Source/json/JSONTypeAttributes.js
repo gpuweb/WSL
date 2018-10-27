@@ -27,8 +27,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { JSONNameMangler } from "./JSONNameMangler.js";
-
 import { StructType } from "../StructType.js";
 
 export class JSONTypeAttributes {
@@ -36,15 +34,15 @@ export class JSONTypeAttributes {
     constructor(type)
     {
         this._type = type;
-        this._isVertexAttribute = false;
+        this._isVertexInput = false;
         this._isVertexOutputOrFragmentInput = false;
         this._isFragmentOutput = false;
-        this._fieldMangler = new JSONNameMangler('field');
+        //this._fieldMangler = new JSONNameMangler('field');
 
-        if (type instanceof StructType) {
-            for (let field of type.fields)
-                this._fieldMangler.mangle(field.name)
-        }
+        // if (type instanceof StructType) {
+        //     for (let field of type.fields)
+        //         this._fieldMangler.mangle(field.name)
+        // }
     }
 
     get type()
@@ -52,14 +50,14 @@ export class JSONTypeAttributes {
         return this._type;
     }
 
-    get isVertexAttribute()
+    get isVertexInput()
     {
-        return this._isVertexAttribute;
+        return this._isVertexInput;
     }
 
-    set isVertexAttribute(va)
+    set isVertexInput(va)
     {
-        this._isVertexAttribute = va;
+        this._isVertexInput = va;
     }
 
     get isVertexOutputOrFragmentInput()
@@ -84,12 +82,14 @@ export class JSONTypeAttributes {
 
     get fieldMangler()
     {
-        return this._fieldMangler;
+        return null;
+        //this._fieldMangler;
     }
 
     mangledFieldName(fieldName)
     {
-        return this.fieldMangler.mangle(fieldName);
+        return fieldName;
+        //return this.fieldMangler.mangle(fieldName);
     }
 }
 
