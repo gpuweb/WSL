@@ -1,3 +1,8 @@
-test int stupid(float inputParameter) {
+struct Foo {
+  int a;
+  float b;
+}
+
+test int stupid(Foo inputParameter) {
     return 10;
 }

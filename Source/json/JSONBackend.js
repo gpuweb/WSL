@@ -417,7 +417,7 @@ export class JSONBackend {
             language: "whlsl",
             entryPoints: [],
             functions: [],
-            types: []
+            types: {}
         };
 
         const entryPoints = this._findEntryPoints();
@@ -433,7 +433,7 @@ export class JSONBackend {
 
         let usedTypes = new JSONTypeAttributesMap(usedFunctions, this._typeUnifier);
         for (let [name, attrs] of usedTypes.types) {
-            output.types.push(this._describeUsedType(attrs.type));
+            output.types[name] = this._describeUsedType(attrs.type);
         }
 
         return output;
@@ -502,7 +502,7 @@ export class JSONBackend {
                     }
                 }
                 const nativeName = typeRef.type.visit(new NativeTypeNameVisitor());
-                return `${name} ${nativeName}`;
+                return `${nativeName}`;
             }
         }
     }
