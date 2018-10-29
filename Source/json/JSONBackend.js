@@ -433,7 +433,7 @@ export class JSONBackend {
 
         let usedTypes = new JSONTypeAttributesMap(usedFunctions, this._typeUnifier);
         for (let [name, attrs] of usedTypes.types) {
-            output.types[name] = this._describeUsedType(attrs.type);
+            output.types[name] = this._describeUsedType(attrs);
         }
 
         return output;
@@ -473,18 +473,21 @@ export class JSONBackend {
         return Array.from(usedFunctions);
     }
 
-    _describeUsedType(typeRef)
+    _describeUsedType(attributes)
     {
-        if (typeRef instanceof StructType)
-            return this._describeUsedStructType(typeRef);
-        else if (typeRef instanceof ArrayRefType)
-            return this._describeUsedArrayRefType(typeRef);
+        let typeRef = attributes.type;
+        let type = typeRef.type;
+        if (type instanceof StructType) {
+            return this._describeUsedStructType(attributes);
+        } else if (type instanceof ArrayRefType)
+            return "FIXME: Implement ArrayRefType";
         else {
+            // FIXME: Should this be type?
             const name = this._typeUnifier.uniqueTypeId(typeRef);
-            if (typeRef.isArray)
-                return `typedef ${this._typeUnifier.uniqueTypeId(node.elementType)} ${name}[${node.numElementsValue}];`;
-            else if (typeRef.isPtr)
-                return `typedef ${node.addressSpace} ${this._typeUnifier.uniqueTypeId(node.elementType)} (*${name});`;
+            if (type.isArray)
+                return `FIXME: Implement Array ${name}[${node.numElementsValue}];`;
+            else if (type.isPtr)
+                return `FIXME: Implement Pointer ${node.addressSpace} ${this._typeUnifier.uniqueTypeId(node.elementType)} (*${name});`;
             else {
                 class NativeTypeNameVisitor extends Visitor {
                     visitNativeType(node)
@@ -502,10 +505,47 @@ export class JSONBackend {
                         return `${node.elementType.name}${node.numRowsValue}x${node.numColumnsValue}`;
                     }
                 }
-                const nativeName = typeRef.type.visit(new NativeTypeNameVisitor());
-                return `${nativeName}`;
+                const nativeName = type.visit(new NativeTypeNameVisitor());
+                return { type: "native", definition: nativeName };
             }
         }
+    }
+
+    _describeUsedStructType(structTypeAttributes)
+    {
+        let structType = structTypeAttributes.type;
+        let struct = structType.type;
+        let result = {
+            type: "struct",
+            fields: []
+        };
+
+        for (let [fieldName, field] of struct.fieldMap) {
+            let fieldData = { name: fieldName, type: field.type.name };
+
+            const annotations = new StringMap();
+            if (structTypeAttributes.isVertexAttribute)
+                annotations.set("vertexAttribute", field._semantic._index);
+            if (structTypeAttributes.isVertexOutputOrFragmentInput)
+                annotations.set("vertexOutputOrFragmentInput", field._semantic._name);
+            if (structTypeAttributes.isFragmentOutput)
+                annotations.set("fragmentOutput", field._semantic._name);
+            if (annotations.size)
+                result.attributes = annotations.toJSON();
+            result.fields.push(fieldData);
+        }
+
+        return result;
+    }
+}
+
+class StringMap extends Map {
+    toJSON()
+    {
+        let obj = Object.create(null);
+        for (let [k,v] of this)
+            obj[k] = v;
+        return obj;
     }
 }
 
