@@ -421,15 +421,15 @@ export class JSONBackend {
         };
 
         const entryPoints = this._findEntryPoints();
-        for (let func of entryPoints) {
-            output.entryPoints.push({ name: func.name, type: func.shaderType });
-        }
+        entryPoints.forEach(entryPoint => {
+            output.entryPoints.push({ name: entryPoint.name, type: entryPoint.shaderType });
+        });
 
         let describer = new FunctionDescriber();
         const usedFunctions = this._findUsedFunctions();
-        for (let func of usedFunctions) {
+        usedFunctions.forEach(func => {
             output.functions.push(describer.describeFuncDef(func));
-        }
+        });
 
         let usedTypes = new JSONTypeAttributesMap(usedFunctions, this._typeUnifier);
         for (let [name, attrs] of usedTypes.types) {
@@ -467,8 +467,9 @@ export class JSONBackend {
             }
         }
         const findFunctionsThatGetCalledVisitor = new FindFunctionsThatGetCalled();
-        for (let entryPoint of entryPoints)
+        entryPoints.forEach(entryPoint => {
             entryPoint.visit(findFunctionsThatGetCalledVisitor);
+        });
         return Array.from(usedFunctions);
     }
 
