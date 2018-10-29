@@ -99,7 +99,7 @@ function compile() {
     let program = prepare("/internal/test", 0, source);
     let result = programToMSL(program);
     if (!result._error) {
-        output.textContent = result._metalShaderLanguageSource;
+        output.textContent = result.source;
     } else {
         output.textContent = `Error: ${result._error.originString}\n${result._error.syntaxErrorMessage}`;
     }
