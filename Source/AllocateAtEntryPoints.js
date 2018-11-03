@@ -109,7 +109,7 @@ function gatherVariablesAndFunctionParameters(funcDefs)
 
 function createGlobalStructTypeAndVarToFieldMap(origin, allVariablesAndFunctionParameters, functionsThatAreCalledByEntryPoints)
 {
-    const globalStructType = new StructType(origin, null);
+    const globalStructType = new StructType(origin, "global struct");
     let counter = 0;
     const varToFieldMap = new Map();
 

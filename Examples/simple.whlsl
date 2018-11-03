@@ -45,7 +45,7 @@ vertex VertexOutput vertexShader(VertexInput vertexInput) {
     return result;
 }
 
-fragment FragmentOutput fragmentShader() {
+fragment FragmentOutput fragmentShader(VertexOutput vertexOutput) {
     FragmentOutput result;
     result.color = float4(1, 0, 0, 1);
     return result;

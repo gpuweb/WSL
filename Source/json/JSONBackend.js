@@ -48,7 +48,12 @@ class FunctionDescriber {
             let result = {
                 name: func.name,
                 cast: true,
+                parameters: []
             };
+            result.returnType = { name: func.name };
+            for (let parameter of func.parameters) {
+                result.parameters.push(this.describeFuncParameter(parameter));
+            }
             return result;
         } else {
             let result = {
@@ -403,12 +408,8 @@ export class JSONBackend {
 
     compile()
     {
-        try {
-            const src = this._compile();
-            return new GeneratorResult(src, null, null, this._functionSources);
-        } catch (e) {
-            return new GeneratorResult(null, e, null, null);
-        }
+        const src = this._compile();
+        return new GeneratorResult(src, null, null, this._functionSources);
     }
 
     _compile()
@@ -425,15 +426,15 @@ export class JSONBackend {
             output.entryPoints.push({ name: entryPoint.name, type: entryPoint.shaderType });
         });
 
-        let describer = new FunctionDescriber();
         const usedFunctions = this._findUsedFunctions();
         usedFunctions.forEach(func => {
-            output.functions.push(describer.describeFuncDef(func));
+            func.visit(this._typeUnifier);
+            output.functions.push(this._describeUsedFunction(func));
         });
 
         let usedTypes = new JSONTypeAttributesMap(usedFunctions, this._typeUnifier);
         for (let [name, attrs] of usedTypes.types) {
-            output.types[name] = this._describeUsedType(attrs);
+            output.types[name] = this._describeUsedType(name, attrs);
         }
 
         return output;
@@ -461,6 +462,7 @@ export class JSONBackend {
             {
                 super.visitCallExpression(node);
                 if (node.func instanceof FuncDef) {
+                    // FIXME: Maybe the CallExpression needs to be captured?
                     usedFunctions.add(node.func);
                     node.func.visit(this);
                 }
@@ -473,7 +475,13 @@ export class JSONBackend {
         return Array.from(usedFunctions);
     }
 
-    _describeUsedType(attributes)
+    _describeUsedFunction(funcDef)
+    {
+        let describer = new FunctionDescriber();
+        return describer.describeFuncDef(funcDef);
+    }
+
+    _describeUsedType(name, attributes)
     {
         let typeRef = attributes.type;
         let type = typeRef.type;
@@ -482,14 +490,24 @@ export class JSONBackend {
         } else if (type instanceof ArrayRefType)
             return "FIXME: Implement ArrayRefType";
         else {
-            // FIXME: Should this be type?
-            const name = this._typeUnifier.uniqueTypeId(typeRef);
-            if (type.isArray)
-                return `FIXME: Implement Array ${name}[${node.numElementsValue}];`;
-            else if (type.isPtr)
-                return `FIXME: Implement Pointer ${node.addressSpace} ${this._typeUnifier.uniqueTypeId(node.elementType)} (*${name});`;
-            else {
+            const uniqueName = this._typeUnifier.uniqueTypeId(typeRef);
+            if (type && type.isArray)
+                return `FIXME: Implement Array`;
+            else if (type && type.isPtr) {
+                return {
+                    type: "pointer",
+                    to: type.elementType.name,
+                    addressSpace: type.addressSpace
+                 };
+            } else {
                 class NativeTypeNameVisitor extends Visitor {
+                    visitTypeRef(node)
+                    {
+                        if (node.type)
+                            return node.type.visit(this);
+                        return "";
+                    }
+
                     visitNativeType(node)
                     {
                         return node.name;
@@ -505,7 +523,7 @@ export class JSONBackend {
                         return `${node.elementType.name}${node.numRowsValue}x${node.numColumnsValue}`;
                     }
                 }
-                const nativeName = type.visit(new NativeTypeNameVisitor());
+                const nativeName = typeRef.visit(new NativeTypeNameVisitor());
                 return { type: "native", definition: nativeName };
             }
         }

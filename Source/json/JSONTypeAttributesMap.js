@@ -29,6 +29,8 @@
 
 import { JSONTypeAttributes } from "./JSONTypeAttributes.js";
 
+import { Visitor } from "../Visitor.js";
+
 export class JSONTypeAttributesMap {
 
     constructor(functionDefs, typeUnifier)
@@ -41,9 +43,15 @@ export class JSONTypeAttributesMap {
                 this._visitVertexShader(funcDef);
             else if (funcDef.shaderType == "fragment")
                 this._visitFragmentShader(funcDef);
-            else if (funcDef.shaderType == "test")
-                this._visitTestFunction(funcDef);
+            else
+                this._visitFunction(funcDef);
+
+            // FIXME: Support compute shaders.
         }
+
+        typeUnifier.typesThatNeedDeclaration().forEach(type => {
+            this.attributesForType(type);
+        });
     }
 
     get types()
@@ -60,11 +68,26 @@ export class JSONTypeAttributesMap {
         return attrs;
     }
 
+    _gatherVariables(funcDef)
+    {
+        const variables = new Set();
+        class VarVisitor extends Visitor {
+            visitVariableDecl(node)
+            {
+                variables.add(node);
+            }
+        }
+        funcDef.visit(new VarVisitor());
+        return variables;
+    }
+
     _visitVertexShader(func)
     {
         this.attributesForType(func.returnType).isVertexOutputOrFragmentInput = true;
         for (let param of func.parameters)
             this.attributesForType(param.type).isVertexInput = true;
+        for (let variable of this._gatherVariables(func))
+            this.attributesForType(variable.type);
     }
 
     _visitFragmentShader(func)
@@ -72,17 +95,19 @@ export class JSONTypeAttributesMap {
         this.attributesForType(func.returnType).isFragmentOutput = true;
         for (let param of func.parameters)
             this.attributesForType(param.type).isVertexOutputOrFragmentInput = true;
+        for (let variable of this._gatherVariables(func))
+            this.attributesForType(variable.type);
     }
 
-    _visitTestFunction(func)
+    _visitFunction(func)
     {
         // FIXME: Should be a setter, like setAttributesForType.
         this.attributesForType(func.returnType);
         for (let param of func.parameters)
             this.attributesForType(param.type);
+        for (let variable of this._gatherVariables(func))
+            this.attributesForType(variable.type);
     }
-
-    // FIXME: Support compute shaders.
 }
 
 export { JSONTypeAttributesMap as default };
