@@ -539,7 +539,8 @@ export class JSONBackend {
         };
 
         for (let [fieldName, field] of struct.fieldMap) {
-            let fieldData = { name: fieldName, type: field.type.name };
+            const uniqueName = this._typeUnifier.uniqueTypeId(field.type.type);
+            let fieldData = { name: fieldName, type: uniqueName };
 
             const annotations = new StringMap();
             if (structTypeAttributes.isVertexAttribute)
@@ -550,6 +551,9 @@ export class JSONBackend {
                 annotations.set("fragmentOutput", field._semantic._name);
             if (annotations.size)
                 result.attributes = annotations.toJSON();
+
+            // FIXME: Add semantics.
+
             result.fields.push(fieldData);
         }
 
