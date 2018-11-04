@@ -82,6 +82,18 @@ button:active {
     background: linear-gradient(to bottom, #dde, #eef);
     color: black;
 }
+
+.json-number, .json-boolean, .json-null {
+    color: red;
+}
+
+.json-key {
+    color: blue;
+}
+
+.json-value {
+    color: green;
+}
 </style>
 <script type="module">
 import { prepare } from "../Prepare.js";
@@ -92,6 +104,28 @@ function init() {
     b.addEventListener("click", compile);
 }
 
+function syntaxHighlight(json) {
+    if (typeof json != 'string') {
+         json = JSON.stringify(json, null, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'json-number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+            } else {
+                cls = 'json-value';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
 function compile() {
     let source = document.querySelector("textarea").value;
     let output = document.querySelector("#output");
@@ -99,7 +133,7 @@ function compile() {
     let program = prepare("/internal/test", 0, source);
     let result = programToJSON(program);
     if (!result._error) {
-        output.textContent = result._metalShaderLanguageSource;
+        output.innerHTML = syntaxHighlight(result.source);
     } else {
         output.textContent = `Error: ${result._error.originString}\n${result._error.syntaxErrorMessage}`;
     }

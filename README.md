@@ -13,6 +13,16 @@ for the WebGPU API.
 
 The Examples directory has some WHLSL sample code.
 
+## Generating Output
+
+We currently support Metal Shading Language as an output format, as well as a debug mode (JSON).
+
+```bash
+prompt> run-jsc --module-file=Scripts/generate.js -- [json|msl] file.whlsl
+```
+
+Alternatively, load Source/json/JSON.html or Source/metal/MSL.html in your browser.
+
 ## Running the Tests
 
 The WHSL source code is exposed as an ES6 Module.
@@ -24,14 +34,3 @@ prompt> run-jsc --module-file=Source/Test.js
 ```
 
 Or, load Source/Test.html in your browser (assuming your browser supports modules, which most modern browsers do).
-
-## Generating Output
-
-We currently support Metal Shading Language as an output format, as well as a debug mode (JSON).
-
-```bash
-prompt> run-jsc --module-file=Scripts/generate.js -- [json|msl] file.whlsl
-```
-
-Alternatively, for MSL load Source/metal/MSL.html in your browser.
-
