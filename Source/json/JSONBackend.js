@@ -38,6 +38,7 @@ import { FuncDef } from "../FuncDef.js";
 import { GeneratorResult } from "../GeneratorResult.js";
 import { PtrType } from "../PtrType.js";
 import { StructType } from "../StructType.js";
+import { VectorType } from "../VectorType.js";
 import { Visitor } from "../Visitor.js";
 
 class FunctionDescriber {
@@ -483,6 +484,30 @@ export class JSONBackend {
 
     _describeUsedType(name, attributes)
     {
+        class NativeTypeNameVisitor extends Visitor {
+            visitTypeRef(node)
+            {
+                if (node.type)
+                    return node.type.visit(this);
+                return "";
+            }
+
+            visitNativeType(node)
+            {
+                return node.name;
+            }
+
+            visitVectorType(node)
+            {
+                return `${node.elementType.name}${node.numElementsValue}`;
+            }
+
+            visitMatrixType(node)
+            {
+                return `${node.elementType.name}${node.numRowsValue}x${node.numColumnsValue}`;
+            }
+        }
+
         let typeRef = attributes.type;
         let type = typeRef.type;
         if (type instanceof StructType) {
@@ -499,30 +524,14 @@ export class JSONBackend {
                     to: type.elementType.name,
                     addressSpace: type.addressSpace
                  };
+            } else if (typeRef instanceof VectorType) {
+                return {
+                    type: "vector",
+                    shortName: typeRef.visit(new NativeTypeNameVisitor()),
+                    elementType: this._typeUnifier.uniqueTypeId(typeRef.elementType),
+                    length: typeRef.numElementsValue
+                };
             } else {
-                class NativeTypeNameVisitor extends Visitor {
-                    visitTypeRef(node)
-                    {
-                        if (node.type)
-                            return node.type.visit(this);
-                        return "";
-                    }
-
-                    visitNativeType(node)
-                    {
-                        return node.name;
-                    }
-
-                    visitVectorType(node)
-                    {
-                        return `${node.elementType.name}${node.numElementsValue}`;
-                    }
-
-                    visitMatrixType(node)
-                    {
-                        return `${node.elementType.name}${node.numRowsValue}x${node.numColumnsValue}`;
-                    }
-                }
                 const nativeName = typeRef.visit(new NativeTypeNameVisitor());
                 return { type: "native", definition: nativeName };
             }
