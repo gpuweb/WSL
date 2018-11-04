@@ -518,13 +518,11 @@ export class JSONBackend {
             const uniqueName = this._typeUnifier.uniqueTypeId(typeRef);
             if (type && type.isArray)
                 return `FIXME: Implement Array`;
-            else if (type && type.isPtr) {
-                return {
-                    type: "pointer",
-                    to: type.elementType.name,
-                    addressSpace: type.addressSpace
-                 };
-            } else if (typeRef instanceof VectorType) {
+            else if (type && type.isPtr)
+                return this._describeUsedPtrType(type);
+            else if (typeRef instanceof PtrType)
+                return this._describeUsedPtrType(typeRef);
+            else if (typeRef instanceof VectorType) {
                 return {
                     type: "vector",
                     shortName: typeRef.visit(new NativeTypeNameVisitor()),
@@ -536,6 +534,15 @@ export class JSONBackend {
                 return { type: "native", definition: nativeName };
             }
         }
+    }
+
+    _describeUsedPtrType(ptrTypeRef)
+    {
+        return {
+            type: "pointer",
+            to: this._typeUnifier.uniqueTypeId(ptrTypeRef.elementType),
+            addressSpace: ptrTypeRef.addressSpace
+         };
     }
 
     _describeUsedStructType(structTypeAttributes)
