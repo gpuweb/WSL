@@ -752,7 +752,7 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     i = uint
     i >= j
     n < j
-    ------------------------------------------------ :: array_ref_access_invalid
+    ------------------------------------------------ :: array_ref_access_clamped
     R |- Ref(addr, j) [uint k] -> LVal(addr + n*k) ;
 
     ------------------------------------ :: array_null_access
@@ -779,16 +779,23 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     R |- LVal(addr) -> rval2 ; addr -> rval1
 
     e0 != LVal(addr)
+    e0 != Invalid_LVal
     R |- e0 -> e0' ; E
     ----------------------------- :: assign_left_reduce
     R |- e0 = e1 -> e0' = e1 ; E
 
     R |- e1 -> e1' ; E
-    --------------------------------------------- :: assign_right_reduce
-    R |- LVal(addr) = e1 -> LVal(addr) = e1' ; E
+    ---------------------------- :: assign_right_reduce
+    R |- e0 = e1 -> e0 = e1' ; E
 
     --------------------------------------------- :: assign_execute
     R |- LVal(addr) = rval -> rval ; addr <- rval
+
+    ---------------------------------- :: assign_invalid_ignore
+    R |- Invalid_LVal = rval -> rval ;
+
+    --------------------------------------- :: assign_invalid_trap
+    R |- Invalid_LVal = rval -> TrapValue ;
 
     R |- e -> e' ; E
     ------------------------------------------------------------------------------------------------------------------ :: call_reduce
