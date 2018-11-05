@@ -419,7 +419,7 @@ export class JSONBackend {
             language: "whlsl",
             entryPoints: [],
             functions: [],
-            types: {}
+            types: []
         };
 
         const entryPoints = this._findEntryPoints();
@@ -435,9 +435,32 @@ export class JSONBackend {
 
         let usedTypes = new JSONTypeAttributesMap(usedFunctions, this._typeUnifier);
         for (let [name, attrs] of usedTypes.types) {
-            output.types[name] = this._describeUsedType(name, attrs);
+            output.types.push(this._describeUsedType(name, attrs));
         }
 
+        // Sort types into an order that will allow them to be declared.
+        // FIXME: This isn't accurate enough. Structs may reference
+        // other structs, etc. We need to look at the members and reference
+        // types.
+        output.types.sort((a, b) => {
+            if (a.type == "native")
+                return -1;
+            if (b.type == "native")
+                return 1;
+            if (a.type == "vector")
+                return -1;
+            if (b.type == "vector")
+                return 1;
+            if (a.type == "struct" && a.name != "global struct")
+                return -1;
+            if (b.type == "struct" && b.name != "global struct")
+                return 1;
+            if (a.name == "global struct")
+                return -1;
+            if (b.name == "global struct" && a.type == "pointer")
+                return 1;
+            return 0;
+        });
         return output;
     }
 
@@ -511,7 +534,7 @@ export class JSONBackend {
         let typeRef = attributes.type;
         let type = typeRef.type;
         if (type instanceof StructType) {
-            return this._describeUsedStructType(attributes);
+            return this._describeUsedStructType(name, attributes);
         } else if (type instanceof ArrayRefType)
             return "FIXME: Implement ArrayRefType";
         else {
@@ -519,11 +542,12 @@ export class JSONBackend {
             if (type && type.isArray)
                 return `FIXME: Implement Array`;
             else if (type && type.isPtr)
-                return this._describeUsedPtrType(type);
+                return this._describeUsedPtrType(name, type);
             else if (typeRef instanceof PtrType)
-                return this._describeUsedPtrType(typeRef);
+                return this._describeUsedPtrType(name, typeRef);
             else if (typeRef instanceof VectorType) {
                 return {
+                    name,
                     type: "vector",
                     shortName: typeRef.visit(new NativeTypeNameVisitor()),
                     elementType: this._typeUnifier.uniqueTypeId(typeRef.elementType),
@@ -531,25 +555,27 @@ export class JSONBackend {
                 };
             } else {
                 const nativeName = typeRef.visit(new NativeTypeNameVisitor());
-                return { type: "native", definition: nativeName };
+                return { name, type: "native", definition: nativeName };
             }
         }
     }
 
-    _describeUsedPtrType(ptrTypeRef)
+    _describeUsedPtrType(name, ptrTypeRef)
     {
         return {
+            name,
             type: "pointer",
             to: this._typeUnifier.uniqueTypeId(ptrTypeRef.elementType),
             addressSpace: ptrTypeRef.addressSpace
          };
     }
 
-    _describeUsedStructType(structTypeAttributes)
+    _describeUsedStructType(name, structTypeAttributes)
     {
         let structType = structTypeAttributes.type;
         let struct = structType.type;
         let result = {
+            name,
             type: "struct",
             fields: []
         };
