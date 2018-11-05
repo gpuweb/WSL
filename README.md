@@ -21,6 +21,8 @@ We currently support Metal Shading Language as an output format, as well as a de
 prompt> run-jsc --module-file=Scripts/generate.js -- [json|msl] file.whlsl
 ```
 
+(Or replace `run-jsc` with your favorite Javascript interpreter. You can get `run-jsc` by checking out and [building WebKit](https://webkit.org/getting-the-code/).)
+
 Alternatively, load Source/json/JSON.html or Source/metal/MSL.html in your browser.
 
 ## Running the Tests
