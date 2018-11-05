@@ -77,11 +77,11 @@ e :: expr_ ::= {{com expression}}
     | fid <( rv0 , .. , rvn )> ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
     | val :: :: val {{com only during exec, except literals}}
     | Call s :: :: call_construct {{com only during exec}}
-    | Clamp ( rval ) :: :: clamp_construct {{com only during exec}}
 
 val :: val_ ::=
     | rval :: :: rval
     | LVal ( addr ) :: :: lval
+    | Invalid_LVal :: :: invalid_lval {{com corresponds to null and out-of-bounds accesses}}
 
 stride :: stride_ ::=
     | k :: :: stride {{com stride annotation added during monomorphisation}}
@@ -189,7 +189,6 @@ fid :: function_identifier_ ::=
 terminals :: terminals_ ::=
     | U :: :: big_union {{tex \bigcup}}
     | |- :: :: vdash {{tex \vdash}}
-    | |-- :: :: vdash_bis {{tex \vdash}}
     | <- :: :: load {{tex \leftarrow}}
     | -> :: :: mapsto {{tex \mapsto}}
     | --> :: :: desugars {{tex \leadsto}}
@@ -237,6 +236,8 @@ formula :: formula_ ::=
     | rv = Default ( tval ) :: :: default_value
     | s is a terminator :: :: stmt_is_terminator
     | u <: u' :: :: uniform_subtype 
+    | rval a valid value for this type :: :: valid_value
+    | rval not a valid value for this type :: :: invalid_value
 
 
 defns
@@ -474,14 +475,14 @@ G |- sc : tval :: :: typing_switch_case :: '' by
     G |- default : tval
 
 defn
-G |-- sblock : u B :: :: typing_switch_block :: '' by
+G |-- sblock : u B :: :: typing_switch_block :: '' {{tex [[G]] \vdash [[sblock]] :_{[[u]]} [[B]]}} by
 
     G |- { s0 .. sn } : u B
     --------------------- :: switch_block
     G |-- s0 .. sn : u B
 
 defn
-G |- e : u t :: :: typing_expr :: '' {{com Typing expressions}} by
+G |- e : u t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash [[e]] :_{[[u]]} [[t]]}} by
 
     ---------------------------- :: null_lit_array_ref
     G |- null : u Ref (tval, as) +
@@ -663,6 +664,9 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     -------------------------------- :: deref_ptr
     R |- * Ptr(addr) -> LVal(addr) ;
 
+    ----------------------------- :: deref_null
+    R |- * null -> Invalid_LVal ;
+
     R |- e -> e' ; E
     -------------------- :: deref_reduce
     R |- * e -> * e' ; E
@@ -675,9 +679,22 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     -------------------------------- :: take_ptr_lval
     R |- & LVal(addr) -> Ptr(addr);
 
-    % TODO: add the '@' operator. It is tricky, because the monomorphisation pass must annotate it with the resulting size of the reference, basically by rerunning the type checking.
+    ---------------------------- :: take_ptr_invalid
+    R |- & Invalid_LVal -> null;
 
-    % TODO: do we want to eliminate the next few rules, and instead put them into the definition of operator[] on the default types?
+    e != LVal(addr)
+    R |- e -> e' ; E
+    -------------------- :: make_ref_reduce
+    R |- @ e -> @ e' ; E
+
+    ---------------------------------- :: make_ref_lval
+    R |- @ LVal(addr) -> Ref(addr, i);
+    % TODO: find a way to express the fact that i is decided at compile time.. it should probably be made part of the @ expression
+
+    ---------------------------- :: make_ref_invalid
+    R |- @ Invalid_LVal -> null;
+
+    % Note: we might want to eliminate the next few rules, and instead put them into the definition of operator[] on the default types?
     % it would allow for nicer interaction with protocols.
     e0 != LVal(addr)
     R |- e0 -> e0' ; E
@@ -691,14 +708,36 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     
     i = uint
     i <= n
-    ------------------------------------------ :: array_lit_access
+    ------------------------------------------ :: array_lit_access_valid
     R |- [rval0, .., rvaln] [uint] -> rvali ;
 
     i = uint
+    i > n
+    --------------------------------------------- :: array_lit_access_trap
+    R |- [rval0, .., rvaln] [uint] -> TrapValue ;
+
+    i = uint
+    i > n
+    j <= n
+    ----------------------------------------- :: array_lit_access_clamped
+    R |- [rval0, .., rvaln] [uint] -> rvalj ;
+
+    i = uint
+    i <= n
     ----------------------------------------------- :: array_lval_access_valid
     R |- LVal(addr) [uint k] -> LVal(addr + i*k) ;
-    % TODO: we will have to add a check either here, or in the local typechecking phase, or in the monomorphisation phase.
-    % TODO: the rules for array accesses in general are messed up, and should be fixed urgently.
+    % TODO: express better the size check, making it clear that the size information comes from the typing phase.
+
+    i = uint
+    i > n
+    ------------------------------------------ :: array_lval_access_invalid
+    R |- LVal(addr) [uint k] -> Invalid_LVal ;
+
+    i = uint
+    i > n
+    j <= n
+    ---------------------------------------------- :: array_lval_access_clamped
+    R |- LVal(addr) [uint k] -> LVal(addr + j*k) ;
 
     i = uint
     i < j
@@ -708,20 +747,36 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     i = uint
     i >= j
     ------------------------------------------ :: array_ref_access_invalid
-    R |- Ref(addr, j) [uint k] -> TrapValue ;
+    R |- Ref(addr, j) [uint k] -> Invalid_LVal ;
+
+    i = uint
+    i >= j
+    n < j
+    ------------------------------------------------ :: array_ref_access_invalid
+    R |- Ref(addr, j) [uint k] -> LVal(addr + n*k) ;
+
+    ------------------------------------ :: array_null_access
+    R |- null [uint k] -> Invalid_LVal ;
 
     x -> val in R
     ---------------- :: environment_access
     R |- x -> val ;
 
-    --------------------------------------- :: load_non_enum
+    rv = Default(tval)
+    ----------------------- :: load_invalid_default
+    R |- Invalid_LVal -> rv
+
+    ------------------------------- :: load_invalid_trap
+    R |- Invalid_LVal -> TrapValue;
+
+    rval a valid value for this type
+    --------------------------------------- :: load_valid
     R |- LVal(addr) -> rval ; addr -> rval
 
-    --------------------------------------- :: load_enum
-    R |- LVal(addr) -> Clamp(rval) ; addr -> rval
-    % TODO: add the Clamp element to the grammar
-
-    % TODO: add rules for dereferencing null (both as a pointer and as an array ref, both as trapping and as clamping/ignoring depending on whether it is on the right or left side of an assignment.. it likely requires some special null LValue).
+    rval1 not a valid value for this type
+    rval2 a valid value for this type
+    ------------------------------------------- :: load_invalid
+    R |- LVal(addr) -> rval2 ; addr -> rval1
 
     e0 != LVal(addr)
     R |- e0 -> e0' ; E
