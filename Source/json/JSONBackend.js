@@ -439,28 +439,7 @@ export class JSONBackend {
         }
 
         // Sort types into an order that will allow them to be declared.
-        // FIXME: This isn't accurate enough. Structs may reference
-        // other structs, etc. We need to look at the members and reference
-        // types.
-        output.types.sort((a, b) => {
-            if (a.type == "native")
-                return -1;
-            if (b.type == "native")
-                return 1;
-            if (a.type == "vector")
-                return -1;
-            if (b.type == "vector")
-                return 1;
-            if (a.type == "struct" && a.name != "global struct")
-                return -1;
-            if (b.type == "struct" && b.name != "global struct")
-                return 1;
-            if (a.name == "global struct")
-                return -1;
-            if (b.name == "global struct" && a.type == "pointer")
-                return 1;
-            return 0;
-        });
+        output.types.sort(this._typeComparison);
         return output;
     }
 
@@ -600,6 +579,29 @@ export class JSONBackend {
         }
 
         return result;
+    }
+
+    _typeComparison(a, b) {
+        // FIXME: This isn't accurate enough. Structs may reference
+        // other structs, etc. We need to look at the members and reference
+        // types.
+        if (a.type == "native")
+            return -1;
+        if (b.type == "native")
+            return 1;
+        if (a.type == "vector")
+            return -1;
+        if (b.type == "vector")
+            return 1;
+        if (a.type == "struct" && a.name != "global struct")
+            return -1;
+        if (b.type == "struct" && b.name != "global struct")
+            return 1;
+        if (a.name == "global struct")
+            return -1;
+        if (b.name == "global struct" && a.type == "pointer")
+            return 1;
+        return 0;
     }
 }
 
