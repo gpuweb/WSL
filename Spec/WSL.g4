@@ -94,6 +94,8 @@ Semantic
     | 'register' '(' [utbs] CoreDecimalIntLiteral (',' SPACEKEYWORD CoreDecimalIntLiteral)? ')'
     | 'specialized';
 
+Numthreads: 'numthreads' '(' CoreDecimalIntLiteral ',' ' '? CoreDecimalIntLiteral ',' ' '? CoreDecimalIntLiteral ')' ;
+
 fragment ValidIdentifier: [a-zA-Z_] [a-zA-Z0-9_]* ;
 Identifier: ValidIdentifier ;
 // Note: this currently excludes unicode, but allows digits in the middle of identifiers. We could easily restrict or extend this definition. to bikeshed
@@ -130,7 +132,7 @@ enumMember: Identifier ('=' constexpr)? ;
 
 funcDef: RESTRICTED? funcDecl block;
 funcDecl
-    : (VERTEX | FRAGMENT | ('[' NUMTHREADS '(' CoreDecimalIntLiteral ',' CoreDecimalIntLiteral ',' CoreDecimalIntLiteral ')' ']' COMPUTE)) type Identifier parameters (':' Semantic)?
+    : (VERTEX | FRAGMENT | ('[' Numthreads ']' COMPUTE)) type Identifier parameters (':' Semantic)?
     | type (Identifier | OperatorName) parameters (':' Semantic)?
     | OPERATOR type parameters (':' Semantic)? ;
 
