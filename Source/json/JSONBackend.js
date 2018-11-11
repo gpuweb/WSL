@@ -34,9 +34,11 @@ import { JSONTypeAttributesMap } from "./JSONTypeAttributesMap.js";
 import { JSONTypeUnifier } from "./JSONTypeUnifier.js";
 
 import { ArrayRefType } from "../ArrayRefType.js";
+import { CommaExpression } from "../CommaExpression.js";
 import { FuncDef } from "../FuncDef.js";
 import { GeneratorResult } from "../GeneratorResult.js";
 import { PtrType } from "../PtrType.js";
+import { Return } from "../Return.js";
 import { StructType } from "../StructType.js";
 import { VariableDecl } from "../VariableDecl.js";
 import { VectorType } from "../VectorType.js";
@@ -106,6 +108,11 @@ class FunctionDescriber {
     describeBlock(block)
     {
         const describer = this;
+        if (!block.statements) {
+            return {
+                type: "emptyBlock"
+            };
+        }
         return block.statements.map(statement => {
             return describer.describeStatement(statement);
         });
@@ -113,14 +120,21 @@ class FunctionDescriber {
 
     describeStatement(statement)
     {
-        if (statement instanceof VariableDecl)
-            return this.describeVariableDecl(statement);
-        return statement.toString();
+        let describeFunc = this["describe" + statement.constructor.name];
+        if (!describeFunc)
+            throw new Error("No describe function for " + statement.constructor.name + " in " + this.constructor.name);
+        return describeFunc.call(this, statement);
     }
 
     describeCommaExpression(node)
     {
-        print("CommaExpression");
+        let statements = [];
+        for (let expression of node.list)
+            statements.push(this.describeBlock(expression));
+        return {
+            type: "comma",
+            statements
+        }
     }
 
     describeTypeRef(typeRef)
@@ -136,62 +150,62 @@ class FunctionDescriber {
 
     describeNativeType(node)
     {
-        print("NativeType");
+        return "NativeType";
     }
 
     describeTypeDef(node)
     {
-        print("TypeDef");
+        return "TypeDef";
     }
 
     describeStructType(node)
     {
-        print("StructType");
+        return "StructType";
     }
 
     describeField(node)
     {
-        print("Field");
+        return "Field";
     }
 
     describeEnumType(node)
     {
-        print("EnumType");
+        return "EnumType";
     }
 
     describeEnumMember(node)
     {
-        print("EnumMember");
+        return "EnumMember";
     }
 
     describeEnumLiteral(node)
     {
-        print("EnumLiteral");
+        return "EnumLiteral";
     }
 
     describeElementalType(node)
     {
-        print("ElementalType");
+        return "ElementalType";
     }
 
     describeReferenceType(node)
     {
-        print("ReferenceType");
+        return "ReferenceType";
     }
 
     describePtrType(node)
     {
-        print("PtrType");
+        return "PtrType";
     }
 
     describeArrayRefType(node)
     {
-        print("ArrayRefType");
+        return "ArrayRefType";
     }
 
     describeArrayType(node)
     {
-        print("ArrayType");
+        return "ArrayType";
     }
 
     describeVariableDecl(varDecl)
@@ -204,192 +218,195 @@ class FunctionDescriber {
 
     describeAssignment(node)
     {
-        print("Assignment");
+        return "Assignment";
     }
 
     describeReadModifyWriteExpression(node)
     {
-        print("ReadModifyWriteExpression");
+        return "ReadModifyWriteExpression";
     }
 
     describeDereferenceExpression(node)
     {
-        print("DereferenceExpression");
+        return "DereferenceExpression";
     }
 
     describeTernaryExpression(node)
     {
-        print("TernaryExpression");
+        return "TernaryExpression";
     }
 
     describeDotExpression(node)
     {
-        print("DotExpression");
+        return "DotExpression";
     }
 
     describeIndexExpression(node)
     {
-        print("IndexExpression");
+        return "IndexExpression";
     }
 
     describeMakePtrExpression(node)
     {
-        print("MakePtrExpression");
+        return "MakePtrExpression";
     }
 
     describeMakeArrayRefExpression(node)
     {
-        print("MakeArrayRefExpression");
+        return "MakeArrayRefExpression";
     }
 
     describeConvertPtrToArrayRefExpression(node)
     {
-        print("ConvertPtrToArrayRefExpression");
+        return "ConvertPtrToArrayRefExpression";
     }
 
     describeVariableRef(node)
     {
-        print("VariableRef");
+        return "VariableRef";
     }
 
     describeIfStatement(node)
     {
-        print("IfStatement");
+        return "IfStatement";
     }
 
     describeWhileLoop(node)
     {
-        print("WhileLoop");
+        return "WhileLoop";
     }
 
     describeDoWhileLoop(node)
     {
-        print("DoWhileLoop");
+        return "DoWhileLoop";
     }
 
     describeForLoop(node)
     {
-        print("ForLoop");
+        return "ForLoop";
     }
 
     describeSwitchStatement(node)
     {
-        print("SwitchStatement");
+        return "SwitchStatement";
     }
 
     describeSwitchCase(node)
     {
-        print("SwitchCase");
+        return "SwitchCase";
     }
 
     describeReturn(node)
     {
-        print("Return");
+        return {
+            type: "return",
+            value: this.describeStatement(node.value)
+        };
     }
 
     describeContinue(node)
     {
-        print("Continue");
+        return "Continue";
     }
 
     describeBreak(node)
     {
-        print("Break");
+        return "Break";
     }
 
     describeTrapStatement(node)
     {
-        print("TrapStatement");
+        return "TrapStatement";
     }
 
     describeGenericLiteral(node)
     {
-        print("GenericLiteral");
+        return "GenericLiteral";
     }
 
     describeGenericLiteralType(node)
     {
-        print("GenericLiteralType");
+        return "GenericLiteralType";
     }
 
     describeNullLiteral(node)
     {
-        print("NullLiteral");
+        return "NullLiteral";
     }
 
     describeBoolLiteral(node)
     {
-        print("BoolLiteral");
+        return "BoolLiteral";
     }
 
     describeNullType(node)
     {
-        print("NullType");
+        return "NullType";
     }
 
     describeCallExpression(node)
     {
-        print("CallExpression");
+        return "CallExpression";
     }
 
     describeLogicalNot(node)
     {
-        print("LogicalNot");
+        return "LogicalNot";
     }
 
     describeLogicalExpression(node)
     {
-        print("LogicalExpression");
+        return "LogicalExpression";
     }
 
     describeFunctionLikeBlock(node)
     {
-        print("FunctionLikeBlock");
+        return "FunctionLikeBlock";
     }
 
     describeAnonymousVariable(node)
     {
-        print("AnonymousVariable");
+        return "AnonymousVariable";
     }
 
     describeIdentityExpression(node)
     {
-        print("IdentityExpression");
+        return "IdentityExpression";
     }
 
     describeVectorType(node)
     {
-        print("VectorType");
+        return "VectorType";
     }
 
     describeMatrixType(node)
     {
-        print("MatrixType");
+        return "MatrixType";
     }
 
     describeFuncNumThreadsAttribute(node)
     {
-        print("FuncNumThreadsAttribute");
+        return "FuncNumThreadsAttribute";
     }
 
     describeBuiltInSemantic(node)
     {
-        print("BuiltInSemantic");
+        return "BuiltInSemantic";
     }
 
     describeResourceSemantic(node)
     {
-        print("ResourceSemantic");
+        return "ResourceSemantic";
     }
 
     describeStageInOutSemantic(node)
     {
-        print("StageInOutSemantic");
+        return "StageInOutSemantic";
     }
 
     describeSpecializationConstantSemantic(node)
     {
-        print("SpecializationConstantSemantic");
+        return "SpecializationConstantSemantic";
     }
 }
 
