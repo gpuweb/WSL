@@ -38,6 +38,7 @@ export function programToMSL(program)
         return new GeneratorResult(null, new Error("Compilation failed"), null, null);
 
     const compiler = new MSLBackend(program);
+    compiler._allowComments = true;
     return compiler.compile();
 }
 

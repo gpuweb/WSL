@@ -38,6 +38,7 @@ import { FuncDef } from "../FuncDef.js";
 import { GeneratorResult } from "../GeneratorResult.js";
 import { PtrType } from "../PtrType.js";
 import { StructType } from "../StructType.js";
+import { VariableDecl } from "../VariableDecl.js";
 import { VectorType } from "../VectorType.js";
 import { Visitor } from "../Visitor.js";
 
@@ -104,11 +105,16 @@ class FunctionDescriber {
 
     describeBlock(block)
     {
-        return block.statements.map(this.describeStatement);
+        const describer = this;
+        return block.statements.map(statement => {
+            return describer.describeStatement(statement);
+        });
     }
 
     describeStatement(statement)
     {
+        if (statement instanceof VariableDecl)
+            return this.describeVariableDecl(statement);
         return statement.toString();
     }
 
@@ -188,9 +194,12 @@ class FunctionDescriber {
         print("ArrayType");
     }
 
-    describeVariableDecl(node)
+    describeVariableDecl(varDecl)
     {
-        print("VariableDecl");
+        return {
+            type: "variable",
+            variableType: varDecl.name
+        };
     }
 
     describeAssignment(node)
