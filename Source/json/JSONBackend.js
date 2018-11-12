@@ -46,6 +46,14 @@ import { Visitor } from "../Visitor.js";
 
 class FunctionDescriber {
 
+    describe(node)
+    {
+        let describeFunc = this["describe" + node.constructor.name];
+        if (!describeFunc)
+            throw new Error("No describe function for " + node.constructor.name + " in " + this.constructor.name);
+        return describeFunc.call(this, node);
+    }
+
     describeFunc(func)
     {
         if (func.isCast) {
@@ -114,16 +122,8 @@ class FunctionDescriber {
             };
         }
         return block.statements.map(statement => {
-            return describer.describeStatement(statement);
+            return describer.describe(statement);
         });
-    }
-
-    describeStatement(statement)
-    {
-        let describeFunc = this["describe" + statement.constructor.name];
-        if (!describeFunc)
-            throw new Error("No describe function for " + statement.constructor.name + " in " + this.constructor.name);
-        return describeFunc.call(this, statement);
     }
 
     describeCommaExpression(node)
@@ -220,8 +220,8 @@ class FunctionDescriber {
     {
         return {
             type: "assignment",
-            lhs: this.describeStatement(node.lhs),
-            rhs: this.describeStatement(node.rhs),
+            lhs: this.describe(node.lhs),
+            rhs: this.describe(node.rhs),
             assignmentType: node.type.name
         };
     }
@@ -235,7 +235,7 @@ class FunctionDescriber {
     {
         return {
             type: "dereference",
-            to: this.describeStatement(node.ptr)
+            to: this.describe(node.ptr)
         };
     }
 
@@ -308,7 +308,7 @@ class FunctionDescriber {
     {
         return {
             type: "return",
-            value: this.describeStatement(node.value)
+            value: this.describe(node.value)
         };
     }
 
@@ -352,9 +352,18 @@ class FunctionDescriber {
         return "NullType";
     }
 
-    describeCallExpression(node)
+    describeCallExpression(call)
     {
-        return "CallExpression";
+        let result = {
+            type: "call",
+            name: call.name,
+            arguments: [],
+            resultType: this.describe(call.resultType)
+        };
+        for (let argument of call.argumentList) {
+            result.arguments.push(this.describe(argument));
+        }
+        return result;
     }
 
     describeLogicalNot(node)
@@ -381,7 +390,7 @@ class FunctionDescriber {
     {
         return {
             type: "identity",
-            target: this.describeStatement(node.target)
+            target: this.describe(node.target)
         };
     }
 
