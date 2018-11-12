@@ -256,7 +256,10 @@ class FunctionDescriber {
 
     describeMakePtrExpression(node)
     {
-        return "MakePtrExpression";
+        return {
+            type: "addressOf",
+            value: this.describe(node.lValue)
+        }
     }
 
     describeMakeArrayRefExpression(node)
