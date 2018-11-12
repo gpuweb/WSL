@@ -110,7 +110,7 @@ class FunctionDescriber {
         const describer = this;
         if (!block.statements) {
             return {
-                statement: "emptyBlock"
+                type: "emptyBlock"
             };
         }
         return block.statements.map(statement => {
@@ -132,7 +132,7 @@ class FunctionDescriber {
         for (let expression of node.list)
             statements.push(this.describeBlock(expression));
         return {
-            statement: "comma",
+            type: "comma",
             statements
         }
     }
@@ -211,7 +211,7 @@ class FunctionDescriber {
     describeVariableDecl(varDecl)
     {
         return {
-            statement: "variable",
+            type: "variable",
             variableType: varDecl.name
         };
     }
@@ -219,10 +219,10 @@ class FunctionDescriber {
     describeAssignment(node)
     {
         return {
-            statement: "assignment",
+            type: "assignment",
             lhs: this.describeStatement(node.lhs),
             rhs: this.describeStatement(node.rhs),
-            type: node.type.name
+            assignmentType: node.type.name
         };
     }
 
@@ -233,7 +233,10 @@ class FunctionDescriber {
 
     describeDereferenceExpression(node)
     {
-        return "DereferenceExpression";
+        return {
+            type: "dereference",
+            to: this.describeStatement(node.ptr)
+        };
     }
 
     describeTernaryExpression(node)
@@ -304,7 +307,7 @@ class FunctionDescriber {
     describeReturn(node)
     {
         return {
-            statement: "return",
+            type: "return",
             value: this.describeStatement(node.value)
         };
     }
@@ -376,7 +379,10 @@ class FunctionDescriber {
 
     describeIdentityExpression(node)
     {
-        return "IdentityExpression";
+        return {
+            type: "identity",
+            target: this.describeStatement(node.target)
+        };
     }
 
     describeVectorType(node)
