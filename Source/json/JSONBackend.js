@@ -83,7 +83,7 @@ class FunctionDescriber {
             if (func.attributeBlock) {
                 result.attributeBlock = [];
                 for (let attribute of func.attributeBlock) {
-                    print("FIXME: attributeBlock");
+                    result.attributeBlock.push("FIXME: attributeBlock");
                 }
             }
             return result;
@@ -195,7 +195,11 @@ class FunctionDescriber {
 
     describePtrType(node)
     {
-        return "PtrType";
+        return {
+            type: "pointerType",
+            typeID: node.typeID,
+            elementType: this.describe(node.elementType)
+        };
     }
 
     describeArrayRefType(node)
@@ -211,7 +215,7 @@ class FunctionDescriber {
     describeVariableDecl(varDecl)
     {
         return {
-            type: "variable",
+            type: "variableDeclaration",
             variableType: varDecl.name
         };
     }
@@ -274,7 +278,10 @@ class FunctionDescriber {
 
     describeVariableRef(node)
     {
-        return "VariableRef";
+        return {
+            type: "variableReference",
+            variable: this.describe(node.variable)
+        }
     }
 
     describeIfStatement(node)
