@@ -102,7 +102,7 @@ class FunctionDescriber {
 
     describeNativeFunc(node)
     {
-        print(`NativeFunc`);
+        return "NativeFunc";
     }
 
     describeBlock(block)
@@ -110,7 +110,7 @@ class FunctionDescriber {
         const describer = this;
         if (!block.statements) {
             return {
-                type: "emptyBlock"
+                statement: "emptyBlock"
             };
         }
         return block.statements.map(statement => {
@@ -132,7 +132,7 @@ class FunctionDescriber {
         for (let expression of node.list)
             statements.push(this.describeBlock(expression));
         return {
-            type: "comma",
+            statement: "comma",
             statements
         }
     }
@@ -211,14 +211,19 @@ class FunctionDescriber {
     describeVariableDecl(varDecl)
     {
         return {
-            type: "variable",
+            statement: "variable",
             variableType: varDecl.name
         };
     }
 
     describeAssignment(node)
     {
-        return "Assignment";
+        return {
+            statement: "assignment",
+            lhs: this.describeStatement(node.lhs),
+            rhs: this.describeStatement(node.rhs),
+            type: node.type.name
+        };
     }
 
     describeReadModifyWriteExpression(node)
@@ -299,7 +304,7 @@ class FunctionDescriber {
     describeReturn(node)
     {
         return {
-            type: "return",
+            statement: "return",
             value: this.describeStatement(node.value)
         };
     }
