@@ -48,9 +48,14 @@ class FunctionDescriber {
 
     describe(node)
     {
+        if (!node || !('constructor' in node))
+            throw new Error("Unknown type " + node + " in " + this.constructor.name);
+
         let describeFunc = this["describe" + node.constructor.name];
+
         if (!describeFunc)
             throw new Error("No describe function for " + node.constructor.name + " in " + this.constructor.name);
+
         return describeFunc.call(this, node);
     }
 
@@ -130,7 +135,7 @@ class FunctionDescriber {
     {
         let statements = [];
         for (let expression of node.list)
-            statements.push(this.describeBlock(expression));
+            statements.push(this.describe(expression));
         return {
             type: "comma",
             statements
@@ -316,10 +321,13 @@ class FunctionDescriber {
 
     describeReturn(node)
     {
-        return {
-            type: "return",
-            value: this.describe(node.value)
+        let result = {
+            type: "return"
         };
+
+        if (node.value)
+            result.value = this.describe(node.value);
+        return result;
     }
 
     describeContinue(node)
@@ -339,7 +347,11 @@ class FunctionDescriber {
 
     describeGenericLiteral(node)
     {
-        return "GenericLiteral";
+        return {
+            type: "literal",
+            value: node.value,
+            literalType: node.type._typeID
+        };
     }
 
     describeGenericLiteralType(node)
