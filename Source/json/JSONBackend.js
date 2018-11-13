@@ -285,6 +285,7 @@ class FunctionDescriber {
     {
         return {
             type: "variableReference",
+            name: node.name,
             variable: this.describe(node.variable)
         }
     }
@@ -405,7 +406,12 @@ class FunctionDescriber {
 
     describeAnonymousVariable(node)
     {
-        return "AnonymousVariable";
+        // FIXME: Use typeUnifier.
+        return {
+            type: "anonymousVariable",
+            name: node.name,
+            variableType: node.type._typeID
+        }
     }
 
     describeIdentityExpression(node)
