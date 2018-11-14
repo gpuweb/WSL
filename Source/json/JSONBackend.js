@@ -36,6 +36,7 @@ import { JSONTypeUnifier } from "./JSONTypeUnifier.js";
 import { ArrayRefType } from "../ArrayRefType.js";
 import { CommaExpression } from "../CommaExpression.js";
 import { FuncDef } from "../FuncDef.js";
+import { FuncParameter } from "../FuncParameter.js";
 import { GeneratorResult } from "../GeneratorResult.js";
 import { PtrType } from "../PtrType.js";
 import { Return } from "../Return.js";
@@ -98,7 +99,7 @@ class FunctionDescriber {
     describeFuncParameter(param)
     {
         let result = {
-            name: param.name || "param"
+            name: param.name || "default function parameter"
         };
         result.type = this.describeTypeRef(param.type);
         if (param.semantic)
@@ -287,10 +288,17 @@ class FunctionDescriber {
 
     describeVariableRef(node)
     {
+        if (!node.name && node.variable instanceof FuncParameter) {
+            return {
+                type: "variableReference",
+                name: "default function parameter"
+            };
+        }
         return {
             type: "variableReference",
             name: node.name,
-            variable: this.describe(node.variable)
+            // FIXME: I think this is just duplicating the VarDecl.
+            // variable: this.describe(node.variable)
         }
     }
 
