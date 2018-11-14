@@ -98,7 +98,7 @@ class FunctionDescriber {
     describeFuncParameter(param)
     {
         let result = {
-            name: param.name
+            name: param.name || "param"
         };
         result.type = this.describeTypeRef(param.type);
         if (param.semantic)
@@ -144,13 +144,16 @@ class FunctionDescriber {
 
     describeTypeRef(typeRef)
     {
-        let result = {
-            name: typeRef.name
-        };
-        if (typeRef.typeArguments.length > 0)
-            result.typeArguments = typeRef.typeArguments.map(argument => argument.toString());
-
-        return result;
+        if (typeRef.name) {
+            let result = {
+                name: typeRef.name
+            };
+            if (typeRef.typeArguments.length > 0)
+                result.typeArguments = typeRef.typeArguments.map(argument => argument.toString());
+            return result;
+        } else {
+            return this.describe(typeRef.type);
+        }
     }
 
     describeNativeType(node)
@@ -203,6 +206,7 @@ class FunctionDescriber {
         return {
             type: "pointerType",
             typeID: node.typeID,
+            addressSpace: node.addressSpace,
             elementType: this.describe(node.elementType)
         };
     }
