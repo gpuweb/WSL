@@ -21,20 +21,29 @@ try {
 }
 
 if (shouldRun) {
-    let program;
-    let conversionFunction = _ => { return { error: "Unknown conversion type" }; };
+    let result;
     try {
         let outputType = arguments[0];
-        if (outputType == "json")
-            conversionFunction = programToJSON;
-        else if (outputType == "msl")
-            conversionFunction = programToMSL;
-        const source = readFile(arguments[1]);
-        program = prepare("/internal/test", 0, source);
+        const filename = arguments[1];
+        const inputIsJSON = /\.json$/.test(filename);
+        const source = readFile(filename);
+        if (outputType == "json" && inputIsJSON) {
+            // I don't know why you'd do this :)
+            result = JSON.parse(source);
+        } else if (outputType == "json") {
+            let program = prepare("/internal/test", 0, source);
+            result = programToJSON(program);
+        } else if (outputType == "msl" && inputIsJSON) {
+            result = { error: "Can't yet convert from json to msl." };
+        } else if (outputType == "msl") {
+            let program = prepare("/internal/test", 0, source);
+            result = programToMSL(program);
+        } else {
+            result = { error: `Unknown conversion type: ${outputType}` };
+        }
     } catch (e) {
         print(e);
         quit();
     }
-    const result = conversionFunction(program);
     print(JSON.stringify(result));
 }
