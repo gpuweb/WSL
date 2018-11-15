@@ -1,3 +1,6 @@
+// This is https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/1.2/spirv.core.grammar.json
+// converted into an ES Module.
+
 export const SPIRVGrammar = {
   "copyright" : [
     "Copyright (c) 2014-2016 The Khronos Group Inc.",
