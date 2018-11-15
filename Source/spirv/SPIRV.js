@@ -28,6 +28,7 @@
  */
 
 import { SPIRVGrammar } from "./SPIRVGrammar.js";
+import { generateSPIRVAssembly } from "./SPIRVCodegenAssembly.js";
 
 // This function accepts a JSON object describing the SPIR-V syntax.
 // For example, https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/1.2/spirv.core.grammar.json
@@ -208,22 +209,27 @@ function processSPIRVGrammar(json) {
 
                 this._operands = operands;
             }
+
             get operands()
             {
                 return this._operands;
             }
+
             get opname()
             {
                 return instruction.opname;
             }
+
             get opcode()
             {
                 return instruction.opcode;
             }
+
             get operandInfo()
             {
                 return instruction.operands;
             }
+
             get storageSize()
             {
                 let result = 1;
@@ -237,6 +243,7 @@ function processSPIRVGrammar(json) {
                 }
                 return result;
             }
+
             get largestId()
             {
                 let maximumId = 0;
@@ -248,6 +255,15 @@ function processSPIRVGrammar(json) {
                         maximumId = Math.max(maximumId, operand);
                 }
                 return maximumId;
+            }
+
+            toString()
+            {
+                let result = `    ${this.opname}`;
+                for (let operand of this.operands) {
+                    result += ` ${operand.enumerant}`;
+                }
+                return result;
             }
         }
     }
@@ -351,16 +367,32 @@ class SPIRVTextAssembler {
         this._grammar = grammar;
         this._largestId = 0;
         this._output = [];
-        this._output.push("; Magic:     0x07230203 (SPIR-V)");
-        this._output.push("; Version:   0x00010000 (Version: 1.0.0)");
-        this._output.push("; Generator: 0x574B0000 (WebKit)");
+        this.comment("Magic:     0x07230203 (SPIR-V)");
+        this.comment("Version:   0x00010000 (Version: 1.0.0)");
+        this.comment("Generator: 0x574B0000 (WebKit)");
         // Upper bound of <id>s will be inserted here.
-        this._output.push("; Schema:    0");
+        this.comment("Schema:    0");
+    }
+
+    comment(msg)
+    {
+        this._output.push(`; ${msg}`);
+    }
+
+    blankLine()
+    {
+        this._output.push("\n");
     }
 
     append(op)
     {
         this._largestId = Math.max(this._largestId, op.largestId);
+        this._output.push(op.toString());
+    }
+
+    get largestId()
+    {
+        return this._largestId;
     }
 
     get output()
@@ -383,10 +415,11 @@ export function programObjectToSPIRV(program)
     return { source: ass.result };
 }
 
-export function programObjectToSPIRVAssembly(program)
+export function programDescriptionToSPIRVAssembly(programDescription)
 {
     const grammar = processSPIRVGrammar(SPIRVGrammar);
     const ass = new SPIRVTextAssembler(grammar);
+    generateSPIRVAssembly(grammar, programDescription, ass);
     return { source: ass.result };
 }
 

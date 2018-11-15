@@ -91,7 +91,7 @@ button:active {
 <script type="module">
 import { prepare } from "../Prepare.js";
 import { programToJSON } from "../json/JSON.js";
-import { programObjectToSPIRVAssembly } from "./SPIRV.js";
+import { programDescriptionToSPIRVAssembly } from "./SPIRV.js";
 
 function provideDownload(result) {
     let resultElement = document.getElementById("Result");
@@ -138,8 +138,8 @@ function compile() {
     let output = document.querySelector("#output");
     output.textContent = "Compiling...";
     let program = prepare("/internal/test", 0, source);
-    let json = programToJSON(program);
-    let result = programObjectToSPIRVAssembly(json);
+    let description = programToJSON(program);
+    let result = programDescriptionToSPIRVAssembly(description);
     if (!result._error) {
         output.textContent = result.source;
     } else {
