@@ -26,11 +26,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+
+import { SPIRVGrammar } from "./SPIRVGrammar.js";
 
 // This function accepts a JSON object describing the SPIR-V syntax.
 // For example, https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/1.2/spirv.core.grammar.json
-function SPIRV(json) {
+
+function processSPIRVGrammar(json) {
     let result = {
         ops: {},
         kinds: {}
@@ -252,9 +254,10 @@ function SPIRV(json) {
     return result;
 }
 
-export default class SPIRVAssembler {
-    constructor()
+export class SPIRVAssembler {
+    constructor(grammar)
     {
+        this._grammar = grammar;
         this._largestId = 0;
         this._size = 5;
         this._storage = new Uint32Array(this.size);
@@ -341,3 +344,50 @@ export default class SPIRVAssembler {
         return this.storage.slice(0, this.size);
     }
 }
+
+class SPIRVTextAssembler {
+    constructor(grammar)
+    {
+        this._grammar = grammar;
+        this._largestId = 0;
+        this._output = [];
+        this._output.push("; Magic:     0x07230203 (SPIR-V)");
+        this._output.push("; Version:   0x00010000 (Version: 1.0.0)");
+        this._output.push("; Generator: 0x574B0000 (WebKit)");
+        // Upper bound of <id>s will be inserted here.
+        this._output.push("; Schema:    0");
+    }
+
+    append(op)
+    {
+        this._largestId = Math.max(this._largestId, op.largestId);
+    }
+
+    get output()
+    {
+        return this._output;
+    }
+
+    get result()
+    {
+        const bound = `; Bound:     ${this._largestId + 1}`;
+        this._output.splice(3, 0, bound);
+        return this.output.join("\n");
+    }
+}
+
+export function programObjectToSPIRV(program)
+{
+    const grammar = processSPIRVGrammar(SPIRVGrammar);
+    const ass = new SPIRVAssembler(grammar);
+    return { source: ass.result };
+}
+
+export function programObjectToSPIRVAssembly(program)
+{
+    const grammar = processSPIRVGrammar(SPIRVGrammar);
+    const ass = new SPIRVTextAssembler(grammar);
+    return { source: ass.result };
+}
+
+export { programObjectToSPIRV as default };

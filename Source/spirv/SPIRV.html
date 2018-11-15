@@ -29,252 +29,175 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <html>
 <head>
-<style>
-td {
-    border: solid black 1px;
+<style type="text/css">
+body {
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system;
+}
+h1 {
+    padding: 20px 20px;
+    text-align: center;
+    font-size: 50px;
+}
+main {
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 45% 45%;
+    grid-column-gap: 10px;
+    grid-template-rows: auto 500px auto;
+    grid-row-gap: 10px;
+    justify-content: center;
+}
+textarea {
+    padding: 5px;
+    margin: 0;
+    font-family: monospace;
+    font-size: 20px;
+    overflow: scroll;
+}
+#output {
+    padding: 5px;
+    margin: 0;
+    font-family: monospace;
+    overflow: scroll;
+    border: 1px solid #888;
+    box-sizing: border-box;
+    font-size: 20px;
+}
+#controls {
+    padding: 5px;
+    margin: 0;
+    text-align: center;
+}
+button {
+    width: 200px;
+    font-size: 20px;
+    background: linear-gradient(to bottom, #aae, #aaf);
+    border: 1px solid #ccd;
+    border-radius: 3px;
+}
+button:active {
+    background: linear-gradient(to bottom, #dde, #eef);
+    color: black;
+}
+#binary {
+    padding: 5px;
+    margin: 0;
+    text-align: center;
 }
 </style>
-    <!-- FIXME: Migrate to ES6 modules -->
-    <script src="Node.js"></script>
-    <script src="Type.js"></script>
-    <script src="ReferenceType.js"></script>
-    <script src="Value.js"></script>
-    <script src="Expression.js"></script>
-    <script src="Rewriter.js"></script>
-    <script src="Visitor.js"></script>
-    <script src="CreateLiteral.js"></script>
-    <script src="CreateLiteralType.js"></script>
-    <script src="PropertyAccessExpression.js"></script>
-    <script src="NativeType.js"></script>
-    <script src="Semantic.js"></script>
+<script type="module">
+import { prepare } from "../Prepare.js";
+import { programToJSON } from "../json/JSON.js";
+import { programObjectToSPIRVAssembly } from "./SPIRV.js";
 
-    <script src="AddressSpace.js"></script>
-    <script src="AllocateAtEntryPoints.js"></script>
-    <script src="AnonymousVariable.js"></script>
-    <script src="ArrayRefType.js"></script>
-    <script src="ArrayType.js"></script>
-    <script src="Assignment.js"></script>
-    <script src="AutoWrapper.js"></script>
-    <script src="Block.js"></script>
-    <script src="BoolLiteral.js"></script>
-    <script src="Break.js"></script>
-    <script src="BuiltInSemantic.js"></script>
-    <script src="BuiltinMatrixGetter.js"></script>
-    <script src="BuiltinMatrixSetter.js"></script>
-    <script src="BuiltinVectorGetter.js"></script>
-    <script src="BuiltinVectorSetter.js"></script>
-    <script src="CallExpression.js"></script>
-    <script src="CallFunction.js"></script>
-    <script src="Casts.js"></script>
-    <script src="Check.js"></script>
-    <script src="CheckLiteralTypes.js"></script>
-    <script src="CheckLoops.js"></script>
-    <script src="CheckNativeFuncStages.js"></script>
-    <script src="CheckRecursion.js"></script>
-    <script src="CheckRecursiveTypes.js"></script>
-    <script src="CheckReturns.js"></script>
-    <script src="CheckTypesWithArguments.js"></script>
-    <script src="CheckUnreachableCode.js"></script>
-    <script src="CheckWrapped.js"></script>
-    <script src="Checker.js"></script>
-    <script src="CloneProgram.js"></script>
-    <script src="CommaExpression.js"></script>
-    <script src="ConstexprFolder.js"></script>
-    <script src="Continue.js"></script>
-    <script src="ConvertPtrToArrayRefExpression.js"></script>
-    <script src="DoWhileLoop.js"></script>
-    <script src="DotExpression.js"></script>
-    <script src="DereferenceExpression.js"></script>
-    <script src="EArrayRef.js"></script>
-    <script src="EBuffer.js"></script>
-    <script src="EBufferBuilder.js"></script>
-    <script src="EPtr.js"></script>
-    <script src="EnumLiteral.js"></script>
-    <script src="EnumMember.js"></script>
-    <script src="EnumType.js"></script>
-    <script src="EvaluationCommon.js"></script>
-    <script src="Evaluator.js"></script>
-    <script src="ExpressionFinder.js"></script>
-    <script src="ExternalOrigin.js"></script>
-    <script src="Field.js"></script>
-    <script src="FindHighZombies.js"></script>
-    <script src="FlattenedStructOffsetGatherer.js"></script>
-    <script src="FloatLiteral.js"></script>
-    <script src="FloatLiteralType.js"></script>
-    <script src="FoldConstexprs.js"></script>
-    <script src="ForLoop.js"></script>
-    <script src="Func.js"></script>
-    <script src="FuncAttribute.js"></script>
-    <script src="FuncDef.js"></script>
-    <script src="FuncNumThreadsAttribute.js"></script>
-    <script src="FuncParameter.js"></script>
-    <script src="FunctionLikeBlock.js"></script>
-    <script src="HighZombieFinder.js"></script>
-    <script src="IdentityExpression.js"></script>
-    <script src="IfStatement.js"></script>
-    <script src="IndexExpression.js"></script>
-    <script src="InferTypesForCall.js"></script>
-    <script src="Inline.js"></script>
-    <script src="Inliner.js"></script>
-    <script src="IntLiteral.js"></script>
-    <script src="IntLiteralType.js"></script>
-    <script src="Intrinsics.js"></script>
-    <script src="LayoutBuffers.js"></script>
-    <script src="Lexer.js"></script>
-    <script src="LexerToken.js"></script>
-    <script src="LiteralTypeChecker.js"></script>
-    <script src="LogicalExpression.js"></script>
-    <script src="LogicalNot.js"></script>
-    <script src="LoopChecker.js"></script>
-    <script src="MakeArrayRefExpression.js"></script>
-    <script src="MakePtrExpression.js"></script>
-    <script src="MatrixType.js"></script>
-    <script src="NameContext.js"></script>
-    <script src="NameFinder.js"></script>
-    <script src="NameResolver.js"></script>
-    <script src="NativeFunc.js"></script>
-    <script src="NormalUsePropertyResolver.js"></script>
-    <script src="NullLiteral.js"></script>
-    <script src="NullType.js"></script>
-    <script src="OperatorAnderIndexer.js"></script>
-    <script src="OperatorArrayRefLength.js"></script>
-    <script src="OriginKind.js"></script>
-    <script src="OverloadResolutionFailure.js"></script>
-    <script src="Parse.js"></script>
-    <script src="Prepare.js"></script>
-    <script src="PropertyResolver.js"></script>
-    <script src="Program.js"></script>
-    <script src="ProgramWithUnnecessaryThingsRemoved.js"></script>
-    <script src="PtrType.js"></script>
-    <script src="ReadModifyWriteExpression.js"></script>
-    <script src="RecursionChecker.js"></script>
-    <script src="RecursiveTypeChecker.js"></script>
-    <script src="ResolveNames.js"></script>
-    <script src="ResolveOverloadImpl.js"></script>
-    <script src="ResolveProperties.js"></script>
-    <script src="ResolveTypeDefs.js"></script>
-    <script src="ResourceSemantic.js"></script>
-    <script src="Return.js"></script>
-    <script src="ReturnChecker.js"></script>
-    <script src="ReturnException.js"></script>
-    <script src="Sampler.js"></script>
-    <script src="SpecializationConstantSemantic.js"></script>
-    <script src="StageInOutSemantic.js"></script>
-    <script src="StandardLibrary.js"></script>
-    <script src="StatementCloner.js"></script>
-    <script src="StructLayoutBuilder.js"></script>
-    <script src="StructType.js"></script>
-    <script src="SwitchCase.js"></script>
-    <script src="SwitchStatement.js"></script>
-    <script src="SynthesizeArrayOperatorLength.js"></script>
-    <script src="SynthesizeEnumFunctions.js"></script>
-    <script src="SynthesizeStructAccessors.js"></script>
-    <script src="SynthesizeCopyConstructorOperator.js"></script>
-    <script src="SynthesizeDefaultConstructorOperator.js"></script>
-    <script src="TernaryExpression.js"></script>
-    <script src="Texture.js"></script>
-    <script src="TextureOperations.js"></script>
-    <script src="TrapStatement.js"></script>
-    <script src="TypeDef.js"></script>
-    <script src="TypeDefResolver.js"></script>
-    <script src="TypeRef.js"></script>
-    <script src="TypeOverloadResolutionFailure.js"></script>
-    <script src="TypedValue.js"></script>
-    <script src="UintLiteral.js"></script>
-    <script src="UintLiteralType.js"></script>
-    <script src="UnificationContext.js"></script>
-    <script src="UnreachableCodeChecker.js"></script>
-    <script src="VariableDecl.js"></script>
-    <script src="VariableRef.js"></script>
-    <script src="VectorType.js"></script>
-    <script src="VisitingSet.js"></script>
-    <script src="WLexicalError.js"></script>
-    <script src="WSyntaxError.js"></script>
-    <script src="WTrapError.js"></script>
-    <script src="WTypeError.js"></script>
-    <script src="WhileLoop.js"></script>
-    <script src="WrapChecker.js"></script>
-<script>
-    let code = `
+function provideDownload(result) {
+    let resultElement = document.getElementById("Result");
+    while (resultElement.childNodes.length != 0)
+        resultElement.removeChild(resultElement.childNodes[0]);
+    let anchor = document.createElement("a");
+    let blob = new Blob([result.file], { type: "application/octet-binary" });
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = "result.spv";
+    anchor.textContent = "Download generated SPIR-V";
+    resultElement.appendChild(anchor);
+
+    let table = document.createElement("table");
+    let tableHeader = document.createElement("thead");
+    let headerRow = document.createElement("tr");
+    let nameHeader = document.createElement("th");
+    nameHeader.textContent = "Attribute name";
+    let locationHeader = document.createElement("th");
+    locationHeader.textContent = "Location";
+    headerRow.appendChild(nameHeader);
+    headerRow.appendChild(locationHeader);
+    tableHeader.appendChild(headerRow);
+    table.appendChild(tableHeader);
+    for (let location of result.locations) {
+        let tableRow = document.createElement("tr");
+        let nameElement = document.createElement("td");
+        nameElement.textContent = location.name;
+        let locationElement = document.createElement("td");
+        locationElement.textContent = location.location;
+        tableRow.appendChild(nameElement);
+        tableRow.appendChild(locationElement);
+        table.appendChild(tableRow);
+    }
+    resultElement.appendChild(table);
+};
+
+function init() {
+    let b = document.querySelector("button");
+    b.addEventListener("click", compile);
+}
+
+function compile() {
+    let source = document.querySelector("textarea").value;
+    let output = document.querySelector("#output");
+    output.textContent = "Compiling...";
+    let program = prepare("/internal/test", 0, source);
+    let json = programToJSON(program);
+    let result = programObjectToSPIRVAssembly(json);
+    if (!result._error) {
+        output.textContent = result.source;
+    } else {
+        output.textContent = `Error: ${result._error.originString}\n${result._error.syntaxErrorMessage}`;
+    }
+}
+
+window.addEventListener("load", init, false);
+</script>
+</head>
+<body>
+<header>
+<h1>WHLSL to SPIRV</h1>
+</header>
+<main>
+<h2>WHSL Source</h2>
+<h2>Compiled Output</h2>
+<textarea id="source">
 struct VertexInput {
-    float2 position;
-    float3 color;
+    float2 position : attribute(0);
+    float2 uv : attribute(1);
 }
 
 struct VertexOutput {
-    float4 wsl_Position;
-    float4 color;
+    float4 position : SV_Position;
+    float4 color : attribute(0);
+}
+
+struct FragmentInput {
+    float4 color : attribute(0);
 }
 
 struct FragmentOutput {
-    float4 wsl_Color;
+    float4 color : SV_Target0;
 }
 
 vertex VertexOutput vertexShader(VertexInput vertexInput) {
     VertexOutput result;
-    result.wsl_Position = float4(vertexInput.position, 0., 1.);
-    result.color = float4(vertexInput.color, 1);
-    
-    int[10] a;
-    int[10u] b;
+    result.position = float4(vertexInput.position, 0., 1.);
+    result.color = float4(vertexInput.uv, 0.0, 1.0);
     return result;
 }
 
-fragment FragmentOutput fragmentShader(VertexOutput stageIn) {
+fragment FragmentOutput fragmentShader(FragmentInput fragmentInput) {
     FragmentOutput result;
-    result.wsl_Color = stageIn.color;
+    result.color = fragmentInput.color;
     return result;
-}`;
-
-    window.addEventListener("load", function () {
-        fetch("spirv.core.grammar.json").then(response => response.json()).then(function (json) {
-            let spirv = SPIRV(json);
-            let program = prepare("/internal/test", 0, code);
-            let result = generateSPIRV(spirv, program);
-            return result;
-        }).then(function(result) {
-            let resultElement = document.getElementById("Result");
-            while (resultElement.childNodes.length != 0)
-                resultElement.removeChild(resultElement.childNodes[0]);
-            let anchor = document.createElement("a");
-            let blob = new Blob([result.file], { type: "application/octet-binary" });
-            anchor.href = URL.createObjectURL(blob);
-            anchor.download = "result.spv";
-            anchor.textContent = "Download generated SPIR-V";
-            resultElement.appendChild(anchor);
-
-            let table = document.createElement("table");
-            let tableHeader = document.createElement("thead");
-            let headerRow = document.createElement("tr");
-            let nameHeader = document.createElement("th");
-            nameHeader.textContent = "Attribute name";
-            let locationHeader = document.createElement("th");
-            locationHeader.textContent = "Location";
-            headerRow.appendChild(nameHeader);
-            headerRow.appendChild(locationHeader);
-            tableHeader.appendChild(headerRow);
-            table.appendChild(tableHeader);
-            for (let location of result.locations) {
-                let tableRow = document.createElement("tr");
-                let nameElement = document.createElement("td");
-                nameElement.textContent = location.name;
-                let locationElement = document.createElement("td");
-                locationElement.textContent = location.location;
-                tableRow.appendChild(nameElement);
-                tableRow.appendChild(locationElement);
-                table.appendChild(tableRow);
-            }
-            resultElement.appendChild(table);
-        }).then(undefined, function () {
-            let resultElement = document.getElementById("Result");
-            while (resultElement.childNodes.length != 0)
-                resultElement.removeChild(resultElement.childNodes[0]);
-            resultElement.textContent = "Load failed.";
-        });
-    });
-</script>
-</head>
-<body>
-    <div id="Result">Loading...</div>
+}
+</textarea>
+<pre id="output">
+No compiled output.
+</pre>
+<div id="controls">
+<button>Compile</button>
+</div>
+<div id="binary">
+<button>Download</button>
+</div>
+</main>
 </body>
 </html>

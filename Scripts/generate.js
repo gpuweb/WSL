@@ -1,6 +1,7 @@
 import { prepare } from "../Source/Prepare.js";
 import { programToMSL } from "../Source/metal/MSL.js";
 import { programToJSON } from "../Source/json/JSON.js";
+import { programObjectToSPIRVAssembly } from "../Source/spirv/SPIR-V.js";
 
 let shouldRun = true;
 
@@ -25,7 +26,7 @@ if (shouldRun) {
     try {
         let outputType = arguments[0];
         const filename = arguments[1];
-        const inputIsJSON = /\.json$/.test(filename);
+        const inputIsJSON = filename.endsWith(".json");
         const source = readFile(filename);
         if (outputType == "json" && inputIsJSON) {
             // I don't know why you'd do this :)
@@ -38,6 +39,8 @@ if (shouldRun) {
         } else if (outputType == "msl") {
             let program = prepare("/internal/test", 0, source);
             result = programToMSL(program);
+        } else if (outputType == "spirv-ass" && inputIsJSON) {
+            result = programObjectToSPIRVAssembly(JSON.parse(source));
         } else {
             result = { error: `Unknown conversion type: ${outputType}` };
         }
