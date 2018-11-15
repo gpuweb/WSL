@@ -1,9 +1,17 @@
 # Code generation
 
+## JSON
+
+```bash
+prompt> jsc --module-file=Scripts/generate.js -- json file.whlsl
+```
+
+Or, load Source/json/JSON.html in your browser.
+
 ## Metal Shading Language
 
 ```bash
-prompt> run-jsc --module-file=Scripts/WHLSLtoMSL.js -- file.whlsl
+prompt> jsc --module-file=Scripts/generate.js -- msl file.whlsl
 ```
 
 Or, load Source/metal/MSL.html in your browser.
