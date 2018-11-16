@@ -435,6 +435,13 @@ class SPIRVTextAssembler {
         this._output.push(`ERROR: ${msg}`);
     }
 
+    lineComment(msg)
+    {
+        if (!this._output.length)
+            return;
+        this._output[this._output.length - 1] += ` ; ${msg}`;
+    }
+
     get largestId()
     {
         return this._largestId;

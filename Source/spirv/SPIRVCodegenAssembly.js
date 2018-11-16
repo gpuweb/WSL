@@ -89,7 +89,8 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
 
     // 4. The single required OpMemoryModel instruction
     assembler.append(new spirv.ops.MemoryModel(spirv.kinds.AddressingModel.Logical, spirv.kinds.MemoryModel.GLSL450));
-
+    assembler.lineComment("FIXME: Is GLSL540 correct?");
+    
     // 5. All entry point declarations
     for (let entryPoint of program.entryPoints) {
         let executionModel;
@@ -119,6 +120,7 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     assembler.blankLine();
     assembler.comment("Debug information");
     assembler.append(new spirv.ops.Source(spirv.kinds.SourceLanguage.Unknown, 1));
+    assembler.lineComment("WHLSL Compiler");
     for (let entryPoint of program.entryPoints) {
         assembler.append(new spirv.ops.Name(entryPoint.id, entryPoint.name));
     }
@@ -151,6 +153,7 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
             }
             assembler.append(new spirv.ops.TypeStruct(id, ...fieldIds));
         }
+        assembler.lineComment(type.name);
     }
 
 
