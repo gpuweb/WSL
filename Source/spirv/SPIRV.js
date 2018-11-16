@@ -268,6 +268,7 @@ function processSPIRVGrammar(json) {
                     case "AddressingModel":
                     case "MemoryModel":
                     case "ExecutionModel":
+                    case "ExecutionMode":
                         result += ` ${operand.enumerant}`;
                         break;
                     case "IdRef":
@@ -277,7 +278,8 @@ function processSPIRVGrammar(json) {
                         result += ` "${operand}"`;
                         break;
                     default:
-                        result += `UNKNOWNKIND`;
+                        debugger;
+                        result += ` UNKNOWNKIND`;
                     }
                 }
                 return result;

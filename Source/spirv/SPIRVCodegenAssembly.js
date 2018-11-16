@@ -84,21 +84,19 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
             executionModel = spirv.kinds.ExecutionModel.Fragment;
             break;
         }
-        let id = 0;
-        let name = entryPoint.name;
+        entryPoint.id = ++currentId;
         let interfaceIds = []
         // for (let value of entryPoint.inputs)
         //     interfaceIds.push(value.id);
         // for (let value of entryPoint.outputs)
         //     interfaceIds.push(value.id);
-        assembler.append(new spirv.ops.EntryPoint(executionModel, id, name, ...interfaceIds));
+        assembler.append(new spirv.ops.EntryPoint(executionModel, entryPoint.id, entryPoint.name, ...interfaceIds));
     }
-    //
-    // // 6. All execution mode declarations
-    // for (let entryPoint of entryPoints) {
-    //     let id = entryPoint.id;
-    //     assembler.append(new spirv.ops.ExecutionMode(id, spirv.kinds.ExecutionMode.OriginLowerLeft));
-    // }
+
+    // 6. All execution mode declarations
+    for (let entryPoint of program.entryPoints) {
+        assembler.append(new spirv.ops.ExecutionMode(entryPoint.id, spirv.kinds.ExecutionMode.OriginLowerLeft));
+    }
     //
     // // 7. These debug instructions
     // // 8. All annotation instructions
