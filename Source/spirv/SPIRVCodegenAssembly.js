@@ -27,12 +27,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export function generateSPIRVAssembly(spirv, program, assembler)
+class ProgramHelper {
+    constructor(programDescription)
+    {
+        this._program = programDescription;
+    }
+
+    get entryPoints()
+    {
+        if (!this._entryPoints) {
+            this._entryPoints = Array.from(this._program.source.entryPoints);
+            for (let entryPoint of this._entryPoints) {
+                let func = this._findFunctionNamed(entryPoint.name);
+                entryPoint.func = func;
+            }
+        }
+        return this._entryPoints;
+    }
+
+    _findFunctionNamed(name)
+    {
+        for (let func of this._program.source.functions) {
+            if (func.name == name)
+                return func;
+        }
+        return null;
+    }
+}
+
+export function generateSPIRVAssembly(spirv, programDescription, assembler)
 {
+    let program = new ProgramHelper(programDescription);
     let currentId = assembler.largestId;
     let typeMap = new Map();
     let reverseTypeMap = new Map();
-    let entryPoints = [];
 
     assembler.blankLine();
 
@@ -45,27 +73,26 @@ export function generateSPIRVAssembly(spirv, program, assembler)
     // 4. The single required OpMemoryModel instruction
     assembler.append(new spirv.ops.MemoryModel(spirv.kinds.AddressingModel.Logical, spirv.kinds.MemoryModel.GLSL450));
 
-    //
-    // // 5. All entry point declarations
-    // for (let entryPoint of entryPoints) {
-    //     let executionModel;
-    //     switch (entryPoint.shader.shaderType) {
-    //     case "vertex":
-    //         executionModel = spirv.kinds.ExecutionModel.Vertex;
-    //         break;
-    //     case "fragment":
-    //         executionModel = spirv.kinds.ExecutionModel.Fragment;
-    //         break;
-    //     }
-    //     let id = entryPoint.id;
-    //     let name = entryPoint.shader.name;
-    //     let interfaceIds = []
-    //     for (let value of entryPoint.inputs)
-    //         interfaceIds.push(value.id);
-    //     for (let value of entryPoint.outputs)
-    //         interfaceIds.push(value.id);
-    //     assembler.append(new spirv.ops.EntryPoint(executionModel, id, name, ...interfaceIds));
-    // }
+    // 5. All entry point declarations
+    for (let entryPoint of program.entryPoints) {
+        let executionModel;
+        switch (entryPoint.type) {
+        case "vertex":
+            executionModel = spirv.kinds.ExecutionModel.Vertex;
+            break;
+        case "fragment":
+            executionModel = spirv.kinds.ExecutionModel.Fragment;
+            break;
+        }
+        let id = 0;
+        let name = entryPoint.name;
+        let interfaceIds = []
+        // for (let value of entryPoint.inputs)
+        //     interfaceIds.push(value.id);
+        // for (let value of entryPoint.outputs)
+        //     interfaceIds.push(value.id);
+        assembler.append(new spirv.ops.EntryPoint(executionModel, id, name, ...interfaceIds));
+    }
     //
     // // 6. All execution mode declarations
     // for (let entryPoint of entryPoints) {

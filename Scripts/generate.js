@@ -1,13 +1,13 @@
 import { prepare } from "../Source/Prepare.js";
 import { programToMSL } from "../Source/metal/MSL.js";
 import { programToJSON } from "../Source/json/JSON.js";
-import { programObjectToSPIRVAssembly } from "../Source/spirv/SPIR-V.js";
+import { programDescriptionToSPIRVAssembly } from "../Source/spirv/SPIRV.js";
 
 let shouldRun = true;
 
 function printUsage() {
     shouldRun = false;
-    print("Usage: jsc -m Scripts/generate.js -- [json|msl] filename.whlsl");
+    print("Usage: jsc -m Scripts/generate.js -- [json|msl|spirv-ass] filename.whlsl");
     print("(Currently only works via JSC command line. Node support coming soon.)")
     try {
         quit();
@@ -40,7 +40,7 @@ if (shouldRun) {
             let program = prepare("/internal/test", 0, source);
             result = programToMSL(program);
         } else if (outputType == "spirv-ass" && inputIsJSON) {
-            result = programObjectToSPIRVAssembly(JSON.parse(source));
+            result = programDescriptionToSPIRVAssembly(JSON.parse(source));
         } else {
             result = { error: `Unknown conversion type: ${outputType}` };
         }

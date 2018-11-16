@@ -260,8 +260,25 @@ function processSPIRVGrammar(json) {
             toString()
             {
                 let result = `    ${this.opname}`;
-                for (let operand of this.operands) {
-                    result += ` ${operand.enumerant}`;
+                for (let i = 0; i < this.operands.length; i++) {
+                    const operand = this.operands[i];
+                    const operandInfo = this.operandInfo[i];
+                    switch (operandInfo.kind) {
+                    case "Capability":
+                    case "AddressingModel":
+                    case "MemoryModel":
+                    case "ExecutionModel":
+                        result += ` ${operand.enumerant}`;
+                        break;
+                    case "IdRef":
+                        result += ` %${operand}`;
+                        break;
+                    case "LiteralString":
+                        result += ` "${operand}"`;
+                        break;
+                    default:
+                        result += `UNKNOWNKIND`;
+                    }
                 }
                 return result;
             }
@@ -381,7 +398,7 @@ class SPIRVTextAssembler {
 
     blankLine()
     {
-        this._output.push("\n");
+        this._output.push("");
     }
 
     append(op)
