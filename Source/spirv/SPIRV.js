@@ -259,8 +259,17 @@ function processSPIRVGrammar(json) {
 
             toString()
             {
-                let result = `    ${this.opname}`;
+                let result;
+                let isType = false;
+                if (this.opname.startsWith("OpType")) {
+                    isType = true;
+                    result = this.opname;
+                } else {
+                    result = `    ${this.opname}`;
+                }
                 for (let i = 0; i < this.operands.length; i++) {
+                    if (isType && i == 0)
+                        continue;
                     const operand = this.operands[i];
                     const operandInfo = this.operandInfo[i];
                     switch (operandInfo.kind) {
@@ -269,6 +278,7 @@ function processSPIRVGrammar(json) {
                     case "MemoryModel":
                     case "ExecutionModel":
                     case "ExecutionMode":
+                    case "SourceLanguage":
                         result += ` ${operand.enumerant}`;
                         break;
                     case "IdRef":
@@ -276,6 +286,10 @@ function processSPIRVGrammar(json) {
                         break;
                     case "LiteralString":
                         result += ` "${operand}"`;
+                        break
+                    case "LiteralInteger":
+                    case "IdResult":
+                        result += ` ${operand}`;
                         break;
                     default:
                         debugger;
@@ -407,6 +421,13 @@ class SPIRVTextAssembler {
     {
         this._largestId = Math.max(this._largestId, op.largestId);
         this._output.push(op.toString());
+    }
+
+    type(id, op)
+    {
+        this._largestId = Math.max(this._largestId, id);
+        this._largestId = Math.max(this._largestId, op.largestId);
+        this._output.push(`  %${id} = ${op.toString()}`);
     }
 
     get largestId()

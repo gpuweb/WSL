@@ -33,6 +33,11 @@ class ProgramHelper {
         this._program = programDescription;
     }
 
+    get types()
+    {
+        return this._program.source.types;
+    }
+
     get entryPoints()
     {
         if (!this._entryPoints) {
@@ -62,9 +67,22 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     let typeMap = new Map();
     let reverseTypeMap = new Map();
 
-    assembler.blankLine();
+    // Collect all the types.
+    typeMap.set("void", ++currentId);
+    for (let type of program.types) {
+        if (type.type == "native") {
+            if (!typeMap.has(type.name))
+                typeMap.set(type.name, ++currentId);
+        }
+    }
+
+    // Give each entry point an identifier.
+    for (let entryPoint of program.entryPoints) {
+        entryPoint.id = ++currentId;
+    }
 
     // 1. All OpCapability instructions
+    assembler.blankLine();
     assembler.append(new spirv.ops.Capability(spirv.kinds.Capability.Shader));
 
     // 2. Optional OpExtension instructions
@@ -84,7 +102,6 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
             executionModel = spirv.kinds.ExecutionModel.Fragment;
             break;
         }
-        entryPoint.id = ++currentId;
         let interfaceIds = []
         // for (let value of entryPoint.inputs)
         //     interfaceIds.push(value.id);
@@ -97,61 +114,35 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     for (let entryPoint of program.entryPoints) {
         assembler.append(new spirv.ops.ExecutionMode(entryPoint.id, spirv.kinds.ExecutionMode.OriginLowerLeft));
     }
-    //
-    // // 7. These debug instructions
-    // // 8. All annotation instructions
-    
-    // typeMap.set(program.intrinsics.void, currentId++);
-    // typeMap.set(program.intrinsics.uint32, currentId++);
-    //
-    
-    // // FIXME: There are probably more annotations that are required than just location.
-    // let locations = [];
-    // for (let entryPoint of entryPoints) {
-    //     switch (entryPoint.shader.shaderType) {
-    //     case "vertex":
-    //         for (let input of entryPoint.inputs) {
-    //             assembler.append(new spirv.ops.Decorate(input.id, spirv.kinds.Decoration.Location, input.location));
-    //             locations.push({ name: entryPoint.shader.name + "." + input.name, location: input.location });
-    //         }
-    //         break;
-    //     case "fragment":
-    //         for (let output of entryPoint.outputs) {
-    //             assembler.append(new spirv.ops.Decorate(output.id, spirv.kinds.Decoration.Location, output.location));
-    //             locations.push({ name: entryPoint.shader.name + "." + output.name, location: output.location });
-    //         }
-    //         break;
-    //     }
-    // }
-    //
-    // // 9. All type declarations, all constant instructions, and all global variable declarations
-    // emitTypes(assembler);
-    // let functionType = currentId++;
-    // assembler.append(new spirv.ops.TypeFunction(functionType, typeMap.get(program.intrinsics.void)));
-    // for (let constant of constants) {
-    //     if (constant[1].type == program.intrinsics.bool) {
-    //         if (constant[1].value[0])
-    //             assembler.append(new spirv.ops.ConstantTrue(constant[1].id));
-    //         else
-    //             assembler.append(new spirv.ops.ConstantFalse(constant[1].id));
-    //     } else
-    //         assembler.append(new spirv.ops.Constant(constant[1].typeId, constant[1].id, ...constant[1].values));
-    // }
-    // for (let entryPoint of entryPoints) {
-    //     for (let input of entryPoint.inputs)
-    //         assembler.append(new spirv.ops.Variable(input.type, input.id, spirv.kinds.StorageClass.Input));
-    //     for (let output of entryPoint.outputs)
-    //         assembler.append(new spirv.ops.Variable(output.type, output.id, spirv.kinds.StorageClass.Output));
-    // }
-    //
-    // // 10. All function declarations
-    // // 11. All function definitions
-    // for (let entryPoint of entryPoints) {
-    //     assembler.append(new spirv.ops.Function(typeMap.get(program.intrinsics.void), entryPoint.id, [spirv.kinds.FunctionControl.None], functionType));
-    //     assembler.append(new spirv.ops.FunctionEnd());
-    // }
-    //
-    // return { file: assembler.result, locations: locations };
+
+    // 7. Optional debug instructions
+
+    assembler.blankLine();
+    assembler.comment("Debug information");
+    assembler.append(new spirv.ops.Source(spirv.kinds.SourceLanguage.Unknown, 1));
+    for (let entryPoint of program.entryPoints) {
+        assembler.append(new spirv.ops.Name(entryPoint.id, entryPoint.name));
+    }
+
+    // 8. All annotation instructions
+
+    // 9. All type declarations, all constant instructions, and all global variable declarations
+    assembler.blankLine();
+    assembler.comment("Types");
+    for (let [typeName, id] of typeMap) {
+        switch (typeName) {
+        case "void":
+            assembler.type(id, new spirv.ops.TypeVoid(id));
+            break;
+        case "float":
+            assembler.type(id, new spirv.ops.TypeFloat(id, 32));
+            break;
+        }
+    }
+
+
+    // 10. All function declarations
+    // 11. All function definitions
 }
 
 export { generateSPIRVAssembly as default };
