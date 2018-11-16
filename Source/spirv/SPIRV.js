@@ -271,9 +271,13 @@ function processSPIRVGrammar(json) {
                     }
                 }
                 result += `${this.opname}`;
+                let operandInfoIndex = 0;
                 for (let i = 0; i < this.operands.length; i++) {
                     const operand = this.operands[i];
-                    const operandInfo = this.operandInfo[i];
+                    const operandInfo = this.operandInfo[operandInfoIndex];
+                    if (!operandInfo.quantifier || operandInfo.quantifier != "*") {
+                        operandInfoIndex++;
+                    }
                     switch (operandInfo.kind) {
                     case "Capability":
                     case "AddressingModel":
@@ -296,7 +300,6 @@ function processSPIRVGrammar(json) {
                         // Already handled before the opname.
                         break;
                     default:
-                        debugger;
                         result += ` UNKNOWNKIND`;
                     }
                 }

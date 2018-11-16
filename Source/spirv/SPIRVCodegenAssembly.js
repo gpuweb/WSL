@@ -69,7 +69,7 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
 
     // Collect all the types.
     for (let type of program.types) {
-        if (type.type == "native" || type.type == "vector") {
+        if (type.type == "native" || type.type == "vector" || type.type == "struct") {
             typeMap.set(++currentId, type);
             reverseTypeMap.set(type.name, currentId);
         }
@@ -143,6 +143,13 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
         } else if (type.type == "vector") {
             let idOfBaseType = reverseTypeMap.get(type.elementType);
             assembler.append(new spirv.ops.TypeVector(id, idOfBaseType, type.length));
+        } else if (type.type == "struct") {
+            let fieldIds = [];
+            for (let field of type.fields) {
+                let fieldTypeId = reverseTypeMap.get(field.type)
+                fieldIds.push(fieldTypeId);
+            }
+            assembler.append(new spirv.ops.TypeStruct(id, ...fieldIds));
         }
     }
 
