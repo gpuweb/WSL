@@ -69,10 +69,8 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
 
     // Collect all the types.
     for (let type of program.types) {
-        if (type.type == "native" || type.type == "vector" || type.type == "struct") {
-            typeMap.set(++currentId, type);
-            reverseTypeMap.set(type.name, currentId);
-        }
+        typeMap.set(++currentId, type);
+        reverseTypeMap.set(type.name, currentId);
     }
 
     // Give each entry point an identifier.
@@ -90,7 +88,7 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     // 4. The single required OpMemoryModel instruction
     assembler.append(new spirv.ops.MemoryModel(spirv.kinds.AddressingModel.Logical, spirv.kinds.MemoryModel.GLSL450));
     assembler.lineComment("FIXME: Is GLSL540 correct?");
-    
+
     // 5. All entry point declarations
     for (let entryPoint of program.entryPoints) {
         let executionModel;
@@ -152,6 +150,20 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
                 fieldIds.push(fieldTypeId);
             }
             assembler.append(new spirv.ops.TypeStruct(id, ...fieldIds));
+        } else if (type.type == "pointer") {
+            let idOfReferencedType = reverseTypeMap.get(type.to);
+            let storageClass;
+            switch (type.addressSpace) {
+            case "thread":
+                storageClass = spirv.kinds.StorageClass.Private;
+                break;
+            default:
+                assembler.error(`Unhandled pointer storage class: ${type.addressSpace}`);
+                continue;
+            }
+            assembler.append(new spirv.ops.TypePointer(id, storageClass, idOfReferencedType));
+        } else {
+            assembler.error(`Unhandled type: ${type.type}`);
         }
         assembler.lineComment(type.name);
     }

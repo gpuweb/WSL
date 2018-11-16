@@ -285,6 +285,7 @@ function processSPIRVGrammar(json) {
                     case "ExecutionModel":
                     case "ExecutionMode":
                     case "SourceLanguage":
+                    case "StorageClass":
                         result += ` ${operand.enumerant}`;
                         break;
                     case "IdRef":
