@@ -259,17 +259,19 @@ function processSPIRVGrammar(json) {
 
             toString()
             {
-                let result;
-                let isType = false;
-                if (this.opname.startsWith("OpType")) {
-                    isType = true;
-                    result = this.opname;
-                } else {
-                    result = `    ${this.opname}`;
-                }
+                let result = "    ";
+                // If there is an IdResult operand, it goes
+                // before the opname.
                 for (let i = 0; i < this.operands.length; i++) {
-                    if (isType && i == 0)
-                        continue;
+                    const operandInfo = this.operandInfo[i];
+                    if (operandInfo.kind == "IdResult") {
+                        const operand = this.operands[i];
+                        result = `%${operand} = `;
+                        break;
+                    }
+                }
+                result += `${this.opname}`;
+                for (let i = 0; i < this.operands.length; i++) {
                     const operand = this.operands[i];
                     const operandInfo = this.operandInfo[i];
                     switch (operandInfo.kind) {
@@ -288,8 +290,10 @@ function processSPIRVGrammar(json) {
                         result += ` "${operand}"`;
                         break
                     case "LiteralInteger":
-                    case "IdResult":
                         result += ` ${operand}`;
+                        break;
+                    case "IdResult":
+                        // Already handled before the opname.
                         break;
                     default:
                         debugger;
@@ -421,13 +425,6 @@ class SPIRVTextAssembler {
     {
         this._largestId = Math.max(this._largestId, op.largestId);
         this._output.push(op.toString());
-    }
-
-    type(id, op)
-    {
-        this._largestId = Math.max(this._largestId, id);
-        this._largestId = Math.max(this._largestId, op.largestId);
-        this._output.push(`  %${id} = ${op.toString()}`);
     }
 
     get largestId()

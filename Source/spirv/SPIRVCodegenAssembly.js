@@ -132,10 +132,10 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     for (let [typeName, id] of typeMap) {
         switch (typeName) {
         case "void":
-            assembler.type(id, new spirv.ops.TypeVoid(id));
+            assembler.append(new spirv.ops.TypeVoid(id));
             break;
         case "float":
-            assembler.type(id, new spirv.ops.TypeFloat(id, 32));
+            assembler.append(new spirv.ops.TypeFloat(id, 32));
             break;
         }
     }
