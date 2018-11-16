@@ -427,6 +427,11 @@ class SPIRVTextAssembler {
         this._output.push(op.toString());
     }
 
+    error(msg)
+    {
+        this._output.push(`ERROR: ${msg}`);
+    }
+
     get largestId()
     {
         return this._largestId;

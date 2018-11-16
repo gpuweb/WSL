@@ -68,11 +68,10 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     let reverseTypeMap = new Map();
 
     // Collect all the types.
-    typeMap.set("void", ++currentId);
     for (let type of program.types) {
-        if (type.type == "native") {
-            if (!typeMap.has(type.name))
-                typeMap.set(type.name, ++currentId);
+        if (type.type == "native" || type.type == "vector") {
+            typeMap.set(++currentId, type);
+            reverseTypeMap.set(type.name, currentId);
         }
     }
 
@@ -129,14 +128,21 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     // 9. All type declarations, all constant instructions, and all global variable declarations
     assembler.blankLine();
     assembler.comment("Types");
-    for (let [typeName, id] of typeMap) {
-        switch (typeName) {
-        case "void":
-            assembler.append(new spirv.ops.TypeVoid(id));
-            break;
-        case "float":
-            assembler.append(new spirv.ops.TypeFloat(id, 32));
-            break;
+    for (let [id, type] of typeMap) {
+        if (type.type == "native") {
+            switch (type.name) {
+            case "void":
+                assembler.append(new spirv.ops.TypeVoid(id));
+                break;
+            case "float":
+                assembler.append(new spirv.ops.TypeFloat(id, 32));
+                break;
+            default:
+                assembler.error(`Unhandled native type: ${type.name}`);
+            }
+        } else if (type.type == "vector") {
+            let idOfBaseType = reverseTypeMap.get(type.elementType);
+            assembler.append(new spirv.ops.TypeVector(id, idOfBaseType, type.length));
         }
     }
 
