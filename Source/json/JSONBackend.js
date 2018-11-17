@@ -505,7 +505,8 @@ export class JSONBackend {
             language: "whlsl",
             entryPoints: [],
             functions: [],
-            types: []
+            types: [],
+            literals: []
         };
 
         const entryPoints = this._findEntryPoints();
@@ -526,6 +527,37 @@ export class JSONBackend {
 
         // Sort types into an order that will allow them to be declared.
         output.types.sort(this._typeComparison);
+
+        // Find literals, since that's helpful for SPIR-V.
+        class LiteralVisitor extends Visitor {
+            constructor(output)
+            {
+                super();
+                this._output = output;
+            }
+            visitGenericLiteral(node)
+            {
+                let value = node.value;
+                let literalType = node.type._typeID;
+                // Probably a literal used in a typedef, not in the code.
+                if (!literalType)
+                    return;
+                for (let literal of this._output) {
+                    if (literal.value == value && literal.literalType == literalType)
+                        return;
+                }
+                this._output.push({
+                    type: "literal",
+                    value: node.value,
+                    literalType: node.type._typeID
+                });
+            }
+        };
+        let literalVisitor = new LiteralVisitor(output.literals);
+        usedFunctions.forEach(func => {
+            func.visit(literalVisitor);
+        });
+
         return output;
     }
 
