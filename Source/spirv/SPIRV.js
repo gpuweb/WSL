@@ -289,18 +289,21 @@ function processSPIRVGrammar(json) {
                         result += ` ${operand.enumerant}`;
                         break;
                     case "IdRef":
+                    case "IdResultType":
                         result += ` %${operand}`;
                         break;
                     case "LiteralString":
                         result += ` "${operand}"`;
                         break
                     case "LiteralInteger":
+                    case "LiteralContextDependentNumber":
                         result += ` ${operand}`;
                         break;
                     case "IdResult":
                         // Already handled before the opname.
                         break;
                     default:
+                        debugger;
                         result += ` UNKNOWNKIND`;
                     }
                 }

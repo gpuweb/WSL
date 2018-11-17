@@ -38,6 +38,11 @@ class ProgramHelper {
         return this._program.source.types;
     }
 
+    get literals()
+    {
+        return this._program.source.literals;
+    }
+
     get entryPoints()
     {
         if (!this._entryPoints) {
@@ -168,6 +173,17 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
         assembler.lineComment(type.name);
     }
 
+    if (program.literals && program.literals.length) {
+        assembler.blankLine();
+        assembler.comment("Constants");
+
+        // FIXME: This will have to be precomputed so that we can find them later.
+        for (let literal of program.literals) {
+            let idOfLiteralType = reverseTypeMap.get(literal.literalType);
+            assembler.append(new spirv.ops.Constant(idOfLiteralType, ++currentId, literal.value));
+            assembler.lineComment(`${literal.literalType} ${literal.value}`);
+        }
+    }
 
     // 10. All function declarations
     // 11. All function definitions
