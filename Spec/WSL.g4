@@ -191,7 +191,7 @@ whileStmt: WHILE '(' expr ')' stmt ;
 doStmt: DO stmt WHILE '(' expr ')' ;
 
 variableDecls: type variableDecl (',' variableDecl)* ;
-variableDecl: Qualifier* Identifier ('=' expr)? ;
+variableDecl: Qualifier* Identifier (':' Semantic)? ('=' expr)? ;
 
 /* 
  * Parser: Expressions

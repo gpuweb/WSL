@@ -604,13 +604,16 @@ In this section we describe how to determine if a program is valid or not.
 If a program is invalid, a compliant implementation must reject it with an appropriate error message, and not attempt to execute it.
 If a program is valid, we describe its semantics later in this document.
 
-The validation process happens in two phases. First we gather the top-level declarations into a global environment and do some global checks on it.
-Then each declaration can be further validated independently, without referring to any other declaration. This local validation includes typing.
+Validation includes all of typing. If a program is valid, it is also annotated with typing information used by the execution semantics later
+(for example, accesses to fixed-size arrays are annotated with the size for the bounds-check).
 
-Along the way, the program is annotated with information that will be used in the execution semantics. For example function overloads are resolved, typedefs are resolved, etc..
+The validation rules are presented in several steps:
+- First we explain how the typing environment is built from the top-level declarations
+- Then we provide global validation rules (mostly checking the absence of recursion)
+- Finally we provide the typing rules
 
-Phase 1: Gathering declarations
--------------------------------
+Building the global typing environment
+--------------------------------------
 
 In this first step all top-level declarations are gathered into a global environment.
 More precisely they are gathered in three different mappings:
@@ -619,106 +622,147 @@ More precisely they are gathered in three different mappings:
 - A mapping from identifiers to declarations of global (constant) variables
 - A mapping from identifiers to sets of function declarations.
 
-Each struct name, enum name, typedef name and global variable name must be unique, but function names do not have to be, as we support overloading.
+A type for the purpose of this mapping is either an enum characterized by a set of values, or it is a typedef characterized by its equivalent type, or it is a struct characterized by the types of its elements.
+A variable declaration for the purpose of this mapping is characterized by its type.
+A function declaration for the purpose of this mapping is characterised by a tuple of the return type, the number and types of the parameters, and the body of the function.
 
-After this, we build a relation "depends on", as the smallest relation such that:
+.. todo::
+    Explain how this environment starts with elements from the std lib.
 
-#. A typedef that is defined as equal to a structure or another typedef "depends on" this structure or typedef.
-#. A structure "depends on" a typedef or structure if it has a member with the same name.
+For each top-level declaration:
+
+#. If it is a variable declaration
+
+   #. If there is already a variable of the same name in the environment, the program is invalid
+   #. Add it to the mapping with a type Left-value of its declared type in the Constant address space (see later the section on typing for details of types)
+
+#. If it is a typedef
+
+   #. If there is already a type of the same name in the environment, the program is invalid
+   #. Add it to the mapping, as a new type, associated to its definition
+
+#. If it is a structure
+
+   #. If there is already a type of the same name in the environment, the program is invalid
+   #. If two or more fields of the struct have the same name, the program is invalid
+   #. Add the struct to the environment as a new type.
+   #. For each field of the struct:
+
+        #. Add to the environment a mapping from the name ``operator.field`` (where ``field`` is replaced by the name of the field) to a function declaration with one argument,
+                   whose return type is the type of the field and whose argument type is the struct itself
+        #. Add to the environment a mapping from the name ``operator.field=`` (where ``field`` is replaced by the name of the field) to a function declaration with two arguments,
+                   whose return type is the type of the struct itself, whose first argument type is the type of the struct itself, and whose second argument type is the type of the field
+
+#. If it is an enum
+
+   #. If there is already a type of the same name in the environment, the program is invalid
+   #. If the enum has an explicit base type, and it is not one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``; the program is invalid
+   #. If the enum does not have an explicit base type, its base type is int
+   #. A value is associated to each element of the enum, by iterating over them in source order:
+
+        #. If it has an explicit value, then this is its value
+        #. Else if it is the first element of the enum, its value is 0
+        #. Else its value is the value of the precedent element increased by one.
+
+   #. If no element of the enum has the value 0, the program is invalid
+   #. If two or more element of the enum have the same value, the program is invalid
+   #. If one or more element of the enum have a value that is not representable in the base type of the enum, the program is invalid
+   #. Add the enum to the environment as a new type, associated with the set of the values of its elements
+   #. For each element of the enum, add a mapping from ``EnumName.ElementName`` (with ``EnumName`` and ``ElementName`` replaced) to the enum type
+
+#. If it is a function declaration
+
+   #. If the name of the function is ``operator.field`` for some name ``field``
+
+        #. It must have a single argument
+        #. That argument must not be a pointer, array reference or array
+
+   #. If the name of the function is ``operator.field=`` for some name ``field`` 
+
+        #. It must have exactly two arguments
+        #. Its first argument must not be a pointer, array reference or array
+
+   #. If the name of the function is ``operator[]``
+
+        #. It must have exactly two argument
+        #. Its first argument must not be a pointer, array reference or array.
+        #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+ 
+   #. If the name of the function is ``operator[]=``
+
+        #. It must have exactly three arguments
+        #. Its first argument must not be a pointer, array reference or array
+        #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+
+   #. If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set
+   #. Otherwise add a new mapping from that function name to a singleton set containing that declaration
+
+Other validation steps
+----------------------
+
+We list here these validation steps that don't cleanly fit in either the building of the global typing environment, or the typing of each function.
+
+Void type
+"""""""""
+
+The void type is a special type that can only appear as the return type of functions.
+It must not be part of a composite type (i.e. there is no pointer to void, no array reference to void, no array of void)
+It must not be the type of a variable (either at the top-level or in a function), the type of a field of a struct, the type of a function parameter, or the definition of a typedef.
+
+..
+    We could allow it as the definition of a typedef, but it would be fairly useless, and would make this verification impossible to do before resolving typedefs
+
+Validating types
+""""""""""""""""
+
+Every type name that appears in the program must be defined (i.e. have a mapping in the environment).
+
+Resolving typedefs
+""""""""""""""""""
+
+Once this is checked, we define a relation "depends on", as the smallest relation such that:
+
+- A typedef that is defined as equal to a structure or another typedef "depends on" this structure or typedef.
+- A structure "depends on" a typedef or structure if it has a member with the same name.
 
 If this relation is cyclic, then the program is invalid.
 
-Then for each typedef it must be resolved, meaning that each mention of it is replaced by its definition.
+Then each typedef must be resolved, meaning that each mention of it in the program and in the environment is replaced by its definition.
 
 .. note::
     This last step is guaranteed to terminate thanks to the acyclicity check before it.
 
-Phase 2: Local validation, excluding typing
--------------------------------------------
+Checking the coherence of operators
+"""""""""""""""""""""""""""""""""""
 
-The checks in this section (and the next) can be done independently for each declaration.
+For every function with a name of the form ``operator.field=`` for some name ``field`` which is defined:
 
-Structs
-"""""""
+    #. There must be a function with the name ``operator.field`` (for the same name ``field``) which is defined
+    #. For each declaration of the former with arguments type ``(t1, t2)``, there must be a declaration of the latter with argument type ``(t1)``, and return type ``t2``
 
-Each field of a struct must have a name distinct from the names of the other fields of that struct.
+If a function with the name ``operator[]=`` is defined:
 
-No member of a struct can have the special type ``void``.
+    #. There must be a function with the name ``operator[]`` which is defined
+    #. For each declaration of the former with arguments type ``(t1, t2, t3)``, there must be a declaration of the latter with argument type ``(t1, t2)``, and return type ``t3``
 
-Enums
-"""""
+Typing of functions
+-------------------
 
-If an enum has an explicit base type, it must be one of uchar, ushort, uint, char, short or int. Otherwise, its base type is int by default.
+Each entry point to the program must be well-typed as described in this section.
+This check can in turn lead to the verification of the well-typedness of other functions.
 
-Each element of an enum is given a value with the following algorithm:
+To check that a function is well-typed:
 
-#. If it is the first element and does not have an explicit value, then its value is 0.
-#. Else if it has an explicit value, then its value the one given by the programmer.
-#. Else its value is 1 + the value of the previous element.
+#. Make a new copy of the global environment (built above)
+#. For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type (with uniformity being negative in the case of entry points)
+#. Check that the function body is well-typed in this typing environment (treating it as a block of statement) at the enclosing level of control-flow uniformity (positive in the case of entry points).
+#. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}`` (ignoring uniformity)
+#. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}`` (ignoring uniformity)
 
-These values must follow these rules or the program is invalid:
+.. todo:: check that we cannot assume the parameters to entry points to be uniform.
 
-#. No two elements can have the same value.
-#. One element must have the value 0.
-#. All elements must have a value that is representable by the enum base type.
-
-Functions
-"""""""""
-
-If a function is called ``operator.field`` for some name ``field``:
-
-#. It must have a single argument
-#. That argument cannot be a pointer, array reference or array.
-
-If a function is called ``operator.field=`` for some name ``field``
-
-#. It must have exactly two arguments
-#. Its first argument cannot be a pointer, array reference or array
-#. There must be a function called ``operator.field`` in the global environment, such that:
-
-    #. Its argument has the same type as the first argument of this one
-    #. Its return type is the same as the type of the second argument of this one
-
-..
-    We currently do not restrict in any way the return type of these functions, following Test.js.
-    Do we want to?
-
-If a function is called ``operator[]``:
-
-#. It must have two argument
-#. Its first argument cannot be a pointer, array reference or array.
-#. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
-
-If a function is called ``operator[]=``:
-
-#. It must have exactly three arguments
-#. Its first argument cannot be a pointer, array reference or array
-#. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
-#. There must be a function called ``operator[]`` in the global environment, such that:
-
-    #. Its first argument has the same type as the first argument of this one
-    #. Its return type is the same as the type of the third argument of this one
-
-.. We currently do not restrict in any way the return type of these functions, following Test.js. Do we want to?
-
-No argument of a function can be of type ``void`` (which is a type that can only appear as the return type of a function).
-
-Additionally, there is a type check:
-
-#. Make a new typing environment from the global environment
-#. For each parameter of the function, from left to right, add a mapping to this typing environment, associating this parameter name to the corresponding type
-#. Check that the function body is well-typed in this typing environment (treating it as a block of statements)
-#. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}``.
-#. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}``
-
-We define these notions (typing environment, well-typed, behaviours) in the next section.
-
-Phase 3: Typing of functions
-----------------------------
-
-In this section we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau".
-
-A typing environment is a mapping from identifiers to types.
+In this section we define the terms above, and in particular, what it means for a statement or an expression to be well-typed.
+More formally we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement in (non-)uniform control-flow whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression in (non-)uniform control-flow whose type is Tau".
 
 A type can either be:
 
@@ -733,6 +777,8 @@ A type can either be:
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
 
+And in both cases it is associated with a uniformity flag (a boolean).
+
 A behaviour is any of the following:
 
 - Return of a right-value type
@@ -741,18 +787,54 @@ A behaviour is any of the following:
 - Fallthrough
 - Nothing
 
+All of these except for Nothing are associated with a uniformity flag (a boolean).
 We use these "behaviours" to check the effect of statements on the control flow. 
+
+Notes about uniformity
+"""""""""""""""""""""""
+
+Because of both the uniform keyword (which allow the programmer to request verification that a given variable is uniform) and some functions in the standard library that only make sense when called in uniform control flow we infer the uniformity of both control-flow and values in these typing rules.
+
+As defined above, uniformity is a boolean flag that appears at three different locations:
+
+- On the typing judgments themselves, where it refers to the uniformity of the control-flow
+- On the types of expressions
+- On behaviours, where it refers to the uniformity of the control-flow at the origin of the non-local control-flow they represent.
+
+When we later refer to the "lower of two uniformity flags", we mean false (i.e. negative, i.e. non-uniform) unless both are true. In other words it is a boolean and.
+
+.. todo::
+    This subsection reads terribly, I should try to find a way to rephrase it.
+    Maybe decide once and for all on names for the two uniformity levels: true/false, positive/negative, uniform/non-uniform is two more naming schemes than we need.
+
+There are two important rules about uniformity:
+
+- If a statement or expression is well-typed in non-uniform control flow, it would also be considered well-typed in uniform control-flow
+- If an expression has a type which is uniformi and is a right-value type, it can also be treated as if it is non-uniform.
+
+.. math::
+    :nowrap:
+    
+    \begin{align*}
+        \ottdruleuniformityXXstmt{}\\
+        \ottdruleuniformityXXexpr{}\\
+        \ottdruletvalXXuniform{}
+    \end{align*}
+
+.. note::
+    Importantly that last rule does not apply to expressions that have a left-value type.
+    Such a type refer to the memory that this expression (typically a variable name) refers to, and we don't want to forget that a variable was defined as uniform.
 
 Typing statements
 """""""""""""""""
 
 To check an if-then-else statement:
 
-#. Check that the condition is a well-typed expression of type ``bool``
-#. Check that the then branch is a well-typed statement, whose behaviours we will call B
-#. Check that the else branch is a well-typed statement, whose behaviours we will call B'
-#. Check that neither B nor B' contain a return of a pointer type, or of an array reference type
-#. Then the if-then-else statement is well-typed, and its behaviours is the union of B and B'
+#. Let ``u`` be the uniformity of the control-flow around this statement
+#. Check that the condition is a well-typed expression in control-flow of uniformity ``u``, of type ``bool``, with some uniformity ``u'``
+#. Check that the then and else branches are well-typed statements in control-flow of uniformity that is the lower of ``u`` and ``u'``, whose behaviours we will respectively call ``B`` and ``B'``
+#. Check that neither ``B`` nor ``B'`` contain a return of a pointer type, or of an array reference type
+#. Then the if-then-else statement is well-typed, and its behaviours is the union of ``B`` and ``B'``
 
 .. math::
     :nowrap:
@@ -763,17 +845,28 @@ To check an if-then-else statement:
 
 To check a do-while statement:
 
-#. Check that the condition is a well-typed expression of type ``bool``
-#. Check that the body of the loop is a well-typed statement, whose behaviours we will call B
-#. Check that B does not contain a return of a pointer type, or of an array reference type
-#. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
-#. Then the do-while statement is well-typed, and its behaviours is this new set
+#. If the control-flow around this statement is uniform
+
+   #. And the condition is a well-typed expression in uniform control flow, of type uniform ``bool``
+   #. And the body of the loop is a well-typed statement in uniform control flow, whose behaviours we will call B
+   #. And B does not contain any non-uniform behaviour
+   #. And B does not contain a return of a pointer type, or of an array reference type
+   #. Then the do-while statement is well-typed, and its behaviours is B, from which Break and Continue behaviours have been removed (if they were present) and to which Nothing has been added
+
+#. Else
+
+   #. Check that the condition is a well-typed expression in non-uniform control-flow, of type ``bool``
+   #. Check that the body of the loop is a well-typed statement in non-uniform control-flow, whose behaviours we will call B
+   #. Check that B does not contain a return of a pointer type, or of an array reference type
+   #. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
+   #. Then the do-while statement is well-typed, and its behaviours is this new set
 
 .. math::
     :nowrap:
 
     \begin{align*}
-       \ottdruledoXXwhile{}
+        \ottdruledoXXwhileXXuniform{}\\
+        \ottdruledoXXwhile{}
     \end{align*}
 
 .. note::
@@ -781,13 +874,19 @@ To check a do-while statement:
 
 To check a switch statement:
 
-#. Check that the expression being switched on is well-typed
+#. Check that the expression being switched on is well-typed in control-flow of the same uniformity as the switch statement
 #. Check that this type is either an integer type (``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``) or an enum type
 #. Check that each value ``v`` in a ``case v`` in this switch is well-typed with the same type
 #. Check that no two such cases have the same value
 #. If there is a default, check that there is at least one value in that type which is not covered by the cases
 #. Else check that for all values in that type, there is one case that covers it
-#. Check that the body of each case (and default) are well-typed, treating them as blocks
+#. Check that either:
+   
+   #. Both the control-flow around the switch and the type of the expression being switched on are uniform
+   #. The body of each case (and default) is well-typed in uniform control-flow, treating them as blocks
+   #. None of their behaviours include a non-uniform behaviour
+
+#. Or that the body of each case (and default) is well-typed in non-uniform control-flow, treating them as blocks
 #. Make a set of behaviours that is the union of the behaviours of all of these bodies
 #. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
 #. Remove Break and Fallthrough from this set (if they are in it) and add Nothing
@@ -797,17 +896,18 @@ To check a switch statement:
     :nowrap:
 
     \begin{align*}
+       \ottdruleswitchXXuniform{}\\
        \ottdruleswitch{}\\
        \ottdrulecase{}\\
        \ottdruledefault{}\\
        \ottdruleswitchXXblock{}
     \end{align*}
 
-The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.
+The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}, annotated with the uniformity of the control-flow at this point.
 
-The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T, and its behaviours is then {Return T}.
+The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T, and its behaviours is then {Return T}, annotated with the uniformity of the control-flow at this point.
 
-The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
+.. The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
 
 .. math::
     :nowrap:
@@ -818,8 +918,10 @@ The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T
        \ottdrulefallthrough{}\\
        \ottdrulereturnXXvoid{}\\
        \ottdrulereturn{}\\
-       \ottdruletrap{}
     \end{align*}
+
+.. todo::
+    Everything below this still has to be updated for the new rules (uniformity, clamping, memory model, etc..)
 
 To check a block:
 

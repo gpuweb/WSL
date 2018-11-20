@@ -134,7 +134,6 @@ B :: behaviour_ ::= {{com statement behaviour}}
     | B + B' :: :: union {{tex [[B]] \cup [[B']]}}
     | B \ B' :: :: difference {{tex [[B]] \backslash [[B']]}}
     | U B0 .. Bn :: :: big_union
-    | B | u :: :: restrict
     | ( B ) :: :: parens
 
 b :: single_behaviour_ ::=
@@ -317,14 +316,14 @@ typing :: '' ::=
 defn
 G |- s : u B :: :: typing_statement :: '' {{com Validating statements' behaviours}} {{tex [[G]] \vdash [[s]] :_{[[u]]} [[B]]}} by
 
-    G |- e : u2 bool u1
-    G |- s : u1 /\ u2 B
-    G |- s' : u1 /\ u2 B'
-    B'' = (B + B') | u1 /\ u2
+    G |- e : u bool u'
+    G |- s : u /\ u' B
+    G |- s' : u /\ u' B'
+    B'' = (B + B')
     Return u Ptr(tval, as) not in B''
     Return u Ref(tval, as) not in B''
     ------------------------------ :: if
-    G |- if (e) s else s' : u2 B''
+    G |- if (e) s else s' : u B''
 
     G |- e : + bool +
     G |- s : + B
@@ -458,7 +457,7 @@ G |- s : u B :: :: typing_statement :: '' {{com Validating statements' behaviour
     G |- e; : u2 {Nothing}
 
     G |- s : - B
-    ------------ :: uniformity
+    ------------ :: uniformity_stmt
     G |- s : + B
     % Anything that is valid in non-uniform control-flow is also valid in uniform control-flow
     % TODO: find out if the previous rules can be simplified from that.
@@ -507,7 +506,7 @@ G |- e : u t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vda
 
     G |- e : u bool u1
     G |- e' : u/\u1 bool u2
-    ------------------- :: or
+    ---------------------------- :: or
     G |- e || e' : u bool u1/\u2
 
     G |- e : u bool u1
@@ -603,6 +602,10 @@ G |- e : u t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vda
     % -------------------------------------------------- :: call_no_targ
     % G |- x <( )> (e0, .., en) : tval
     % TODO: Make a formal rule for calls, that takes into account the way we deal with uniform (aka inlining everything)
+
+    G |- e : - t
+    ------------ :: uniformity_expr
+    G |- e : + t
 
     G |- e : u tval +
     ----------------- :: tval_uniform
