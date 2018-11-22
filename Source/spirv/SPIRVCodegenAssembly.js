@@ -124,9 +124,16 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     assembler.comment("Debug information");
     assembler.append(new spirv.ops.Source(spirv.kinds.SourceLanguage.Unknown, 1));
     assembler.lineComment("WHLSL Compiler");
+    // Output names for functions.
     for (let entryPoint of program.entryPoints) {
         assembler.append(new spirv.ops.Name(entryPoint.id, entryPoint.name));
     }
+    // Output names for struct types.
+    Array.from(typeMap).filter(([id, type]) => {
+        return type.type == "struct";
+    }).forEach(([id, type]) => {
+        assembler.append(new spirv.ops.Name(id, type.name));
+    });
 
     // 8. All annotation instructions
 

@@ -85,7 +85,7 @@ function generateSPIRV(spirv, program)
 
         entryPoints.push({ id: currentId++, shader: inlinedShader, inputs: inputValues, outputs: outputValues });
     }
-    
+
     for (let type of typeMap) {
         if (typeof type[1] == "object")
             reverseTypeMap.set(type[1].id, type[0]);
