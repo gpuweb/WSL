@@ -129,7 +129,7 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
         assembler.append(new spirv.ops.Name(entryPoint.id, entryPoint.name));
     }
     // Output names for struct types.
-    Array.from(typeMap).filter(([id, type]) => {
+    [...typeMap].filter(([id, type]) => {
         return type.type == "struct";
     }).forEach(([id, type]) => {
         assembler.append(new spirv.ops.Name(id, type.name));
