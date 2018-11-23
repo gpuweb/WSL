@@ -210,9 +210,25 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
         if (!func.id) {
             func.id = ++currentId;
         }
+
+        let parameterIds = [];
+        let parameterTypeNames = [];
+        for (let param of func.parameters) {
+            if (param.defaultFunctionParameter) {
+                let paramTypeName = `${param.type.elementType.name}* ${param.type.addressSpace}`;
+                let paramTypeId = reverseTypeMap.get(paramTypeName);
+                parameterIds.push(paramTypeId);
+                parameterTypeNames.push(paramTypeName);
+            } else {
+                let paramTypeId = reverseTypeMap.get(param.type.name);
+                parameterIds.push(paramTypeId);
+                parameterTypeNames.push(param.type.name);
+            }
+        }
+
         let idOfReturnType = reverseTypeMap.get(func.cast ? "void" : func.returnType.name);
-        assembler.append(new spirv.ops.TypeFunction(func.id, idOfReturnType));
-        assembler.lineComment(`${func.name} FIXME: Missing parameters`);
+        assembler.append(new spirv.ops.TypeFunction(func.id, idOfReturnType, ...parameterIds));
+        assembler.lineComment(`${func.name}(${parameterTypeNames.join(", ")})`);
     }
 
     // 11. All function definitions

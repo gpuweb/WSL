@@ -98,9 +98,13 @@ class FunctionDescriber {
 
     describeFuncParameter(param)
     {
-        let result = {
-            name: param.name || "default function parameter"
-        };
+        let result = {};
+        if (!param.name) {
+            result.name = "default function parameter";
+            result.defaultFunctionParameter = true;
+        } else {
+            result.name = param.name;
+        }
         result.type = this.describeTypeRef(param.type);
         if (param.semantic)
             result.semantic = param.semantic;

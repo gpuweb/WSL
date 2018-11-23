@@ -483,6 +483,7 @@
         "parameters": [
           {
             "name": "default function parameter",
+            "defaultFunctionParameter": true,
             "type": {
               "type": "pointerType",
               "addressSpace": "thread",
