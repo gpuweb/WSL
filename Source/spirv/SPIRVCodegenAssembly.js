@@ -137,6 +137,10 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
         return type.type == "struct";
     }).forEach(([id, type]) => {
         assembler.append(new spirv.ops.Name(id, type.name));
+        for (let i = 0; i < type.fields.length; i++) {
+            const field = type.fields[i];
+            assembler.append(new spirv.ops.MemberName(id, i, field.name));
+        }
     });
 
     // 8. All annotation instructions
