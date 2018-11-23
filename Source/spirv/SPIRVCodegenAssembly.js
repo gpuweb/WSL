@@ -43,6 +43,11 @@ class ProgramHelper {
         return this._program.source.literals;
     }
 
+    get functions()
+    {
+        return this._program.source.functions;
+    }
+
     get entryPoints()
     {
         if (!this._entryPoints) {
@@ -80,7 +85,7 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
 
     // Give each entry point an identifier.
     for (let entryPoint of program.entryPoints) {
-        entryPoint.id = ++currentId;
+        entryPoint.func.id = ++currentId;
     }
 
     // 1. All OpCapability instructions
@@ -110,23 +115,22 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
         //     interfaceIds.push(value.id);
         // for (let value of entryPoint.outputs)
         //     interfaceIds.push(value.id);
-        assembler.append(new spirv.ops.EntryPoint(executionModel, entryPoint.id, entryPoint.name, ...interfaceIds));
+        assembler.append(new spirv.ops.EntryPoint(executionModel, entryPoint.func.id, entryPoint.name, ...interfaceIds));
     }
 
     // 6. All execution mode declarations
     for (let entryPoint of program.entryPoints) {
-        assembler.append(new spirv.ops.ExecutionMode(entryPoint.id, spirv.kinds.ExecutionMode.OriginLowerLeft));
+        assembler.append(new spirv.ops.ExecutionMode(entryPoint.func.id, spirv.kinds.ExecutionMode.OriginLowerLeft));
     }
 
     // 7. Optional debug instructions
-
     assembler.blankLine();
     assembler.comment("Debug information");
     assembler.append(new spirv.ops.Source(spirv.kinds.SourceLanguage.Unknown, 1));
     assembler.lineComment("WHLSL Compiler");
     // Output names for functions.
     for (let entryPoint of program.entryPoints) {
-        assembler.append(new spirv.ops.Name(entryPoint.id, entryPoint.name));
+        assembler.append(new spirv.ops.Name(entryPoint.func.id, entryPoint.name));
     }
     // Output names for struct types.
     [...typeMap].filter(([id, type]) => {
@@ -193,6 +197,20 @@ export function generateSPIRVAssembly(spirv, programDescription, assembler)
     }
 
     // 10. All function declarations
+
+    assembler.blankLine();
+    assembler.comment("Function declarations");
+    for (let func of program.functions) {
+        // If this is an entry point, we've already given it an id. If
+        // not, create a new one.
+        if (!func.id) {
+            func.id = ++currentId;
+        }
+        let idOfReturnType = reverseTypeMap.get(func.cast ? "void" : func.returnType.name);
+        assembler.append(new spirv.ops.TypeFunction(func.id, idOfReturnType));
+        assembler.lineComment(`${func.name} FIXME: Missing parameters`);
+    }
+
     // 11. All function definitions
 }
 
