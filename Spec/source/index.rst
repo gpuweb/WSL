@@ -1504,6 +1504,7 @@ There is no explicit dereferencing operator for array references: they can just 
 The ``[]`` dereferencing operator is polymorphic: its first operand can be either an array reference, or an array, or a left value pointing
 to an array.
 To reduce ``e1[e2]`` by one step:
+
 #. If ``e2`` can be reduced, then reduce it by one step
 #. Else if the first operand is null, trap
 #. Else if the first operand is an array
