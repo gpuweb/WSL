@@ -1,9 +1,9 @@
-.. WSL documentation master file, created by
+.. WHLSL documentation master file, created by
    sphinx-quickstart on Thu Jun  7 15:53:54 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-WSL Specification
+WHLSL Specification
 #################
 
 General
@@ -18,12 +18,12 @@ the scope of this specification.
 . Note:: The WebGPU Shading Language is designed to target other high-level shading
    languages as compilation targets.
 
-WSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
+WHLSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
 and manipulate shaders are specified in the WebGPU specification, not this document.
 This document describes which programs are well-formed; the exact form of error
 reporting is not discussed in this specification.
 
-WSL does not support extensions or optional behavior.
+WHLSL does not support extensions or optional behavior.
 
 Terms in this document such as *must*, *must not*, *required*, *shall*, *shall not*,
 *should*, *should not*, *recommended*, *may*, and *optional* in normative parts of
@@ -40,7 +40,7 @@ specification.
 
 A shader is a compilation unit which includes type definitions and function definitions.
 
-WSL is used to describe different types of shaders:
+WHLSL is used to describe different types of shaders:
 
 #. Vertex shaders
 #. Fragment shaders
@@ -50,14 +50,14 @@ Each shader type represents software which may execute on a specialized processo
 draw calls, different shader types, or different invocations of the same shader, may execute
 on independent processors.
 
-A WSL string passes through the following stages of processing before it is executed:
+A WHLSL string passes through the following stages of processing before it is executed:
 
 #. Tokenization
 #. Parsing
 #. Validation
 
-Once a WSL string passes all the validation checks, it is then available to be used in a
-draw call or dispatch call. A WSL string contains zero or more shaders, and each shader is
+Once a WHLSL string passes all the validation checks, it is then available to be used in a
+draw call or dispatch call. A WHLSL string contains zero or more shaders, and each shader is
 of a specific shader type. Compute shaders must only be used for dispatch calls, and vertex
 and fragment shaders must only be used in draw calls.
 
@@ -110,7 +110,7 @@ Because vertex shaders may have write-access to resources, they are not "pure" i
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
 Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
 units at the entire shader level or the instruction level (or any level in between). Therefore,
-when using simple loads and stores, load tearing may occur, or any such artifacts. WSL authors must
+when using simple loads and stores, load tearing may occur, or any such artifacts. WHLSL authors must
 take care to create shaders which are portable. See below for advice on how to accomplish this.
 
 .. Note:: Specific GPU instructions are not within scope of this document; therefore, races may
@@ -167,7 +167,7 @@ Because vertex shaders may have write-access to resources, they are not "pure" i
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
 Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
 units at the entire shader level or the instruction level (or any level in between). Therefore,
-WSL authors must take care to create shaders which are portable. See below for advice on how to
+WHLSL authors must take care to create shaders which are portable. See below for advice on how to
 accomplish this.
 
 .. Note:: Specific GPU instructions are not within scope of this document; therefore, races may
@@ -229,13 +229,13 @@ The input to a compute shader may be any assortment of information, arranged int
 Entry Points
 ------------
 
-All functions in WSL are either "entry points" or "non-entry points." An entry point is a function
+All functions in WHLSL are either "entry points" or "non-entry points." An entry point is a function
 that may be associated with a particular programmable stage in a pipeline. Entry points may call
 non-entry points, non-entry points may call non-entry points, but entry points may not be called
-by any WSL function. When execution of a particular shader stage begins, the entry point associated
+by any WHLSL function. When execution of a particular shader stage begins, the entry point associated
 with that shader stage begins, and when that entry point returns, the associated shader stage ends.
 
-Exactly one WSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
+Exactly one WHLSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
 of the same shader type must not be used together in the same draw call or dispatch call.
 Every stage of the appropriate WebGPU pipeline must be occupied by a shader in order to
 execute a draw call or dispatch call.
@@ -244,7 +244,7 @@ All entry points must begin with the keyword "vertex", "fragment", or "compute",
 describes which pipeline stage that shader is appropriate for. An entry point is only valid for one
 type of shader stage.
 
-Built-ins are identified by name. WSL does not include annotations for identifying built-ins. If
+Built-ins are identified by name. WHLSL does not include annotations for identifying built-ins. If
 the return of a shader should be assigned to a built-in, the author should create a struct with
 a variable named according to to the built-in, and the shader should return that struct.
 
@@ -253,7 +253,7 @@ Vertex and fragment entry points must transitively never refer to the ``threadgr
 Arguments and Return Types
 """"""""""""""""""""""""""
 
-Arguments return types of an entry point are more restricted than arguments to an arbitrary WSL function.
+Arguments return types of an entry point are more restricted than arguments to an arbitrary WHLSL function.
 They are flattened through structs - that is, each member of any struct appearing in an argument to an entry
 point or return type is considered independently, recursively. Arguments to entry points are not
 distinguished by position or order.
@@ -320,18 +320,18 @@ Lexical analysis
 Shaders exist as a Unicode string, and therefore support all the code points
 Unicode supports.
 
-WSL does not include any digraphs or trigraphs. WSL is case-sensitive. It does not include any
+WHLSL does not include any digraphs or trigraphs. WHLSL is case-sensitive. It does not include any
 escape sequences.
 
-.. Note:: WSL does not include a string type, so escape characters are not present in the
+.. Note:: WHLSL does not include a string type, so escape characters are not present in the
    language.
 
-WSL does not include a preprocessor step.
+WHLSL does not include a preprocessor step.
 
 .. Note:: Because there is no processor step, tokens such as '#if' are generally considered
    parse errors.
 
-Before parsing, the text of a WSL program is first turned into a list of tokens, removing comments and whitespace along the way.
+Before parsing, the text of a WHLSL program is first turned into a list of tokens, removing comments and whitespace along the way.
 Tokens are built greedily, in other words each token is as long as possible.
 If the program cannot be transformed into a list of tokens by following these rules, the program is invalid and must be rejected.
 
@@ -1715,7 +1715,7 @@ Built-in Scalars
 | float     | A 32-bit floating-point number.                                                | See below for details on representable values.                                    |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 
-.. Note:: The following types are not present in WSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
+.. Note:: The following types are not present in WHLSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
 
 Built-in Atomic Types
 """""""""""""""""""""
