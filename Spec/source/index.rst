@@ -34,9 +34,16 @@ Basics
 
 The WebGPU Shading Language is designed to be as portable as possible; therefore,
 implementations must reject any shader which does not strictly adhere to this
-specification. Optimizations must not be observable, and must not affect error reporting.
+specification. Optimizations must not affect the validity of a program.
 Implementations must not support functionality beyond the mandated parts of this
 specification.
+
+. Note:: The fact that optimizations must not affect the validity of a program means
+   errors in dead code must cause a compilation failure. However, optimizations may,
+   in general, be observable, such as fusing a multiply followed by an add into a
+   single operation which has higher intermediate precision than the distinct operations.
+   This means that the same WHLSL program run on different machines, browsers, or operating
+   systems may might not produce the exact same results bit-for-bit.
 
 A shader is a compilation unit which includes type definitions and function definitions.
 
