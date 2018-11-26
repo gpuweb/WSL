@@ -259,14 +259,14 @@ function processSPIRVGrammar(json) {
 
             toString()
             {
-                let result = "    ";
+                let result = "        ";
                 // If there is an IdResult operand, it goes
                 // before the opname.
                 for (let i = 0; i < this.operands.length; i++) {
                     const operandInfo = this.operandInfo[i];
                     if (operandInfo.kind == "IdResult") {
                         const operand = this.operands[i];
-                        result = `%${operand} = `;
+                        result = `%${operand} = `.padStart(8, " ");
                         break;
                     }
                 }
@@ -443,7 +443,9 @@ class SPIRVTextAssembler {
     {
         if (!this._output.length)
             return;
-        this._output[this._output.length - 1] += ` ; ${msg}`;
+        let existingValue = this._output[this._output.length - 1];
+        existingValue = existingValue.padEnd((Math.floor(existingValue.length / 8) + 1) * 8, " ");
+        this._output[this._output.length - 1] = `${existingValue} ; ${msg}`;
     }
 
     get largestId()
