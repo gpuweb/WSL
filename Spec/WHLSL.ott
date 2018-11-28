@@ -7,7 +7,7 @@ td :: top_level_decl_ ::= {{com top-level declaration}}
     | typedef x <( tparam0 , .. , tparamk )> = tval ; :: :: typedef
 
 tparam :: type_parameter_ ::= {{com type parameter}}
-    | tval x :: :: constexpr
+    | tval x :: :: constexpression
     | x : y0 + .. + yn :: :: type_variable
 
 s :: stmt_ ::= {{com statement}}
@@ -92,9 +92,9 @@ addr :: addr_ ::=
     | sid :: :: sid
 
 targ :: type_argument_ ::= {{com type argument}}
-    | x :: :: ident {{com either a type or a constexpr}}
+    | x :: :: ident {{com either a type or a constexpression}}
     | tval :: :: type {{com a type that is not just an identifier}}
-    | x . y :: :: enum_value {{com a field of an enum, for a constexpr type parameter}}
+    | x . y :: :: enum_value {{com a field of an enum, for a constexpression type parameter}}
 
 G {{tex \Gamma}} , Gglobal {{tex \Gamma_{global} }} :: env_ ::= {{com typing environment}}
     | G [ x -> envMapping ] :: :: update {{com $\Gamma$ with the mapping for x replaced by envMapping}}
@@ -121,7 +121,7 @@ sig :: signature_ ::=
     % TODO: fix these tparamAnanon, they are clearly wrong.
 
 tparamAnon :: tparam_anon_ ::=
-    | t :: :: constexpr
+    | t :: :: constexpression
     | { y0 , .. , yn } :: :: tvar 
 
 u :: uniformity_ ::=
@@ -299,7 +299,7 @@ e --> e' :: :: desugaring_expr :: '' {{com Desugaring expressions}} by
 %       G |- well_formed (tval f<()>(tval0 x0, tval1 x1, .., tvalm xm) {s0..sn})
 %
 %       G[x -> tval'] |- well_formed (tval f<(tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
-%       ---------------------------------------------------------------------------------------- :: func_constexpr
+%       ---------------------------------------------------------------------------------------- :: func_constexpression
 %       G |- well_formed (tval f<(tval' x, tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
 %
 %       y0 -> Protocol namedSigs0 in G /\ .. /\ yi -> Protocol namedSigsi in G
@@ -468,7 +468,7 @@ G |- sc : tval :: :: typing_switch_case :: '' by
     G |- rval : + tval +
     --------------------- :: case
     G |- case rval : tval
-    % Note: I put rval :+ tval+ in the premise instead of tval-, but it does not matter as only constexprs are allowed in that position in the grammar.
+    % Note: I put rval :+ tval+ in the premise instead of tval-, but it does not matter as only constexpressions are allowed in that position in the grammar.
 
     ------------------- :: default
     G |- default : tval

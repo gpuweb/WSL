@@ -464,7 +464,7 @@ A valid file is made of a sequence of 0 or more top-level declarations, followed
 
 .. productionlist::
     enumDef: "enum" `Identifier` (":" `type`)? "{" `enumElement` ("," `enumElement`)* "}"
-    enumElement: `Identifier` ("=" `constexpr`)?
+    enumElement: `Identifier` ("=" `constexpression`)?
 
 .. productionlist::
     funcDef: `funcDecl` "{" `stmt`* "}"
@@ -516,7 +516,7 @@ Then, we apply the following two rules:
 
 .. productionlist::
     switchStmt: "switch" "(" `expr` ")" "{" `switchCase`* "}"
-    switchCase: ("case" `constexpr` | "default") ":" `stmt`*
+    switchCase: ("case" `constexpression` | "default") ":" `stmt`*
 
 .. productionlist::
     variableDecls: `type` `variableDecl` ("," `variableDecl`)*
@@ -557,7 +557,7 @@ WHLSL accepts three different kinds of expressions, in different places in the g
 - ``expr`` is the most generic, and includes all expressions.
 - ``maybeEffectfulExpr`` is used in places where a variable declaration would also be allowed. It forbids some expressions that are clearly effect-free, such as ``x*y`` or ``x < y``.
   As the name indicates, it may be empty. In that case it is equivalent to "null" (any other effect-free expression would be fine, as the result of such an expression is always discarded).
-- ``constexpr`` is limited to literals and the elements of an enum. It is used in switch cases, and in type arguments.
+- ``constexpression`` is limited to literals and the elements of an enum. It is used in switch cases, and in type arguments.
 
 .. productionlist::
     expr: (`expr` ",")? `ternaryConditional`
@@ -602,7 +602,7 @@ If the programmer still wants to use them in such a position (for example due to
 it can be done just by wrapping the expression in parentheses (see the last alternative for effSuffix).
 
 .. productionlist::
-    constexpr: `Literal` | `Identifier` "." `Identifier`
+    constexpression: `Literal` | `Identifier` "." `Identifier`
 
 Validation
 ===========
