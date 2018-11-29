@@ -89,9 +89,9 @@ button:active {
 }
 </style>
 <script type="module">
-import { prepare } from "../Prepare.js";
-import { programToJSON } from "../json/JSON.js";
-import { programDescriptionToSPIRVAssembly } from "./SPIRV.js";
+import { prepare } from "../Prepare.mjs";
+import { programToJSON } from "../json/JSON.mjs";
+import { programDescriptionToSPIRVAssembly } from "./SPIRV.mjs";
 
 function provideDownload(result) {
     let resultElement = document.getElementById("Result");

@@ -3,7 +3,7 @@
 ## JSON
 
 ```bash
-prompt> jsc --module-file=Scripts/generate.js -- json file.whlsl
+prompt> jsc --module-file=Scripts/generate.mjs -- json file.whlsl
 ```
 
 Or, load Source/json/JSON.html in your browser.
@@ -11,7 +11,7 @@ Or, load Source/json/JSON.html in your browser.
 ## Metal Shading Language
 
 ```bash
-prompt> jsc --module-file=Scripts/generate.js -- msl file.whlsl
+prompt> jsc --module-file=Scripts/generate.mjs -- msl file.whlsl
 ```
 
 Or, load Source/metal/MSL.html in your browser.
