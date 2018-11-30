@@ -38,16 +38,16 @@ BREAK: 'break';
 SWITCH: 'switch';
 CASE: 'case';
 DEFAULT: 'default';
-FALLTHROUGH: 'fallthrough';
+FALLTHROUGHKEYWORD: 'fallthrough';
 FOR: 'for';
 WHILE: 'while';
 DO: 'do';
 RETURN: 'return';
 TRAP: 'trap';
 
-NULL: 'null';
-TRUE: 'true';
-FALSE: 'false';
+NULLKEYWORD: 'null';
+TRUEKEYWORD: 'true';
+FALSEKEYWORD: 'false';
 // Note: We could make these three fully case sensitive or insensitive. to bikeshed.
 
 CONSTANT: 'constant';
@@ -128,7 +128,7 @@ structElement: Qualifier* type Identifier (':' Semantic)? ';' ;
 
 enumDef: ENUM Identifier (':' type)? '{' enumMember (',' enumMember)* '}' ;
 // Note: we could allow an extra ',' at the end of the list of enumMembers, ala Rust, to make it easier to reorder the members. to bikeshed
-enumMember: Identifier ('=' constexpr)? ;
+enumMember: Identifier ('=' constexpression)? ;
 
 funcDef: RESTRICTED? funcDecl block;
 funcDecl
@@ -158,7 +158,7 @@ typeArguments
     // Note: this first alternative is a horrible hack to deal with nested generics that end with '>>'. As far as I can tell it works fine, but requires arbitrary lookahead.
     | '<' typeArgument (',' typeArgument)* '>'
     | ('<' '>')? ;
-typeArgument: constexpr | type ;
+typeArgument: constexpression | type ;
 
 /* 
  * Parser: Statements 
@@ -175,7 +175,7 @@ stmt
     | doStmt ';'
     | BREAK ';'
     | CONTINUE ';'
-    | FALLTHROUGH ';'
+    | FALLTHROUGHKEYWORD ';'
     | TRAP ';'
     | RETURN expr? ';'
     | variableDecls ';'
@@ -184,7 +184,7 @@ stmt
 ifStmt: IF '(' expr ')' stmt (ELSE stmt)? ;
 
 switchStmt: SWITCH '(' expr ')' '{' switchCase* '}' ;
-switchCase: (CASE constexpr | DEFAULT) ':' blockBody ;
+switchCase: (CASE constexpression | DEFAULT) ':' blockBody ;
 
 forStmt: FOR '(' (variableDecls | effectfulExpr) ';' expr? ';' expr? ')' stmt ;
 whileStmt: WHILE '(' expr ')' stmt ;
@@ -196,9 +196,9 @@ variableDecl: Qualifier* Identifier (':' Semantic)? ('=' expr)? ;
 /* 
  * Parser: Expressions
  */
-constexpr
+constexpression
     : literal 
-    | Identifier // to get the (constexpr) value of a type variable
+    | Identifier // to get the (constexpression) value of a type variable
     | Identifier '.' Identifier; // to get a value out of an enum
 
 // Note: we separate effectful expressions from normal expressions, and only allow the former in statement positions, to disambiguate the following:
@@ -249,5 +249,5 @@ term
     | Identifier
     | '(' expr ')' ;
 
-literal: IntLiteral | FloatLiteral | NULL | TRUE | FALSE;
+literal: IntLiteral | FloatLiteral | NULLKEYWORD | TRUEKEYWORD | FALSEKEYWORD;
 
