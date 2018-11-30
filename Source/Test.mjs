@@ -27,6 +27,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { log, commandLineArgs, getFileContents, exitProcess } from "../Source/misc/Helpers.mjs";
+
 import { ArrayRefType } from "./ArrayRefType.mjs";
 import { EArrayRef } from "./EArrayRef.mjs";
 import { EBuffer } from "./EBuffer.mjs";
@@ -318,7 +320,7 @@ function checkFail(callback, predicate)
         throw new Error("Did not throw exception");
     } catch (e) {
         if (predicate(e)) {
-            print("    Caught: " + e);
+            log("    Caught: " + e);
             return;
         }
         throw e;
@@ -9866,20 +9868,24 @@ okToTest = true;
 
 let testFilter = /.*/; // run everything by default
 let testExclusionFilter = /^DISABLED_/;
-try {
-    if (arguments) {
-        for (let i = 0; i < arguments.length; i++) {
-            switch (arguments[0]) {
-            case "--filter":
-                testFilter = new RegExp(arguments[++i]);
-                break;
-            default:
-                throw new Error("Unknown argument: ", arguments[i]);
-            }
+if (commandLineArgs) {
+    for (let i = 0; i < commandLineArgs.length; i++) {
+        switch (commandLineArgs[0]) {
+        case "--filter":
+            testFilter = new RegExp(commandLineArgs[++i]);
+            break;
+        default:
+            throw new Error("Unknown argument: ", commandLineArgs[i]);
         }
     }
-} catch (e) {
-    // Ignore the ReferenceError (no arguments).
+}
+
+try {
+    preciseTime();
+} catch {
+    var preciseTime = function () {
+        return Date.now() / 1000;
+    };
 }
 
 export function* doTest(testFilter)
@@ -9895,22 +9901,22 @@ export function* doTest(testFilter)
     for (let s of names) {
         if (s.match(testFilter)) {
             if (s.match(testExclusionFilter)) {
-                print(`Skipping ${s} because it is disabled.`);
+                log(`Skipping ${s} because it is disabled.`);
             } else {
-                print("TEST: " + s + "...");
+                log("TEST: " + s + "...");
                 yield;
                 const testBefore = preciseTime();
                 tests[s]();
                 const testAfter = preciseTime();
-                print(`    OK, took ${Math.round((testAfter - testBefore) * 1000)} ms`);
+                log(`    OK, took ${Math.round((testAfter - testBefore) * 1000)} ms`);
             }
         }
     }
 
     let after = preciseTime();
 
-    print("Success!");
-    print("That took " + (after - before) * 1000 + " ms.");
+    log("Success!");
+    log("That took " + (after - before) * 1000 + " ms.");
 }
 
 let shouldRunTests = true;

@@ -18,13 +18,16 @@ The Examples directory has some WHLSL sample code.
 We currently support Metal Shading Language as an output format, as well as a debug mode (JSON).
 
 ```bash
-prompt> jsc --module-file=Scripts/generate.mjs -- [json|msl] file.whlsl
+# Using JavaScriptCore
+prompt> jsc -m Scripts/generate.mjs -- [json|msl|spirv-ass] file.whlsl
+
+# Using Node JS
+prompt> node --experimental-modules Scripts/generate.mjs [json|msl|spirv-ass] file.whlsl
 ```
 
 Or replace `jsc` with your favorite Javascript interpreter. You
 can get `jsc` by checking out and [building WebKit](https://webkit.org/getting-the-code/)
 or, if you're using macOS, it can be found in `/System/Library/Frameworks/JavaScriptCore.framework/Resources/jsc`.
-Note that this project uses ES modules, so doesn't work out of the box with node.js.
 
 Alternatively, load Source/json/JSON.html or Source/metal/MSL.html in your browser.
 
@@ -35,7 +38,11 @@ The WHSL source code is exposed as an ES6 Module.
 To run the tests:
 
 ```bash
+# Using JavaScriptCore
 prompt> jsc -m Source/Test.mjs
+
+# Using Node JS
+prompt> node --experimental-modules Source/Test.mjs
 ```
 
 Or, load Source/Test.html in your browser (assuming your browser supports ES modules, which most modern browsers do).
