@@ -45,7 +45,7 @@ DO: 'do';
 RETURN: 'return';
 TRAP: 'trap';
 
-NULL: 'null';
+NULLKEYWORD: 'null';
 TRUE: 'true';
 FALSE: 'false';
 // Note: We could make these three fully case sensitive or insensitive. to bikeshed.
@@ -249,5 +249,5 @@ term
     | Identifier
     | '(' expr ')' ;
 
-literal: IntLiteral | FloatLiteral | NULL | TRUE | FALSE;
+literal: IntLiteral | FloatLiteral | NULLKEYWORD | TRUE | FALSE;
 
