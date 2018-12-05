@@ -1,0 +1,8 @@
+struct VertexInput {
+    float4 position : attribute(0);
+}
+
+vertex float4 vertexShader(VertexInput vertexInput) : SV_Position
+{
+    return vertexInput.position;
+}

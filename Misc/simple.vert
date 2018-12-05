@@ -1,11 +1,12 @@
 #version 450
 
-layout(location=0) in vec4 position;
-layout(location=1) in vec4 input_color;
-layout(location=0) out vec4 output_color;
+// Input structures are flattened into structName_attributeName.
 
-void main()
-{
-    gl_Position = position;
-    output_color = input_color;
+layout(location=0) in vec4 VertexInput_position;
+
+// The position output of the vertex shader is the
+// value of gl_PerVertex.gl_Position.
+
+void main() {
+    gl_Position = VertexInput_position;
 }

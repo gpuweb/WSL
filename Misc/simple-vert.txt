@@ -1,12 +1,12 @@
 ; SPIR-V
 ; Version: 1.0
 ; Generator: Khronos Glslang Reference Front End; 7
-; Bound: 24
+; Bound: 21
 ; Schema: 0
                OpCapability Shader
           %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical GLSL450
-               OpEntryPoint Vertex %main "main" %_ %position %output_color %input_color
+               OpEntryPoint Vertex %main "main" %_ %VertexInput_position
                OpSource GLSL 450
                OpName %main "main"
                OpName %gl_PerVertex "gl_PerVertex"
@@ -15,17 +15,13 @@
                OpMemberName %gl_PerVertex 2 "gl_ClipDistance"
                OpMemberName %gl_PerVertex 3 "gl_CullDistance"
                OpName %_ ""
-               OpName %position "position"
-               OpName %output_color "output_color"
-               OpName %input_color "input_color"
+               OpName %VertexInput_position "VertexInput_position"
                OpMemberDecorate %gl_PerVertex 0 BuiltIn Position
                OpMemberDecorate %gl_PerVertex 1 BuiltIn PointSize
                OpMemberDecorate %gl_PerVertex 2 BuiltIn ClipDistance
                OpMemberDecorate %gl_PerVertex 3 BuiltIn CullDistance
                OpDecorate %gl_PerVertex Block
-               OpDecorate %position Location 0
-               OpDecorate %output_color Location 0
-               OpDecorate %input_color Location 1
+               OpDecorate %VertexInput_position Location 0
        %void = OpTypeVoid
           %3 = OpTypeFunction %void
       %float = OpTypeFloat 32
@@ -39,16 +35,12 @@
         %int = OpTypeInt 32 1
       %int_0 = OpConstant %int 0
 %_ptr_Input_v4float = OpTypePointer Input %v4float
-   %position = OpVariable %_ptr_Input_v4float Input
+%VertexInput_position = OpVariable %_ptr_Input_v4float Input
 %_ptr_Output_v4float = OpTypePointer Output %v4float
-%output_color = OpVariable %_ptr_Output_v4float Output
-%input_color = OpVariable %_ptr_Input_v4float Input
        %main = OpFunction %void None %3
           %5 = OpLabel
-         %18 = OpLoad %v4float %position
+         %18 = OpLoad %v4float %VertexInput_position
          %20 = OpAccessChain %_ptr_Output_v4float %_ %int_0
                OpStore %20 %18
-         %23 = OpLoad %v4float %input_color
-               OpStore %output_color %23
                OpReturn
                OpFunctionEnd
