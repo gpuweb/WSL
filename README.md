@@ -25,11 +25,13 @@ prompt> jsc -m Scripts/generate.mjs -- [json|msl|spirv-ass] file.whlsl
 prompt> node --experimental-modules Scripts/generate.mjs [json|msl|spirv-ass] file.whlsl
 ```
 
-Or replace `jsc` with your favorite Javascript interpreter. You
-can get `jsc` by checking out and [building WebKit](https://webkit.org/getting-the-code/)
+You can get `jsc` by checking out and [building WebKit](https://webkit.org/getting-the-code/)
 or, if you're using macOS, it can be found in `/System/Library/Frameworks/JavaScriptCore.framework/Resources/jsc`.
 
-Alternatively, load Source/json/JSON.html or Source/metal/MSL.html in your browser.
+Alternatively, load Source/json/JSON.html, Source/metal/MSL.html or Source/spirv/SPIRV.html in your browser.
+
+More details can be found in [Code Generation](CodeGeneration.md). Also, there are some [rough notes
+on the specifics of translating WHLSL to SPIR-V](CodeGeneration-SPIRV.md).
 
 ## Running the Tests
 

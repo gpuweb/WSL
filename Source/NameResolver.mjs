@@ -221,7 +221,7 @@ export default class NameResolver extends Visitor {
         let funcs = this._nameContext.get(Func, node.name);
         if (funcs)
             node.possibleOverloads = funcs;
-        else if (node.name != "operator cast"){
+        else {
             node.setCastData(new TypeRef(node.origin, node.name));
             node.possibleOverloads = this._nameContext.get(Func, "operator cast");
         }

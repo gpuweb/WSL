@@ -413,7 +413,7 @@ class SPIRVTextAssembler {
         this._output = [];
         this.comment("Magic:     0x07230203 (SPIR-V)");
         this.comment("Version:   0x00010300 (Version: 1.3)");
-        this.comment("Generator: 0x574B0000 (WebKit)");
+        this.comment("Generator: 0x00140000 (WHLSL Reference Translator)");
         // Upper bound of <id>s will be inserted here.
         this.comment("Schema:    0");
     }

@@ -1,0 +1,9 @@
+struct FragmentOutput {
+    float4 color : SV_Target0;
+}
+
+fragment FragmentOutput fragmentShader(float4 position : SV_Position) {
+    FragmentOutput result;
+    result.color = float4(1, 0, 0, 1);
+    return result;
+}

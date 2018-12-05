@@ -3496,19 +3496,11 @@ tests.vectorTypeSyntax = function()
             vector<int,4> z = int4(3, 4, 5, 6);
             x = z;
             return x.w;
-        }
-
-        test bool vec2OperatorCast()
-        {
-            int2 x = vector<int,2>(1, 2);
-            vector<int, 2> y = int2(1, 2);
-            return x == y && x.x == 1 && x.y == 2 && y.x == 1 && y.y == 2;
         }`);
 
     checkInt(program, callFunction(program, "foo2", []), 4);
     checkInt(program, callFunction(program, "foo3", []), 5);
     checkInt(program, callFunction(program, "foo4", []), 6);
-    checkBool(program, callFunction(program, "vec2OperatorCast", []), true);
 
     program = doPrep(`
         typedef i = int;
@@ -3518,17 +3510,9 @@ tests.vectorTypeSyntax = function()
             vector<i, 2> z = int2(3, 4);
             x = z;
             return x.y;
-        }
-
-        test bool vec2OperatorCast()
-        {
-            int2 x = vector<i,2>(1, 2);
-            vector<i, 2> y = int2(1, 2);
-            return x == y && x.x == 1 && x.y == 2 && y.x == 1 && y.y == 2;
         }`);
 
     checkInt(program, callFunction(program, "foo2", []), 4);
-    checkBool(program, callFunction(program, "vec2OperatorCast", []), true);
 }
 
 tests.builtinVectors = function()
@@ -6101,26 +6085,6 @@ tests.casts = function()
         }
     `);
     checkInt(program, callFunction(program, "baz", [makeInt(program, 6)]), 13);
-    program = doPrep(`
-        struct Foo {
-            int x;
-        }
-        struct Bar {
-            int y;
-        }
-        operator thread Bar*(thread Foo* foo) {
-            Bar b;
-            b.y = (*foo).x + 8;
-            return &b;
-        }
-        test int baz(int z) {
-            Foo foo;
-            foo.x = z;
-            thread Bar* b = thread Bar*(&foo);
-            return (*b).y;
-        }
-    `);
-    checkInt(program, callFunction(program, "baz", [makeInt(program, 6)]), 14);
 }
 
 tests.atomics = function()
