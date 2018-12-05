@@ -154,11 +154,9 @@ typeSuffixNonAbbreviated: '*' addressSpace | '[]' addressSpace | '[' IntLiteral 
 // Note: in this formulation of typeSuffix*, we don't allow whitespace between the '[' and the ']' in '[]'. We easily could at the cost of a tiny more bit of lookahead. to bikeshed
 
 typeArguments
-    : '<' (typeArgument ',')* addressSpace? Identifier '<' (typeArgument (',' typeArgument)*)? '>>'
-    // Note: this first alternative is a horrible hack to deal with nested generics that end with '>>'. As far as I can tell it works fine, but requires arbitrary lookahead.
     | '<' typeArgument (',' typeArgument)* '>'
     | ('<' '>')? ;
-typeArgument: constexpr | type ;
+typeArgument: constexpr | Identifier ;
 
 /* 
  * Parser: Statements 
@@ -243,7 +241,7 @@ prefixOp: '++' | '--' | '+' | '-' | '~' | '!' | '&' | '@' | '*' ;
 possibleSuffix
     : callExpression limitedSuffixOperator*
     | term (limitedSuffixOperator | '++' | '--')* ;
-callExpression: Identifier typeArguments '(' (possibleTernaryConditional (',' possibleTernaryConditional)*)? ')';
+callExpression: Identifier '(' (possibleTernaryConditional (',' possibleTernaryConditional)*)? ')';
 term
     : literal
     | Identifier

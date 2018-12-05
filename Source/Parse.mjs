@@ -467,46 +467,25 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
 
     function parseCallExpression()
     {
-        let parseArguments = function(origin, callName) {
-            let argumentList = [];
-            while (!test(")")) {
-                let argument = parsePossibleAssignment();
-                if (argument instanceof WSyntaxError)
-                    return argument;
-                argumentList.push(argument);
-                if (!tryConsume(","))
-                    break;
-            }
-            let maybeError = consume(")");
-            if (maybeError instanceof WSyntaxError)
-                return maybeError;
-            return new CallExpression(origin, callName, argumentList);
-        }
-
-        let name = backtrackingScope(() => {
-            let name = consumeKind("identifier");
-            if (name instanceof WSyntaxError)
-                return name;
-            let maybeError = consume("(");
-            if (maybeError instanceof WSyntaxError)
-                return maybeError;
+        let name = consumeKind("identifier");
+        if (name instanceof WSyntaxError)
             return name;
-        });
-
-        if (name) {
-            let result = parseArguments(name, name.text);
-            return result;
-        } else {
-            let returnType = parseType();
-            if (returnType instanceof WSyntaxError)
-                return returnType;
-            let maybeError = consume("(");
-            if (maybeError instanceof WSyntaxError)
-                return maybeError;
-            let result = parseArguments(returnType.origin, "operator cast");
-            result.setCastData(returnType);
-            return result;
+        let maybeError = consume("(");
+        if (maybeError instanceof WSyntaxError)
+            return maybeError;
+        let argumentList = [];
+        while (!test(")")) {
+            let argument = parsePossibleAssignment();
+            if (argument instanceof WSyntaxError)
+                return argument;
+            argumentList.push(argument);
+            if (!tryConsume(","))
+                break;
         }
+        maybeError = consume(")");
+        if (maybeError instanceof WSyntaxError)
+            return maybeError;
+        return new CallExpression(origin, name.text, argumentList);
     }
 
     function isCallExpression()
