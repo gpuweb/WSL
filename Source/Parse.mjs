@@ -407,10 +407,13 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
                 continue;
             }
 
-            const lengthExpr = parseConstexpr();
-            if (lengthExpr instanceof WSyntaxError)
-                return lengthExpr;
-            typeConstructorStack.unshift(type => new ArrayType(token, type, lengthExpr));
+            const lengthLiteral = consumeKind("intLiteral");
+            if (lengthLiteral instanceof WSyntaxError)
+                return lengthLiteral;
+            let intVersion = (+lengthLiteral.text) | 0;
+            if ("" + intVersion !== lengthLiteral.text)
+                return fail("Integer literal is not an integer: " + token.text);
+            typeConstructorStack.unshift(type => new ArrayType(token, type, new IntLiteral(token, intVersion)));
             let maybeError = consume("]");
             if (maybeError instanceof WSyntaxError)
                 return maybeError;
