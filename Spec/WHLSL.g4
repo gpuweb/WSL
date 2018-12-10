@@ -113,7 +113,6 @@ OperatorName
 file: topLevelDecl* EOF ;
 topLevelDecl
     : ';'
-    | variableDecls ';'
     | typeDef
     | structDef
     | enumDef

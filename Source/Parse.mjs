@@ -374,37 +374,36 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
         let typeArguments = parseTypeArguments();
         if (typeArguments instanceof WSyntaxError)
             return typeArguments;
-        let type = new TypeRef(name, name.text, typeArguments);
 
-        function getAddressSpace()
+        function parseAggregateType()
         {
-            addressSpaceConsumed = true;
-            if (addressSpace)
-                return addressSpace;
-            let consumedAddressSpace = consume(...addressSpaces);
-            if (consumedAddressSpace instanceof WSyntaxError)
-                return consumedAddressSpace;
-            return consumedAddressSpace.text;
-        }
-
-        const typeConstructorStack = [ ];
-
-        for (let token; token = tryConsume("*", "[");) {
+            let token = consume("*", "[");
+            if (token instanceof WSyntaxError)
+                return token;
             if (token.text == "*") {
-                // Likewise, the address space must be parsed before parsing continues.
-                const addressSpace = getAddressSpace();
-                if (addressSpace instanceof WSyntaxError)
-                    return addressSpace;
-                typeConstructorStack.unshift(type => new PtrType(token, addressSpace, type));
-                continue;
+                let localAddressSpace;
+                if (addressSpace)
+                    localAddressSpace = addressSpace;
+                else {
+                    localAddressSpace = consume(...addressSpaces);
+                    if (localAddressSpace instanceof WSyntaxError)
+                        return localAddressSpace;
+                    localAddressSpace = localAddressSpace.text;
+                }
+                return type => new PtrType(token, localAddressSpace, type);
             }
 
             if (tryConsume("]")) {
-                const addressSpace = getAddressSpace();
-                if (addressSpace instanceof WSyntaxError)
-                    return addressSpace;
-                typeConstructorStack.unshift(type => new ArrayRefType(token, addressSpace, type));
-                continue;
+                let localAddressSpace;
+                if (addressSpace)
+                    localAddressSpace = addressSpace;
+                else {
+                    localAddressSpace = consume(...addressSpaces);
+                    if (localAddressSpace instanceof WSyntaxError)
+                        return localAddressSpace;
+                    localAddressSpace = localAddressSpace.text;
+                }
+                return type => new ArrayRefType(token, localAddressSpace, type);
             }
 
             const lengthLiteral = consumeKind("intLiteral");
@@ -413,17 +412,31 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
             let intVersion = (+lengthLiteral.text) | 0;
             if ("" + intVersion !== lengthLiteral.text)
                 return fail("Integer literal is not an integer: " + token.text);
-            typeConstructorStack.unshift(type => new ArrayType(token, type, new IntLiteral(token, intVersion)));
             let maybeError = consume("]");
             if (maybeError instanceof WSyntaxError)
                 return maybeError;
+            return type => new ArrayType(token, type, new IntLiteral(token, intVersion));
         }
 
+        const typeConstructorStack = [ ];
+
+        if (addressSpace) {
+            let firstAggregateType = parseAggregateType();
+            if (firstAggregateType instanceof WSyntaxError)
+                return firstAggregateType;
+            typeConstructorStack.unshift(firstAggregateType);
+        }
+
+        while (true) {
+            let aggregateType = backtrackingScope(parseAggregateType);
+            if (!aggregateType)
+                break;
+            typeConstructorStack.unshift(aggregateType);
+        }
+
+        let type = new TypeRef(name, name.text, typeArguments);
         for (let constructor of typeConstructorStack)
             type = constructor(type);
-
-        if (addressSpace && !addressSpaceConsumed)
-            return fail("Address space specified for type that does not need address space");
 
         return type;
     }
@@ -455,8 +468,12 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
         if (left instanceof WSyntaxError)
             return left;
         let token;
-        while (token = tryConsume(...texts))
-            left = constructor(token, left, nextParser());
+        while (token = tryConsume(...texts)) {
+            let next = nextParser();
+            if (next instanceof WSyntaxError)
+                return next;
+            left = constructor(token, left, next);
+        }
         return left;
     }
 
