@@ -15,6 +15,7 @@ fragment DecimalUIntLiteral: CoreDecimalIntLiteral 'u' ;
 fragment CoreHexadecimalIntLiteral: '0x' [0-9a-fA-F]+ ;
 fragment HexadecimalIntLiteral: '-'? CoreHexadecimalIntLiteral;
 fragment HexadecimalUIntLiteral: CoreHexadecimalIntLiteral 'u';
+// There are currently no places that only accept one of ints or uints, but not both. Therefore, we can treat them identically.
 IntLiteral: DecimalIntLiteral | DecimalUIntLiteral | HexadecimalIntLiteral | HexadecimalUIntLiteral ;
 // Do we want to allow underscores in the middle of numbers for readability?
 
