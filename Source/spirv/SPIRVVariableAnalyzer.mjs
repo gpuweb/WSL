@@ -27,7 +27,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export default class SPIRVPrimitiveVariableAnalyzer extends Visitor {
+import { Visitor } from "../Visitor.mjs";
+
+export class SPIRVPrimitiveVariableAnalyzer extends Visitor {
     constructor(program, typeMap, currentId, currentLocation, startName)
     {
         super();
@@ -154,4 +156,5 @@ export default class SPIRVPrimitiveVariableAnalyzer extends Visitor {
         }
     }
 }
-export { SPIRVPrimitiveVariableAnalyzer };
+
+export { SPIRVPrimitiveVariableAnalyzer as default };

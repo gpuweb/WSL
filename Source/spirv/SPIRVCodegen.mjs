@@ -27,7 +27,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function generateSPIRV(spirv, program)
+import { StructType } from "../StructType.mjs";
+import { TypeRef } from "../TypeRef.mjs";
+import { VisitingSet } from "../VisitingSet.mjs";
+import { Visitor } from "../Visitor.mjs";
+import { _inlineFunction } from "../Inline.mjs";
+
+import { SPIRVPrimitiveVariableAnalyzer } from "./SPIRVVariableAnalyzer.mjs";
+import { SPIRVTypeAnalyzer } from "./SPIRVTypeAnalyzer.mjs";
+
+export function generateSPIRV(spirv, program, assembler)
 {
 
     function findEntryPoints()
@@ -129,7 +138,7 @@ function generateSPIRV(spirv, program)
                 } else {
                     if (!type[1].elementType)
                         throw new Error("Unknown type!");
-            
+
                     let elementType = type[1].elementType;
                     let key = reverseTypeMap.get(elementType);
                     let value = typeMap.get(key);
@@ -140,6 +149,7 @@ function generateSPIRV(spirv, program)
                     assembler.append(new spirv.ops.TypeArray(type[1].id, elementType, id));
                 }
             } else {
+                debugger;
                 switch (type[0].name) {
                 case "void":
                     assembler.append(new spirv.ops.TypeVoid(type[1]));
@@ -152,6 +162,8 @@ function generateSPIRV(spirv, program)
                     break;
                 case "uint32":
                 case "uint8":
+                case "uint":
+                case "int":
                     assembler.append(new spirv.ops.TypeInt(type[1], 32, 0));
                     break;
                 case "float32":
@@ -163,9 +175,14 @@ function generateSPIRV(spirv, program)
                 }
             }
         }
-        doEmitTypes([program.intrinsics.uint32, typeMap.get(program.intrinsics.uint32)]);
-        for (let type of typeMap)
-            doEmitTypes(type)
+        debugger;
+        doEmitTypes([program.intrinsics.int, typeMap.get(program.intrinsics.int)]);
+        for (let type of typeMap) {
+            // FIXME: This should not happen.
+            if (type[0] === undefined)
+                continue;
+            doEmitTypes(type);
+        }
     }
 
     let constants = new Map();
@@ -180,6 +197,8 @@ function generateSPIRV(spirv, program)
             case program.intrinsics.bool:
                 values = [node.value];
                 break;
+            case program.intrinsics.int:
+            case program.intrinsics.uint:
             case program.intrinsics.int32:
             case program.intrinsics.uint32:
             case program.intrinsics.uint8:
@@ -194,6 +213,7 @@ function generateSPIRV(spirv, program)
                 break;
             }
             default:
+                debugger;
                 throw new Error("Unrecognized literal.");
             }
             constants.set(node, { id: currentId++, typeId: typeMap.get(type), type: type, values: values });
@@ -202,7 +222,6 @@ function generateSPIRV(spirv, program)
     for (let entryPoint of entryPoints)
         entryPoint.shader.visit(new ConstantFinder());
 
-    let assembler = new SPIRVAssembler();
     // 1. All OpCapability instructions
     assembler.append(new spirv.ops.Capability(spirv.kinds.Capability.Shader));
     assembler.append(new spirv.ops.Capability(spirv.kinds.Capability.Float64));

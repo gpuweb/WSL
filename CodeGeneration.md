@@ -38,6 +38,8 @@ Or, load Source/metal/MSL.html in your browser.
 
 ## SPIR-V
 
+Note: Substitute "spirv" for "spirv-ass" as the parameter to get binary output.
+
 Using JavaScriptCore:
 
 ```bash

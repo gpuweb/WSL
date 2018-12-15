@@ -2,14 +2,14 @@ import { log, commandLineArgs, getFileContents, exitProcess } from "../Source/mi
 import { prepare } from "../Source/Prepare.mjs";
 import { programToMSL } from "../Source/metal/MSL.mjs";
 import { programToJSON } from "../Source/json/JSON.mjs";
-import { programDescriptionToSPIRVAssembly } from "../Source/spirv/SPIRV.mjs";
+import { programDescriptionToSPIRVAssembly, programObjectToSPIRV } from "../Source/spirv/SPIRV.mjs";
 
 let shouldRun = true;
 
 function printUsage() {
     shouldRun = false;
-    log("WebKit JSC Usage: jsc -m Scripts/generate.mjs -- [json|msl|spirv-ass] filename.whlsl");
-    log("Node JS Usage: node --experimental-modules Scripts/generate.mjs [json|msl|spirv-ass] filename.whlsl");
+    log("WebKit JSC Usage: jsc -m Scripts/generate.mjs -- [json|msl|spirv-ass|spirv] filename.whlsl");
+    log("Node JS Usage: node --experimental-modules Scripts/generate.mjs [json|msl|spirv-ass|spirv] filename.whlsl");
     exitProcess();
 }
 
@@ -37,6 +37,10 @@ async function run() {
                 result = programToMSL(program);
             } else if (outputType == "spirv-ass" && inputIsJSON) {
                 result = programDescriptionToSPIRVAssembly(JSON.parse(source));
+            } else if (outputType == "spirv") {
+                let program = prepare("/internal/test", 0, source);
+                result = programObjectToSPIRV(program);
+                console.log(result);
             } else {
                 result = { error: `Unknown conversion type: ${outputType}` };
             }

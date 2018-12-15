@@ -27,8 +27,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { SPIRVGrammar } from "./SPIRVGrammar.mjs";
+import { generateSPIRV } from "./SPIRVCodegen.mjs";
 import { generateSPIRVAssembly } from "./SPIRVCodegenAssembly.mjs";
+import { SPIRVGrammar } from "./SPIRVGrammar.mjs";
 
 // This function accepts a JSON object describing the SPIR-V syntax.
 // For example, https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/1.2/spirv.core.grammar.json
@@ -470,6 +471,7 @@ export function programObjectToSPIRV(program)
 {
     const grammar = processSPIRVGrammar(SPIRVGrammar);
     const ass = new SPIRVAssembler(grammar);
+    generateSPIRV(grammar, program, ass);
     return { source: ass.result };
 }
 

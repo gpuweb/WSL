@@ -19,10 +19,11 @@ We currently support Metal Shading Language as an output format, as well as a de
 
 ```bash
 # Using JavaScriptCore
-prompt> jsc -m Scripts/generate.mjs -- [json|msl|spirv-ass] file.whlsl
+
+prompt> jsc -m Scripts/generate.mjs -- [json|msl|spirv-ass|spirv] file.whlsl
 
 # Using Node JS
-prompt> node --experimental-modules Scripts/generate.mjs [json|msl|spirv-ass] file.whlsl
+prompt> node --experimental-modules Scripts/generate.mjs [json|msl|spirv-ass|spirv] file.whlsl
 ```
 
 You can get `jsc` by checking out and [building WebKit](https://webkit.org/getting-the-code/)
