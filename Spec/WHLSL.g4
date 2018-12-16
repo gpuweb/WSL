@@ -117,9 +117,7 @@ topLevelDecl
     | typeDef
     | structDef
     | enumDef
-    | funcDef
-    | nativeFuncDecl
-    | nativeTypeDecl;
+    | funcDef;
 
 typeDef: TYPEDEF Identifier '=' type ';' ;
 
@@ -141,9 +139,6 @@ parameters
     : '(' ')'
     | '(' parameter (',' parameter)* ')' ;
 parameter: Qualifier* type Identifier? (':' Semantic)?;
-
-nativeFuncDecl: RESTRICTED? NATIVE funcDecl ';' ;
-nativeTypeDecl: NATIVE TYPEDEF Identifier typeArguments ';' ;
 
 type
     : addressSpace Identifier typeArguments typeSuffixAbbreviated+
