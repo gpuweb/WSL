@@ -9828,6 +9828,73 @@ tests.trapTransitively = () => {
     checkTrap(program, () => callFunction(program, "foo", []), checkInt);
 };
 
+tests.duplicateFunctions = () => {
+    checkFail(() => doPrep(`
+        void foo() { }
+        void foo() { }
+    `), e => e instanceof WTypeError && e.message.indexOf("Duplicate function") !== -1);
+
+    checkFail(() => doPrep(`
+        void foo(int x) { }
+        typedef A = int;
+        void foo(A x) { }
+    `), e => e instanceof WTypeError && e.message.indexOf("Duplicate function") !== -1);
+
+    const program = doPrep(`
+        int bar() {
+            return 42;
+        }
+        int bar(int x) {
+            return x;
+        }
+        test int foo()
+        {
+            return bar();
+        }
+        test int baz()
+        {
+            return bar(3);
+        }
+    `);
+    checkInt(program, callFunction(program, "foo", []), 42);
+    checkInt(program, callFunction(program, "baz", []), 3);
+
+    checkFail(() => doPrep(`
+        int operator&[](thread int[] a, uint b) {
+            return 4;
+        }
+    `), e => e instanceof WTypeError && e.message.indexOf("not supported") !== -1);
+
+    checkFail(() => doPrep(`
+        uint operator.length(thread int[] a) {
+            return 4;
+        }
+    `), e => e instanceof WTypeError && e.message.indexOf("not supported") !== -1);
+
+    checkFail(() => doPrep(`
+        bool operator==(thread int[] a, thread int[] b) {
+            return true;
+        }
+    `), e => e instanceof WTypeError && e.message.indexOf("not supported") !== -1);
+
+    checkFail(() => doPrep(`
+        bool operator==(thread int* a, thread int* b) {
+            return true;
+        }
+    `), e => e instanceof WTypeError && e.message.indexOf("not supported") !== -1);
+}
+
+tests.duplicateTypes = () => {
+    checkFail(() => doPrep(`
+        struct Foo {
+            int x;
+        }
+        struct Foo {
+            float y;
+        }
+    `), e => e instanceof WTypeError);
+}
+
 okToTest = true;
 
 let testFilter = /.*/; // run everything by default

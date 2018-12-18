@@ -56,6 +56,7 @@ import { synthesizeCopyConstructorOperator } from "./SynthesizeCopyConstructorOp
 import { synthesizeDefaultConstructorOperator } from "./SynthesizeDefaultConstructorOperator.mjs";
 import { synthesizeEnumFunctions } from "./SynthesizeEnumFunctions.mjs";
 import { synthesizeStructAccessors } from "./SynthesizeStructAccessors.mjs";
+import { checkDuplicateFunctions } from "./CheckDuplicateFunctions.mjs";
 
 export let prepare = (() => {
     let standardProgram;
@@ -86,6 +87,7 @@ export let prepare = (() => {
         resolveNamesInFunctions(program, nameResolver);
         resolveTypeDefsInFunctions(program);
         checkTypesWithArguments(program);
+        checkDuplicateFunctions(program);
 
         check(program);
         checkLiteralTypes(program);
