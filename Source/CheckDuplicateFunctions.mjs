@@ -35,6 +35,8 @@ export function checkDuplicateFunctions(program)
     for (let [name, functions] of program.functions) {
         for (let i = 0; i < functions.length; ++i) {
             for (let j = i + 1; j < functions.length; ++j) {
+                if (functions[i].isNative && functions[j].isNative)
+                    continue; // Native functions are allowed to have duplicates, because the implementations are guaranteed to be identical.
                 if (name == "operator cast") {
                     // Overload resolution incorporate the return type for casts
                     if (!functions[i].isCast || !functions[j].isCast)
@@ -53,7 +55,7 @@ export function checkDuplicateFunctions(program)
                         }
                     }
                     if (same)
-                        throw new WTypeError(`Duplicate function detected: ${functions[i].toString()}`);
+                        throw new WTypeError(functions[i].origin.originString, `Duplicate function detected: ${functions[i].toString()}: ${functions[j].origin.originString}`);
                 } else {
                     if (functions[i].isCast || functions[j].isCast)
                         throw new Error("Function disagrees with itself about whether or not it is a cast");
@@ -67,7 +69,7 @@ export function checkDuplicateFunctions(program)
                         }
                     }
                     if (same)
-                        throw new WTypeError(functions[i].origin.originString, `Duplicate function detected: ${functions[i].toString()}`);
+                        throw new WTypeError(functions[i].origin.originString, `Duplicate function detected: ${functions[i].toString()}: ${functions[j].origin.originString}`);
                 }
             }
         }

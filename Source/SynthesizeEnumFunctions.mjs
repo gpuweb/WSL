@@ -41,7 +41,6 @@ export function synthesizeEnumFunctions(program)
             continue;
 
         let nativeFunc;
-        let isCast = false;
 
         nativeFunc = new NativeFunc(
             type.origin, "operator==", new TypeRef(type.origin, "bool"),
@@ -49,28 +48,28 @@ export function synthesizeEnumFunctions(program)
                 new FuncParameter(type.origin, null, new TypeRef(type.origin, type.name)),
                 new FuncParameter(type.origin, null, new TypeRef(type.origin, type.name))
             ],
-            isCast);
+            false);
         nativeFunc.implementation = ([left, right]) => EPtr.box(left.loadValue() == right.loadValue());
         program.add(nativeFunc);
 
         nativeFunc = new NativeFunc(
             type.origin, "operator.value", type.baseType.visit(new Rewriter()),
             [new FuncParameter(type.origin, null, new TypeRef(type.origin, type.name))],
-            isCast);
+            false);
         nativeFunc.implementation = ([value]) => value;
         program.add(nativeFunc);
 
         nativeFunc = new NativeFunc(
             type.origin, "operator cast", type.baseType.visit(new Rewriter()),
             [new FuncParameter(type.origin, null, new TypeRef(type.origin, type.name))],
-            isCast);
+            true);
         nativeFunc.implementation = ([value]) => value;
         program.add(nativeFunc);
 
         nativeFunc = new NativeFunc(
             type.origin, "operator cast", new TypeRef(type.origin, type.name),
             [new FuncParameter(type.origin, null, type.baseType.visit(new Rewriter()))],
-            isCast);
+            true);
         nativeFunc.implementation = ([value]) => value;
         program.add(nativeFunc);
     }
