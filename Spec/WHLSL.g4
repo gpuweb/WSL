@@ -196,7 +196,6 @@ variableDecl: Qualifier* Identifier (':' Semantic)? ('=' expr)? ;
  */
 constexpression
     : literal 
-    | Identifier // to get the (constexpression) value of a type variable
     | Identifier '.' Identifier; // to get a value out of an enum
 
 // Note: we separate effectful expressions from normal expressions, and only allow the former in statement positions, to disambiguate the following:
