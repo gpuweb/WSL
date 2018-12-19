@@ -1632,63 +1632,9 @@ The comma operator simply reduces its first operand as long as it can, then drop
 Memory model
 ------------
 
-There are 4 address spaces into which all memory locations are partitioned:
+.. note:: This section is currently being ported from the `SPIR-V Memory Model`_
 
-#. global (read-write)
-#. constant
-#. threadgroup
-#. thread
-
-Global and constant memory are shared between all threads, threadgroup memory is shared between threads in the same group, and finally thread memory is thread-local.
-Furthermore, the rules in the validation section should prevent any store to the constant address space.
-
-As we have seen in the previous sections, each thread can emit memory events. There are several possible such kinds of events:
-
-- (non-atomic) stores of a value to a location
-- (non-atomic) loads of a value from a location
-- Fences (a.k.a. memory barrier, not to be confused with control barriers)
-- atomic stores of a value to a location
-- atomic loads of a value from a location.
-
-All non-atomic stores and loads are considered to happen byte-by-byte.
-
-In this section we will give the *memory model* of WHLSL, that is the set of rules that determine which values a load is allowed to read.
-The gist of it is that all atomic accesses are fully ordered and sequentially consistent, and that races involving non-atomic accesses result in unspecified values being read.
-A bit more precisely, a read is racy if:
-
-- It is non-atomic, and the set of all stores that are visible to it (same location and not happening-after it) is not a singleton that happens-before it
-- Or there are at least two stores in the set of all stores that are visible to it, and at least one of these stores is non-atomic
-
-The value read by a racy load is unspecified: it can be anything (even a value that is not written anywhere in the program). Contrary to C++ though, it is not an undefined behaviour to have a racy access.
-
-.. 
-    This memory model is presented in an axiomatic fashion, and is loosely inspired by the C++11 memory model.
-    Like in C++11, we first generate the set of all candidate executions, by considering each thread in isolation, and assuming that any load can return any value (of the right size).
-    Then we augment each of these candidate executions with several relationships:
-
-    - Reads-from, which optionally associates one store at the same address to each load
-    - Memory-order, which must be a total order for each memory address on all the stores to that memory address
-    - Sequentially-consistent-before, that is a total order on all atomic operations
-
-    This further increase the number of candidate executions to include all possible relationships above.
-    We then build yet another relationship called happens-before with the following rules:
-
-    - If two events are emitted by the same thread in some order, they are related in the same order by happens-before
-    - If an atomic load (or a normal load followed in program order by a fence) reads a value written by an atomic store (or a normal store preceded in program order by a fence), then that atomic store (or fence) happens-before that atomic load (or fence).
-    - Happens-before is transitive (and is the smallest relationship that follows these rules
-
-    Then we filter all of these to only keep those candidate executions that verify a few rules:
-
-    - If a load reads-from a store, it must read the same value that was written by that store
-    - If two stores are ordered by both memory-order and happens-before, then they must be in the same order in both
-    - If two stores are ordered by both memory-order and sequentially-consistent-before, then they must be in the same order in both
-    - Happens-before is irreflexive
-    - A read cannot reads-from a store that happens-after it
-    - If there is a single store that happens-before a normal load such that every other store to that memory location either happens-before that store or happens-after that load, then the load must read-from the store
-    - If there is at least one store to a location that does not happen-after a load to that location, then that load must reads-from one such store
-
-    TODO: my rules are currently wrong, because of the case of atomic/non-atomic race.
-    TODO: essentially every part of the C11 model related to mo, hb, rf; + a fixed version of the rules for sc.. it is going to be ugly and unreadable to anyone not an expert I'm afraid.
+.. _SPIR-V Memory Model: https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_a_id_memorymodelsection_a_memory_model
 
 Standard library
 ================
