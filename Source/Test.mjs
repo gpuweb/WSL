@@ -9895,6 +9895,43 @@ tests.duplicateTypes = () => {
     `), e => e instanceof WTypeError);
 }
 
+tests.copyConstructors = () => {
+    const program = doPrep(`
+        enum Weekday {
+            Monday,
+            Tuesday,
+            Wednesday,
+            Thursday,
+            Pizzaday
+        }
+        test void foo()
+        {
+            Weekday x = Weekday.Monday;
+            Weekday y = Weekday(x);
+            float4 z = float4(1, 2, 3, 4);
+            float4 w = float4(z);
+            float2x2 p;
+            float2x2 q = float2x2(p);
+        }
+    `);
+};
+
+tests.defaultEnumConstructor = () => {
+    const program = doPrep(`
+        enum Weekday {
+            Monday,
+            Tuesday,
+            Wednesday,
+            Thursday,
+            Pizzaday
+        }
+        test void foo()
+        {
+            Weekday x = Weekday();
+        }
+    `);
+};
+
 okToTest = true;
 
 let testFilter = /.*/; // run everything by default

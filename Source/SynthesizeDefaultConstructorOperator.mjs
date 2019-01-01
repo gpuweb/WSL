@@ -49,6 +49,12 @@ export function synthesizeDefaultConstructorOperator(program)
             super.visitStructType(node);
         }
 
+        visitEnumType(node)
+        {
+            types.add(node);
+            super.visitEnumType(node);
+        }
+
         visitElementalType(node)
         {
             types.add(node);
