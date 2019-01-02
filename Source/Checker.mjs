@@ -51,7 +51,6 @@ export default class Checker extends Visitor {
     {
         super();
         this._program = program;
-        this._currentStatement = null;
         this._vertexEntryPoints = new Set();
         this._fragmentEntryPoints = new Set();
         this._computeEntryPoints = new Set();
@@ -59,26 +58,16 @@ export default class Checker extends Visitor {
 
     visitProgram(node)
     {
-        let doStatement = statement => {
-            this._currentStatement = statement;
-            statement.visit(this);
-        }
-
         for (let type of node.types.values()) {
             if (type instanceof Array) {
                 for (let constituentType of type)
-                    doStatement(constituentType);
+                    constituentType.visit(this);
             } else
-                doStatement(type);
-        }
-        for (let funcs of node.functions.values()) {
-            for (let func of funcs) {
-                this.visitFunc(func);
-            }
+                type.visit(this);
         }
         for (let funcs of node.functions.values()) {
             for (let func of funcs)
-                doStatement(func);
+                func.visit(this);
         }
     }
 
