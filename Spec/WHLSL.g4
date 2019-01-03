@@ -112,9 +112,7 @@ topLevelDecl
     | typeDef
     | structDef
     | enumDef
-    | funcDef
-    | nativeFuncDecl
-    | nativeTypeDecl;
+    | funcDef;
 
 semantic
     : builtInSemantic
@@ -166,9 +164,6 @@ parameters
     : '(' ')'
     | '(' parameter (',' parameter)* ')' ;
 parameter: Qualifier* type Identifier? (':' semantic)?;
-
-nativeFuncDecl: RESTRICTED? NATIVE funcDecl ';' ;
-nativeTypeDecl: NATIVE TYPEDEF Identifier typeArguments ';' ;
 
 type
     : addressSpace Identifier typeArguments typeSuffixAbbreviated+
