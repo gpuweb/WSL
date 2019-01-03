@@ -229,7 +229,8 @@ constexpression
 effectfulExpr: ((effAssignment ',')* effAssignment)? ; 
 effAssignment
     : possiblePrefix assignOperator possibleTernaryConditional
-    | effPrefix ;
+    | effPrefix
+    | callExpression ;
 assignOperator: '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '&=' | '|=' | '>>=' | '<<=' ;
 effPrefix
     : ('++' | '--') possiblePrefix
