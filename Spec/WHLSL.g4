@@ -56,12 +56,28 @@ DEVICE: 'device';
 THREADGROUP: 'threadgroup';
 THREAD: 'thread';
 
-SPACEKEYWORD: 'space';
-
 VERTEX: 'vertex';
 FRAGMENT: 'fragment';
 COMPUTE: 'compute';
 NUMTHREADS: 'numthreads';
+
+SVINSTANCEID: 'SV_InstanceID';
+SVVERTEXID: 'SV_VertexID';
+PSIZE: 'PSIZE';
+SVPOSITION: 'SV_Position';
+SVISFRONTFACE: 'SV_IsFrontFace';
+SVSAMPLEINDEX: 'SV_SampleIndex';
+SVINNERCOVERAGE: 'SV_InnerCoverage';
+SVTARGET: 'SV_Target';
+SVDEPTH: 'SV_Depth';
+SVCOVERAGE: 'SV_Coverage';
+SVDISPATCHTHREADID: 'SV_DispatchThreadID';
+SVGROUPID: 'SV_GroupID';
+SVGROUPINDEX: 'SV_GroupIndex';
+SVGROUPTHREADID: 'SV_GroupThreadID';
+ATTRIBUTE: 'attribute';
+REGISTER: 'register';
+SPECIALIZED: 'specialized';
 
 NATIVE: 'native';
 RESTRICTED: 'restricted';
@@ -75,27 +91,6 @@ STATIC: 'static';
 // Note: these are currently not used by the grammar, but I would like to make them reserved keywords for future expansion of the language. to bikeshed
 
 Qualifier: 'nointerpolation' | 'noperspective' | 'uniform' | 'centroid' | 'sample';
-
-Semantic
-    : 'SV_InstanceID'
-    | 'SV_VertexID'
-    | 'PSIZE'
-    | 'SV_Position'
-    | 'SV_IsFrontFace'
-    | 'SV_SampleIndex'
-    | 'SV_InnerCoverage'
-    | 'SV_Target' CoreDecimalIntLiteral
-    | 'SV_Depth'
-    | 'SV_Coverage'
-    | 'SV_DispatchThreadID'
-    | 'SV_GroupID'
-    | 'SV_GroupIndex'
-    | 'SV_GroupThreadID'
-    | 'attribute' '(' CoreDecimalIntLiteral ')'
-    | 'register' '(' [utbs] CoreDecimalIntLiteral (',' SPACEKEYWORD CoreDecimalIntLiteral)? ')'
-    | 'specialized';
-
-Numthreads: 'numthreads' '(' CoreDecimalIntLiteral ',' ' '? CoreDecimalIntLiteral ',' ' '? CoreDecimalIntLiteral ')' ;
 
 fragment ValidIdentifier: [a-zA-Z_] [a-zA-Z0-9_]* ;
 Identifier: ValidIdentifier ;
@@ -121,26 +116,56 @@ topLevelDecl
     | nativeFuncDecl
     | nativeTypeDecl;
 
+semantic
+    : builtInSemantic
+    | stageInOutSemantic
+    | resourceSemantic
+    | specializationConstantSemantic;
+
+builtInSemantic
+    : SVINSTANCEID
+    | SVVERTEXID
+    | PSIZE
+    | SVPOSITION
+    | SVISFRONTFACE
+    | SVSAMPLEINDEX
+    | SVINNERCOVERAGE
+    | SVTARGET IntLiteral
+    | SVDEPTH
+    | SVCOVERAGE
+    | SVDISPATCHTHREADID
+    | SVGROUPID
+    | SVGROUPINDEX
+    | SVGROUPTHREADID;
+
+stageInOutSemantic: ATTRIBUTE '(' IntLiteral ')';
+
+resourceSemantic: REGISTER '(' Identifier (',' Identifier)? ')';
+
+specializationConstantSemantic: SPECIALIZED;
+
 typeDef: TYPEDEF Identifier '=' type ';' ;
 
 structDef: STRUCT Identifier '{' structElement* '}' ;
-structElement: Qualifier* type Identifier (':' Semantic)? ';' ;
+structElement: Qualifier* type Identifier (':' semantic)? ';' ;
 
 enumDef: ENUM Identifier (':' type)? '{' enumMember (',' enumMember)* '}' ;
 // Note: we could allow an extra ',' at the end of the list of enumMembers, ala Rust, to make it easier to reorder the members. to bikeshed
 enumMember: Identifier ('=' constexpression)? ;
 
+numthreadsSemantic: NUMTHREADS '(' IntLiteral ',' IntLiteral ',' IntLiteral ')' ;
+
 funcDef: RESTRICTED? funcDecl block;
 funcDecl
-    : (VERTEX | FRAGMENT | ('[' Numthreads ']' COMPUTE)) type Identifier parameters (':' Semantic)?
-    | type (Identifier | OperatorName) parameters (':' Semantic)?
-    | OPERATOR type parameters (':' Semantic)? ;
+    : (VERTEX | FRAGMENT | ('[' numthreadsSemantic ']' COMPUTE)) type Identifier parameters (':' semantic)?
+    | type (Identifier | OperatorName) parameters (':' semantic)?
+    | OPERATOR type parameters (':' semantic)? ;
 
 // Note: the return type is moved in a different place for operator casts, as a hint that it plays a role in overload resolution. to bikeshed
 parameters
     : '(' ')'
     | '(' parameter (',' parameter)* ')' ;
-parameter: Qualifier* type Identifier? (':' Semantic)?;
+parameter: Qualifier* type Identifier? (':' semantic)?;
 
 nativeFuncDecl: RESTRICTED? NATIVE funcDecl ';' ;
 nativeTypeDecl: NATIVE TYPEDEF Identifier typeArguments ';' ;
@@ -189,7 +214,7 @@ whileStmt: WHILE '(' expr ')' stmt ;
 doStmt: DO stmt WHILE '(' expr ')' ;
 
 variableDecls: type variableDecl (',' variableDecl)* ;
-variableDecl: Qualifier* Identifier (':' Semantic)? ('=' expr)? ;
+variableDecl: Qualifier* Identifier (':' semantic)? ('=' expr)? ;
 
 /* 
  * Parser: Expressions
