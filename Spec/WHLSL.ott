@@ -419,6 +419,7 @@ G |- s : u B :: :: typing_statement :: '' {{com Validating statements' behaviour
     s0 != tval' x = e'; /\../\ sn != tval' x = e';
     -------------------------------------------- :: variable_decl_init
     G |- {tval x = e; s0 .. sn} : u1 B
+    % TODO: add support for threadgroup variables (here and in the other rules related to variable declarations)
 
     G[x -> LVal(tval, +, thread)] |- e : + tval +
     G[x -> LVal(tval, +, thread)] |- {s0 .. sn} : + B
@@ -572,16 +573,6 @@ G |- e : u t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vda
     G |- @e : u Ref(tval, as) -
     % Note: in the execution rules, the behaviour depends on whether that LVal points to an array, but here we don't need to track it.
 
-    G |- e : u LVal([tval], +, as)
-    G |- e' : u uint32 +
-    --------------------------- :: array_index_lval_uniform
-    G |- e[e'] : u LVal(tval, +, as)
-
-    G |- e : u LVal([tval], -, as)
-    G |- e' : u uint32 -
-    --------------------------- :: array_index_lval_non_uniform
-    G |- e[e'] : u LVal(tval, -, as)
-
     G |- e : u [tval] u1
     G |- e' : u uint32 u2
     -------------------------- :: array_index_rval
@@ -590,6 +581,11 @@ G |- e : u t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vda
     % It is not problematic, because the rules are confluent, so either choice leads to the same result.
     % TODO: should we refuse during validation the case where e' is a constant that falls out of the bounds of e ?
     % I think it should be an allowed behaviour but not required of the implementation.
+
+    G |- e : u LVal([tval], u1, as)
+    G |- e' : u uint32 u1
+    --------------------------- :: array_index_lval
+    G |- e[e'] : u LVal(tval, u1, as)
 
     G |- e : u Ref(tval, as) -
     G |- e' : u uint32 -
