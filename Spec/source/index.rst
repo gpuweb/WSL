@@ -1670,16 +1670,21 @@ Other
 
 Parentheses have no effect at runtime (beyond their effect during parsing).
 
-The comma operator simply reduces its first operand as long as it can, then drop it and is replaced by its second operand.
+The comma operator simply reduces its first operand as long as it can, then drops it and is replaced by its second operand.
 
 .. I don't mention the ! operator here, because it has no weirdness/interest: it is just a special syntax for a standard library function.
 
 Memory model
 ------------
 
-.. note:: This section is currently being ported from the `SPIR-V Memory Model`_
+Our memory model is strongly inspired by the Vulkhan memory model, as presented in https://github.com/KhronosGroup/Vulkan-MemoryModel/blob/master/alloy/spirv.als as of the git commit f9110270e1799041bdaaf00a1db70fd4175d433f.
+That memory model is under Creative Commons Attribution 4.0 International License per the comment at top of the file: http://creativecommons.org/licenses/by/4.0/ and is Copyright (c) 2017-2018 Khronos Group.
 
-.. _SPIR-V Memory Model: https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_a_id_memorymodelsection_a_memory_model
+The main difference between the two models is that we avoid undefined behaviour by making races merely make reads return unspecified results.
+This is in turn safe, as our execution semantics for loads (see above) clamp any enum value to a valid value of that type, and there can be no race on pointers or array references as they are limited to the ``thread`` address space. 
+
+.. todo::
+    Rewrite the model here, translating the kinds of atomics provided; and formalizing what we mean about races.
 
 Standard library
 ================
