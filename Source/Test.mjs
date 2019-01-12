@@ -9932,7 +9932,7 @@ tests.defaultEnumConstructor = () => {
     `);
 };
 
-tests.incrementAssign = () => {
+tests.lValues = () => {
     checkFail(() => doPrep(`
         test int foo()
         {
@@ -9949,6 +9949,76 @@ tests.incrementAssign = () => {
             return *y;
         }
     `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &(x = 3);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &3;
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        int bar(int x) {
+            return x + 1;
+        }
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &bar(3);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &(7, x);
+            return *y;
+        }
+    `), e => e instanceof WSyntaxError);
+    checkFail(() => doPrep(`
+        enum Days {
+            Monday,
+            Tuesday
+        }
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &(Days.Monday);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            thread bool* y = &(true && false);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            thread bool* y = &(!true);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    const program = doPrep(`
+        test int foo()
+        {
+            int x = 3;
+            thread int* y = &x;
+            return *y;
+        }
+    `);
+    checkInt(program, callFunction(program, "foo", []), 3);
 }
 
 okToTest = true;
