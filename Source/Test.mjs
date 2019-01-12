@@ -9932,6 +9932,25 @@ tests.defaultEnumConstructor = () => {
     `);
 };
 
+tests.incrementAssign = () => {
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &(x++);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        test int foo()
+        {
+            int x = 0;
+            thread int* y = &(++x);
+            return *y;
+        }
+    `), e => e instanceof WTypeError);
+}
+
 okToTest = true;
 
 let testFilter = /.*/; // run everything by default
