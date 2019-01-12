@@ -1677,14 +1677,58 @@ The comma operator simply reduces its first operand as long as it can, then drop
 Memory model
 ------------
 
-Our memory model is strongly inspired by the Vulkhan memory model, as presented in https://github.com/KhronosGroup/Vulkan-MemoryModel/blob/master/alloy/spirv.als as of the git commit f9110270e1799041bdaaf00a1db70fd4175d433f.
-That memory model is under Creative Commons Attribution 4.0 International License per the comment at top of the file: http://creativecommons.org/licenses/by/4.0/ and is Copyright (c) 2017-2018 Khronos Group.
+Our memory model is strongly inspired by the Vulkan memory model, as presented in https://github.com/KhronosGroup/Vulkan-MemoryModel/blob/master/alloy/spirv.als as of the git commit f9110270e1799041bdaaf00a1db70fd4175d433f
+and in https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/memorymodel.txt as of the git commit 56e0289318a4cd23aa5f5dcfb290ee873be53b82.
+That memory model is under Creative Commons Attribution 4.0 International License per the comment at the top of both files: http://creativecommons.org/licenses/by/4.0/ and is Copyright (c) 2017-2018 Khronos Group or Copyright (c) 2017-2019 Khronos Group depending on the file.
 
 The main difference between the two models is that we avoid undefined behaviour by making races merely make reads return unspecified results.
 This is in turn safe, as our execution semantics for loads (see above) clamp any enum value to a valid value of that type, and there can be no race on pointers or array references as they are limited to the ``thread`` address space. 
 
+Apart from that, we only removed parts of the model, since some operations supported by Vulkhan are not supported by WHLSL, and renamed some elements for consistency with the rest of this specification.
+
+Memory locations
+""""""""""""""""
+
+.. The next paragraph was copied verbatim from the source of the Vulkan spec.
+
+A memory location identifies unique storage for 8 bits of data.
+Memory operations access a _set of memory locations_ consisting of one or
+more memory locations at a time, e.g. an operation accessing a 32-bit
+integer in memory would read/write a set of four memory locations.
+Two sets of memory locations overlap if the intersection of their sets of
+memory locations is non-empty.
+A memory operation must: not affect memory at a memory location not within
+its set of memory locations.
+
+Memory events and program order
+"""""""""""""""""""""""""""""""
+
+Some steps in the execution rules provided in the previous section emit memory events.
+There are a few possible such events:
+- A store of a value to some set of (contiguous) memory locations, that may be atomic
+- A load of a value from some set of (contiguous) memory locations, that may be atomic
+- A memory barrier (a.k.a. memory fence), that may either ensure synchronization at the threadgroup or whole device scope.
+- A control barrier, with a scope that may be threadgroup or device, that may optionally act as a memory barrier at the threadgroup level, or at the device level
+
+.. The following note was copied verbatim from the source of the Vulkan spec
+
+.. note::
+    A write whose value is the same as what was already in those memory locations is still considered to be a write and has all the same effects.
+
 .. todo::
-    Rewrite the model here, translating the kinds of atomics provided; and formalizing what we mean about races.
+    Add a note here giving an informal mapping of these to Vulkan/MSL/HLSL.
+
+There is furthermore a total order ``po`` (program order) on all such events by any given thread. An event is before another by ``po`` if it is emitted by an
+execution rule that is executed by this thread before the rule that emitted the other event.
+
+.. note::
+    ``po`` is guaranteed to be a total order for a given thread because no execution rule emits more than one memory event.
+
+.. todo::
+    Verify that is true. I think the current rules treat large stores as several accesses, instead of one access to multiple memory location. It should be fixed.
+
+.. todo::
+    Rewrite the rest of the model here, translating the kinds of atomics provided; and formalizing what we mean about races.
 
 Standard library
 ================
@@ -1793,6 +1837,9 @@ declared in the "constant" address space. There is no constructor for samplers; 
 or destory one in WHLSL. The type is defined as ``native typedef sampler;``. Samplers are impossible to
 introspect. Arrays must not contain samplers anywhere inside them. Functions that return samplers must only
 have one return point. Ternary expressions must not return references.
+
+.. todo::
+    The last sentence does not seem related to samplers. Or should we s/references/samplers/g in it?
 
 .. todo::
     Robin: I have not put the ``native typedef`` syntax in the grammar or the semantics so far, should I?
