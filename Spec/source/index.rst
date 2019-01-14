@@ -659,6 +659,9 @@ For each top-level declaration:
                    whose return type is the type of the field and whose argument type is the struct itself
         #. Add to the environment a mapping from the name ``operator.field=`` (where ``field`` is replaced by the name of the field) to a function declaration with two arguments,
                    whose return type is the type of the struct itself, whose first argument type is the type of the struct itself, and whose second argument type is the type of the field
+        #. Add to the environment a mapping from the name ``operator&.field=`` (where ``field`` is replaced by the name of the field) to 4 function declarations with one argument,
+                    whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each
+                    address space, that address space is used both by the pointer argument and by the return type
 
 #. If it is an enum
 
@@ -689,6 +692,12 @@ For each top-level declaration:
         #. It must have exactly two arguments
         #. Its first argument must not be a pointer, array reference or array
 
+   #. If the name of the function is ``operator&.field`` for some name ``field``
+
+        #. It must have exactly one argument
+        #. Its return type must be a pointer type
+        #. Its argument must be a pointer type
+
    #. If the name of the function is ``operator[]``
 
         #. It must have exactly two argument
@@ -701,8 +710,20 @@ For each top-level declaration:
         #. Its first argument must not be a pointer, array reference or array
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
 
+   #. If the name of the function is ``operator&[]``
+
+        #. It must have exactly two arguments
+        #. Its return type must be a pointer type
+        #. Its first argument must be an array reference type
+        #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+
    #. If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set
    #. Otherwise add a new mapping from that function name to a singleton set containing that declaration
+
+.. todo::
+    My check for anders seems a bit more complete than the one in the implementation.
+    In particular, I reject operator&.foo on array refs, and operator&[] on pointers.
+    Get the implementation(s) and the spec closer.
 
 Other validation steps
 ----------------------
@@ -1190,7 +1211,6 @@ Every load and store must also be annotated with a size in bytes.
 Finally, every array dereference (the ``[]`` operator) must be annotated with the stride, i.e. the size of the elements of the corresponding array.
 This size is computed in exactly the way described above.
 If the first operand is either an array or a left-value type associated with an array type, the access must also be annotated with the statically known size of the array.
-
 
 Phase 5. Verifying the absence of recursion
 -------------------------------------------
