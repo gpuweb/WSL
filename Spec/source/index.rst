@@ -38,7 +38,7 @@ specification. Optimizations must not affect the validity of a program.
 Implementations must not support functionality beyond the mandated parts of this
 specification.
 
-. Note:: The fact that optimizations must not affect the validity of a program means
+.. note:: The fact that optimizations must not affect the validity of a program means
    errors in dead code must cause a compilation failure. However, optimizations may,
    in general, be observable, such as fusing a multiply followed by an add into a
    single operation which has higher intermediate precision than the distinct operations.
@@ -667,7 +667,7 @@ For each top-level declaration:
 
    #. If there is already a type of the same name in the environment, the program is invalid
    #. If the enum has an explicit base type, and it is not one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``; the program is invalid
-   #. If the enum does not have an explicit base type, its base type is int
+   #. If the enum does not have an explicit base type, its base type is ``int``
    #. A value is associated to each element of the enum, by iterating over them in source order:
 
         #. If it has an explicit value, then this is its value
@@ -678,7 +678,7 @@ For each top-level declaration:
    #. If two or more element of the enum have the same value, the program is invalid
    #. If one or more element of the enum have a value that is not representable in the base type of the enum, the program is invalid
    #. Add the enum to the environment as a new type, associated with the set of the values of its elements
-   #. For each element of the enum, add a mapping from ``EnumName.ElementName`` (with ``EnumName`` and ``ElementName`` replaced) to the enum type
+   #. For each element of the enum, add a mapping to the variables mapping, from ``EnumName.ElementName`` (with ``EnumName`` and ``ElementName`` replaced) to the enum type
 
 #. If it is a function declaration
 
@@ -748,7 +748,7 @@ Every type name that appears in the program must be defined (i.e. have a mapping
 Resolving typedefs
 """"""""""""""""""
 
-Once this is checked, we define a relation "depends on", as the smallest relation such that:
+We define a relation "depends on", as the smallest relation such that:
 
 - A typedef that is defined as equal to a structure or another typedef "depends on" this structure or typedef.
 - A structure "depends on" a typedef or structure if it has a member with the same name.
@@ -1170,15 +1170,13 @@ To check that a function call is well-typed:
 
 .. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
 
-.. todo::
-    Everything below this still has to be updated for the new rules (uniformity, clamping, memory model, etc..)
-
 Phase 4. Annotations for execution
 ----------------------------------
 
 We resolved each overloaded function call in the previous section. They must now be annotated with which function is actually being called.
 
-Every variable declaration, and every function parameter must be associated with a unique memory location.
+Every variable declaration, and every function parameter must be associated with a unique store identifier.
+This identifier in turn refers to a set of contiguous bytes, of the right size; these sets are disjoint.
 
 Each control barrier must be annotated with a unique barrier identifier.
 
@@ -1218,8 +1216,12 @@ Phase 5. Verifying the absence of recursion
 WHLSL does not support recursion (for efficient compilation to GPUs).
 So once all overloaded function calls have been resolved, we must do one last check.
 
-We create a relationship "may call" that connects two functions ``f`` and ``g`` if there is a call to ``g`` in the body of ``f`` (after resolving overloading).
+We create a relationship "may call" that connects two function declarations ``f`` and ``g`` if there is a call to ``g`` in the body of ``f`` (after resolving overloading).
 If this relationship is cyclic, then the program is invalid.
+
+.. note::
+    This check is done on function declarations, not on function names, so if for example foo(int) calls foo(short), it is not considered recursion, as they are different functions
+    after resolution of overloading.
 
 Dynamic rules
 =============
@@ -1236,10 +1238,9 @@ The per-thread state is made of a few element:
 
 - The program being executed. Each transition transforms it.
 - A control-flow stack. This is a stack of values, which tracks whether we are in a branch, and is used by the rules for barriers to check that control-flow is uniform.
-- A (constant) environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function.
+- An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function.
 
-Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, modifing
-the control-flow stack in the following way, and emitting the following memory events."
+Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, emitting the following memory events."
 
 In some of these rules we use ``ASSERT`` to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
 Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.
@@ -1285,6 +1286,9 @@ Here is how to reduce a block by one step:
 
 Branches
 """"""""
+
+.. todo::
+    Everything below this still has to be updated for the new rules (uniformity, clamping, memory model, etc..)
 
 We add another kind of statement: the ``Join(s)`` construct, that takes as argument another statement ``s``.
 
