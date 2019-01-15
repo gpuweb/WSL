@@ -10019,7 +10019,94 @@ tests.lValues = () => {
         }
     `);
     checkInt(program, callFunction(program, "foo", []), 3);
-}
+};
+
+tests.getterType = function() {
+    checkFail(() => doPrep(`
+        int operator.x(thread int[] foo)
+        {
+            return foo[0];
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        int operator.x(int[3] foo)
+        {
+            return foo[0];
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        int operator[](thread int[] foo, int index)
+        {
+            return foo[index];
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        int operator.x(int[3] foo)
+        {
+            return foo[0];
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        struct Foo {
+            int x;
+        }
+        int operator[](Foo foo, uint4 index)
+        {
+            return foo[index.x];
+        }
+    `), e => e instanceof WTypeError);
+};
+
+tests.setterType = function() {
+    checkFail(() => doPrep(`
+        thread int[] operator.x=(thread int[] foo, uint x)
+        {
+            return foo;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        int[3] operator.x=(int[3] foo, uint x)
+        {
+            return foo;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        thread int[] operator[]=(thread int[] foo, uint x, uint y)
+        {
+            return foo;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        int[3] operator.x=(int[3] foo, uint x)
+        {
+            return foo;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        struct Foo {
+            int x;
+        }
+        Foo operator[]=(Foo foo, float4 y, uint z)
+        {
+            return foo.x;
+        }
+    `), e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        struct Foo {
+            int x;
+        }
+        int operator.y(Foo foo)
+        {
+            return foo.x;
+        }
+        Foo operator.y=(Foo foo, int4 x)
+        {
+            Foo result;
+            foo.x = x.x;
+            return result;
+        }
+    `), e => e instanceof WTypeError);
+};
 
 okToTest = true;
 

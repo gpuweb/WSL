@@ -306,18 +306,22 @@ export default class Checker extends Visitor {
             let numExpectedParameters = kind == "index" ? 2 : 1;
             if (func.parameters.length != numExpectedParameters)
                 throw new WTypeError(func.origin.originString, "Incorrect number of parameters for " + func.name + " (expected " + numExpectedParameters + ", got " + func.parameters.length + ")");
-            if (func.parameterTypes[0].unifyNode.isPtr)
-                throw new WTypeError(func.origin.originString, "Cannot have getter for pointer type: " + func.parameterTypes[0]);
+            if (func.parameterTypes[0].unifyNode.isRef || func.parameterTypes[0].unifyNode.isArray)
+                throw new WTypeError(func.origin.originString, "Cannot have getter for pointer/array/array-ref type: " + func.parameterTypes[0]);
+            if (kind == "index" && !func.parameterTypes[1].unifyNode.isInt)
+                throw new WTypeError(func.origin.originString, "Second argument to getter must be an integral type: " + func.parameterTypes[1]);
         };
 
         let checkSetter = (kind) => {
             let numExpectedParameters = kind == "index" ? 3 : 2;
             if (func.parameters.length != numExpectedParameters)
                 throw new WTypeError(func.origin.originString, "Incorrect number of parameters for " + func.name + " (expected " + numExpectedParameters + ", got " + func.parameters.length + ")");
-            if (func.parameterTypes[0].unifyNode.isPtr)
-                throw new WTypeError(func.origin.originString, "Cannot have setter for pointer type: " + func.parameterTypes[0]);
+            if (func.parameterTypes[0].unifyNode.isRef || func.parameterTypes[0].unifyNode.isArray)
+                throw new WTypeError(func.origin.originString, "Cannot have setter for pointer/array/array-ref type: " + func.parameterTypes[0]);
             if (!func.returnType.equals(func.parameterTypes[0]))
                 throw new WTypeError(func.origin.originString, "First parameter type and return type of setter must match (parameter was " + func.parameterTypes[0] + " but return was " + func.returnType + ")");
+            if (kind == "index" && !func.parameterTypes[1].unifyNode.isInt)
+                throw new WTypeError(func.origin.originString, "Second argument to setter must be an integral type: " + func.parameterTypes[1]);
             let valueType = func.parameterTypes[numExpectedParameters - 1];
             let getterName = func.name.substr(0, func.name.length - 1);
             let getterFuncs = resolveFuncs(getterName);
