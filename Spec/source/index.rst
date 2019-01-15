@@ -392,6 +392,9 @@ The following strings are reserved keywords of the language:
 | Reserved for future extension | protocol auto const static                                                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
+.. todo::
+    Decide whether we support the trap statement or not, and harmonize the different sections of the spec in that regard.
+
 .. todo:: Find a way to explain the 'Semantic' grammar element here, or at least the relevant keywords
 
 ``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
@@ -1287,9 +1290,6 @@ Here is how to reduce a block by one step:
 Branches
 """"""""
 
-.. todo::
-    Everything below this still has to be updated for the new rules (uniformity, clamping, memory model, etc..)
-
 We add another kind of statement: the ``Join(s)`` construct, that takes as argument another statement ``s``.
 
 Here is how to reduce a branch (if-then-else construct, remember that if-then is just syntactic sugar that was eliminated during parsing) by one step:
@@ -1346,14 +1346,16 @@ Here is how to reduce a switch statement by one step:
     #. Wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
     #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
+    #. Push ``val`` on the control-flow stack
 
 #. Else
 
-   #. ASSERT(the expression in the switch is an integer or enum value)
-   #. ASSERT(there is a ``default:`` case in the switch)
-   #. Find the ``default`` case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)
-   #. Do the same for each sequence of statements until the end of the switch
-   #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
+    #. ASSERT(the expression in the switch is an integer or enum value ``val``)
+    #. ASSERT(there is a ``default:`` case in the switch)
+    #. Find the ``default`` case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)
+    #. Do the same for each sequence of statements until the end of the switch
+    #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
+    #. Push ``val`` on the control-flow stack
 
 .. math::
     :nowrap:
@@ -1433,7 +1435,7 @@ Barriers and uniform control flow
 """""""""""""""""""""""""""""""""
 
 There is no rule in the per-thread semantics for *control barriers*.
-Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction, and their control-flow stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
+Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction with the same identifier, and their control-flow stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
 
 Other
 """""
@@ -1453,6 +1455,7 @@ We define the following kinds of values:
 - Integers, floats, booleans and other primitives provided by the standard library
 - Pointers. These have an address and an address space
 - Left values. These also have an address and an address space
+- A special Invalid left-value, used to represent the dereferencing of out-of-bounds accesses and the dereferencing of ``null`` 
 - Array references. These have a base address, an address space and a size
 - Struct values. These are a sequence of bytes of the right size, and can be interpreted as a tuple of their elements (plus padding bits)
 - Array values. These are also a sequence of bytes of the right size, and can also be interpreted as a sequence of their elements (plus padding bits).
@@ -1544,18 +1547,19 @@ To reduce a ``JoinExpr`` by one step:
 
 Pointers and references
 """""""""""""""""""""""
+
 WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
 Array references are actually bounds-checked fat-pointers.
 
 The ``&`` and ``*`` operators simply convert between left-values and pointers.
-In particular, to reduce ``& e``:
+To reduce ``& e``:
 
 #. If ``e`` is an lvalue, replace the whole expression by a pointer to the same address.
 #. Else reduce ``e``.
 
 Symmetrically, to reduce ``* e``:
 
-#. If ``e`` is null, trap
+#. If ``e`` is null, then a compliant implementation can either trap or replace the whole expression by an invalid left-value
 #. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address
 #. Else reduce ``e``.
 
@@ -1564,6 +1568,7 @@ Symmetrically, to reduce ``* e``:
 
     \begin{align*}
         \ottdruletakeXXptrXXlval{}\\
+        \ottdruletakeXXptrXXinvalid{}\\
         \ottdruletakeXXptrXXreduce{}\\
         \ottdrulederefXXptr{}\\
         \ottdrulederefXXreduce{}\\
@@ -1582,29 +1587,29 @@ to an array.
 To reduce ``e1[e2]`` by one step:
 
 #. If ``e2`` can be reduced, then reduce it by one step
-#. Else if the first operand is null, trap
+#. Else if the first operand is null, a compliant implementation can either trap or replace the whole expression by an invalid left-value
 #. Else if the first operand is an array
 
     #. ASSERT(``e2`` is a non-negative integer value)
-    #. If the value is equal or greater than the size of the array (known from typing information), trap
+    #. If the value is equal or greater than the size of the array (known from typing information), either trap or replace the whole expression by the default value of the type of elements of the array or replace ``e2`` by a valid in-bounds value and continue
     #. Else replace the whole expression by the corresponding element of the array
 
 #. Else if the first operand is a left-value
 
    #. ASSERT(``e2`` is a non-negative integer value)
-   #. If the value is equal or greater than the size of the array pointed to by the left-value (known from typing information), trap
+   #. If the value is equal or greater than the size of the array pointed to by the left-value (known from typing information), either trap or replace the whole expression by an invalid left-value or replace ``e2`` by a valid in-bounds value and continue
    #. Offset the address pointed to by the left-value by the product of the stride size (annotated during typing) and ``e2``
-   #. Replace the whole expression by the resulting left-value (without changing its address space)
+   #. And replace the whole expression by the resulting left-value (without changing its address space)
 
 #. Else if the first operand is an array reference
 
    #. ASSERT(``e2`` is a non-negative integer value)
-   #. If the value is equal or greater than the size carried by the array reference, trap
+   #. If the value is equal or greater than the size carried by the array reference, trap or replace the whole expression by an invalid left-value or replace ``e2`` by a valid in-bounds value and continue
    #. Make a left-value with the same address-space as ``e1``, with an address that is the address pointed to by ``e1``, offset by the product of the stride size (annotated during typing) and ``e2``
-   #. Replace the whole expression by it
+   #. And replace the whole expression by it
 
 .. todo::
-    Finish writing the related formal rules
+    Include the related formal rules
 
 Variables and assignment
 """"""""""""""""""""""""
@@ -1612,9 +1617,9 @@ Variables and assignment
 A variable name can be reduced in one step into whatever that name binds in the current environment.
 This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.
 
-To reduce an lvalue:
+To reduce a (valid) lvalue:
 
-#. Emit a load to the corresponding address
+#. Emit a load to the corresponding address, of a size appropriate for the type of the value
 #. If the type of the expression was an enum type, and the value loaded is not a valid value of that type, replace it by an unspecified valid value of that type
 #. Replace the whole expression by this value
 
@@ -1622,21 +1627,25 @@ To reduce an lvalue:
     The 2nd step is to prevent races from allowing the creation of invalid enum values, which could cause problems to switches without default cases.
     We don't need a similar rules for pointers or array references, because we do not allow potentially racy assignments to variables of these types.
 
+To reduce an invalid left-value, either trap or replace it by the default value of that type.
+
 To reduce an assignment ``e1 = e2``:
 
-#. If ``e1`` is not a lvalue, and can be reduced, reduce it.
+#. If ``e1`` is not a lvalue (valid or not), and can be reduced, reduce it.
 #. Else if ``e2`` can be reduced, reduce it.
+#. Else if ``e1`` is an invalid lvalue, either replace the entire expression by the value on the right of the equal or trap
 #. Else
-
-   #. Emit a store to the address of the lvalue, of the value on the right of the equal.
-   #. Replace the entire expression by the value on the right of the equal.
+   
+    #. ASSERT(``e1`` is a valid lvalue)
+    #. Emit a store to the address of the lvalue, of the value on the right of the equal, of a size appropriate for the type of that value
+    #. Replace the entire expression by the value on the right of the equal.
 
 .. Should we make the sizes of loads/stores more explicit?
 
 Calls
 """""
 
-Overloaded function calls have already been resolved to point to a specific function during the validation phase.
+Overloaded function calls have already been resolved to point to a specific function declaration during the validation phase.
 
 Like we added ``Loop`` or ``JoinExpr``, we add a special construct ``Call`` that takes as argument a statement and return an expression.
 Informally, it is a way to transform a return statement into the corresponding value.
@@ -1651,7 +1660,7 @@ To reduce a function call by one step:
     #. For each parameter of the function, from left to right:
            
         #. Lookup the address of that parameter
-        #. Emit a store of the value of the corresponding argument to that address
+        #. Emit a store of the value of the corresponding argument to that address, of a size appropriate to the type of it
         #. Modify the new environment to have a binding from that parameter name to that address
 
     #. Make a block statement from the body of the function, annotated with this new environment
@@ -2005,6 +2014,9 @@ shaders:
 
 Built-in Functions
 ------------------
+
+.. todo::
+    Fill in this section, including all of the basic arithmetic operators, explaining what behaviors are allowed on overflow.
 
 Some of these functions only appear in specific shader stages.
 
