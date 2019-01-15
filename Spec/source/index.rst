@@ -387,13 +387,13 @@ The following strings are reserved keywords of the language:
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Address space                 | constant device threadgroup thread                                                      |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Qualifier                     | nointerpolation noperspective uniform specialized centroid sample                       |
+| Qualifier                     | nointerpolation noperspective specialized centroid sample                               |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | 'Semantics' qualifier         | SV_InstanceID SV_VertexID PSIZE SV_Position SV_IsFrontFace SV_SampleIndex               |
 |                               | SV_InnerCoverage SV_Target SV_Depth SV_Coverage SV_DispatchThreadId SV_GroupID          |
 |                               | SV_GroupIndex SV_GroupThreadID attribute register specialized                           |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Reserved for future extension | protocol auto const static restricted native space                                      |
+| Reserved for future extension | protocol auto const static restricted native space uniform                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
 .. todo::
@@ -796,21 +796,18 @@ If a function with the name ``operator[]=`` is defined:
 Typing of functions
 -------------------
 
-Each entry point to the program must be well-typed as described in this section.
-This check can in turn lead to the verification of the well-typedness of other functions.
+Each function must be well-typed following the rules in this section.
 
 To check that a function is well-typed:
 
 #. Make a new copy of the global environment (built above)
-#. For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type (with uniformity being negative in the case of entry points)
-#. Check that the function body is well-typed in this typing environment (treating it as a block of statement) at the enclosing level of control-flow uniformity (positive in the case of entry points).
-#. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}`` (ignoring uniformity)
-#. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}`` (ignoring uniformity)
-
-.. todo:: check that we cannot assume the parameters to entry points to be uniform.
+#. For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type
+#. Check that the function body is well-typed in this typing environment (treating it as a block of statement)
+#. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}``
+#. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}``
 
 In this section we define the terms above, and in particular, what it means for a statement or an expression to be well-typed.
-More formally we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement in (non-)uniform control-flow whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression in (non-)uniform control-flow whose type is Tau".
+More formally we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau".
 
 A type can either be:
 
@@ -825,8 +822,6 @@ A type can either be:
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
 
-And in both cases it is associated with a uniformity flag (a boolean).
-
 A behaviour is any of the following:
 
 - Return of a right-value type
@@ -835,52 +830,15 @@ A behaviour is any of the following:
 - Fallthrough
 - Nothing
 
-All of these except for Nothing are associated with a uniformity flag (a boolean).
 We use these "behaviours" to check the effect of statements on the control flow. 
-
-Notes about uniformity
-"""""""""""""""""""""""
-
-Because of both the uniform keyword (which allow the programmer to request verification that a given variable is uniform) and some functions in the standard library that only make sense when called in uniform control flow we infer the uniformity of both control-flow and values in these typing rules.
-
-As defined above, uniformity is a boolean flag that appears at three different locations:
-
-- On the typing judgments themselves, where it refers to the uniformity of the control-flow
-- On the types of expressions
-- On behaviours, where it refers to the uniformity of the control-flow at the origin of the non-local control-flow they represent.
-
-When we later refer to the "lower of two uniformity flags", we mean false (i.e. negative, i.e. non-uniform) unless both are true. In other words it is a boolean and.
-
-.. todo::
-    This subsection reads terribly, I should try to find a way to rephrase it.
-    Maybe decide once and for all on names for the two uniformity levels: true/false, positive/negative, uniform/non-uniform is two more naming schemes than we need.
-
-There are two important rules about uniformity:
-
-- If a statement or expression is well-typed in non-uniform control flow, it would also be considered well-typed in uniform control-flow
-- If an expression has a type which is uniform and is a right-value type, it can also be treated as if it is non-uniform.
-
-.. math::
-    :nowrap:
-    
-    \begin{align*}
-        \ottdruleuniformityXXstmt{}\\
-        \ottdruleuniformityXXexpr{}\\
-        \ottdruletvalXXuniform{}
-    \end{align*}
-
-.. note::
-    Importantly that last rule does not apply to expressions that have a left-value type.
-    Such a type refer to the memory that this expression (typically a variable name) refers to, and we don't want to forget that a variable was defined as uniform.
 
 Typing statements
 """""""""""""""""
 
 To check an if-then-else statement:
 
-#. Let ``u`` be the uniformity of the control-flow around this statement
-#. Check that the condition is a well-typed expression in control-flow of uniformity ``u``, of type ``bool``, with some uniformity ``u'``
-#. Check that the then and else branches are well-typed statements in control-flow of uniformity that is the lower of ``u`` and ``u'``, whose behaviours we will respectively call ``B`` and ``B'``
+#. Check that the condition is a well-typed expression of type bool
+#. Check that the then and else branches are well-typed statements whose behaviours we will respectively call ``B`` and ``B'``
 #. Check that neither ``B`` nor ``B'`` contain a return of a pointer type, or of an array reference type
 #. Then the if-then-else statement is well-typed, and its behaviours is the union of ``B`` and ``B'``
 
@@ -893,27 +851,16 @@ To check an if-then-else statement:
 
 To check a do-while statement:
 
-#. If the control-flow around this statement is uniform
-
-   #. And the condition is a well-typed expression in uniform control flow, of type uniform ``bool``
-   #. And the body of the loop is a well-typed statement in uniform control flow, whose behaviours we will call B
-   #. And B does not contain any non-uniform behaviour
-   #. And B does not contain a return of a pointer type, or of an array reference type
-   #. Then the do-while statement is well-typed, and its behaviours is B, from which Break and Continue behaviours have been removed (if they were present) and to which Nothing has been added
-
-#. Else
-
-   #. Check that the condition is a well-typed expression in non-uniform control-flow, of type ``bool``
-   #. Check that the body of the loop is a well-typed statement in non-uniform control-flow, whose behaviours we will call B
-   #. Check that B does not contain a return of a pointer type, or of an array reference type
-   #. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
-   #. Then the do-while statement is well-typed, and its behaviours is this new set
+#. Check that the condition is well-typed, of type ``bool``
+#. Check that the body of the loop is a well-typed statement whose behaviours we will call B
+#. Check that B does not contain a return of a pointer type, or of an array reference type
+#. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
+#. Then the do-while statement is well-typed, and its behaviours is this new set
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \ottdruledoXXwhileXXuniform{}\\
         \ottdruledoXXwhile{}
     \end{align*}
 
@@ -922,19 +869,13 @@ To check a do-while statement:
 
 To check a switch statement:
 
-#. Check that the expression being switched on is well-typed in control-flow of the same uniformity as the switch statement
-#. Check that this type is either an integer type (``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``) or an enum type
+#. Check that the expression being switched on is well-typed 
+#. Check that its type is either an integer type (``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``) or an enum type
 #. Check that each value ``v`` in a ``case v`` in this switch is well-typed with the same type
 #. Check that no two such cases have the same value
 #. If there is a default, check that there is at least one value in that type which is not covered by the cases
 #. Else check that for all values in that type, there is one case that covers it
-#. Check that either:
-   
-   #. Both the control-flow around the switch and the type of the expression being switched on are uniform
-   #. The body of each case (and default) is well-typed in uniform control-flow, treating them as blocks
-   #. None of their behaviours include a non-uniform behaviour
-
-#. Or that the body of each case (and default) is well-typed in non-uniform control-flow, treating them as blocks
+#. Check that the body of each case (and default) is well-typed when treating them as blocks
 #. Make a set of behaviours that is the union of the behaviours of all of these bodies
 #. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
 #. Remove Break and Fallthrough from this set (if they are in it) and add Nothing
@@ -944,16 +885,15 @@ To check a switch statement:
     :nowrap:
 
     \begin{align*}
-       \ottdruleswitchXXuniform{}\\
        \ottdruleswitch{}\\
        \ottdrulecase{}\\
        \ottdruledefault{}\\
        \ottdruleswitchXXblock{}
     \end{align*}
 
-The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}, annotated with the uniformity of the control-flow at this point.
+The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.
 
-The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T in control-flow of the same uniformity as that around the return statement, and its behaviours is then {Return T}, annotated with the uniformity of the control-flow at this point.
+The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T and its behaviours is then {Return T}.
 
 .. The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
 
@@ -975,25 +915,20 @@ To check a block:
 
     #. Check that there is no other statement in that block is a variable declaration sharing the same name.
     #. Check that the given address space is either ``thread`` or ``threadgroup``
-    #. Let ``u`` be the uniformity of the control-flow around the block
-    #. Pick a uniformity ``u'`` for the newly-created variable, the program is valid if either of the two choices allow the validation to complete.
-    #. If ``u`` is non-uniform, check that ``u'`` is non-uniform
-    #. If the declaration uses the ``uniform`` keyword, check that ``u'`` is uniform
-    #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space with uniformity ``u'``.
+    #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space
     #. If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.
-    #. If there is an initializing expression, check that it is well-typed in this new environment in control-flow of uniformity ``u``, that its type match the type of the variable, and that it is of uniformity ``u'``
-    #. Check that the rest of the block, removing this first statement is well-typed in this new typing environment in control-flow ``u`` and has a set of behaviours B.
+    #. Else if there is an initializing expression, check that it is well-typed in this new environment and that its type match the type of the variable
+    #. Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours B.
     #. Then the block is well-typed and has the same set of behaviours B.
 
-#. Else if this block contains a single statement, check that this statement is well-typed in the control-flow of the same uniformity as that around the block. If it is, then so is this block, and it has the same set of behaviours
+#. Else if this block contains a single statement, check that this statement is well-typed. If it is, then so is this block, and it has the same set of behaviours
 #. Else
    
-    #. Check that this block's first statement is well-typed in control-flow of the same uniformity as that around the block
+    #. Check that this block's first statement is well-typed
     #. Check that its set of behaviours B contains Nothing.
     #. Remove Nothing from it.
     #. Check that it does not contain Fallthrough
-    #. If the control-flow is uniform, and B does not contain any non-uniform behaviour, then check that the rest of the block, removing the first statement, is well-typed in uniform control-flow, with a set of behaviours B'
-    #. Else check that the rest of the block, removing the first statement, is well-typed in non-uniform control-flow with a set of behaviours B'.
+    #. Check that the rest of the block, removing the first statement, is well-typed with a set of behaviours B'.
     #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
 
 .. math::
@@ -1002,12 +937,9 @@ To check a block:
     \begin{align*}
         \ottdruleemptyXXblock{}\\
         \ottdrulevariableXXdecl{}\\
-        \ottdrulevariableXXdeclXXuniform{}\\
         \ottdrulevariableXXdeclXXinit{}\\
-        \ottdrulevariableXXdeclXXinitXXuniform{}\\
         \ottdruletrivialXXblock{}\\
         \ottdruleblock{}
-        \ottdruleblockXXuniform{}
     \end{align*}
 
 .. note::
@@ -1016,7 +948,7 @@ To check a block:
 .. todo::
     Change the variable declaration ott rules to support threadgroup local variables
 
-Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed in control-flow of the same uniformity, and its set of behaviours is then {Nothing}.
+Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and its set of behaviours is then {Nothing}.
 
 .. math::
     :nowrap:
@@ -1025,19 +957,17 @@ Finally a statement that consists of a single expression (followed by a semicolo
         \ottdruleexpr{}
     \end{align*}
 
-.. Do we have a notion of ill-formed syntactically correct type? If so we should make sure it appears nowhere.
-
 Typing expressions
 """"""""""""""""""
 
-Literals are always well-typed and uniform, and are of any type that can contain them (depending on which is required for validation to succeed).
+Literals are always well-typed and are of any type that can contain them (depending on which is required for validation to succeed).
 ``true`` and ``false`` are always boolean.
 
-``null`` is always well-typed and uniform, and its type can be any pointer or array reference type (depending on which is required for validation to succeed).
+``null`` is always well-typed and its type can be any pointer or array reference type (depending on which is required for validation to succeed).
 
-The type of an expression in parentheses, is the type of the expression in the parentheses (and the uniformity of the control-flow is the same)
+The type of an expression in parentheses, is the type of the expression in the parentheses
 
-A comma expression is well-typed if both of its operands are well-typed in control-flow of the same uniformity. In that case, its type is the type of its second operand.
+A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the type of its second operand.
 
 .. math::
     :nowrap:
@@ -1051,20 +981,15 @@ A comma expression is well-typed if both of its operands are well-typed in contr
         \ottdrulecomma{}
     \end{align*}
 
-To check that a boolean or, or a boolean and is well-typed:
-
-#. Check that the left-side expression is well-typed in control-flow of the same uniformity and of type bool
-#. If that boolean is uniform, then check that the right-side expression is well-typed in control-flow of the same uniformity and of type bool
-#. Else check that the right-side expression is well-typed in non-uniform control-flow and of type bool
-#. Then it is well-typed, of type bool, and uniform if and only if both expressions had uniform types
+To check that a boolean or, or a boolean and is well-typed, check that both of its operands are well-typed and of type bool.
 
 To check that a ternary conditional is well-typed:
 
-#. Check that its condition is well-typed in control-flow of the same uniformity and of type bool
-#. Check that both of its branches are well-typed in control-flow of uniformity that is the lower of that one and the uniformity of the boolean resulting from the condition
-#. Check that the types of its branches are both right-value types and the same except possibly for their uniformity
+#. Check that its condition is well-typed and of type bool
+#. Check that both of its branches are well-typed
+#. Check that the types of its branches are both right-value types and the same
 #. Check that this same type is neither a pointer type nor an array reference type.
-#. Then it is well-typed, and of that type, with uniformity that is the lower of the uniformities of these two types
+#. Then the whole expression is well-typed, and of that type
 
 .. math::
     :nowrap:
@@ -1077,43 +1002,33 @@ To check that a ternary conditional is well-typed:
 
 To check that an assignment is well-typed:
 
-#. Check that the expression on the right side of the ``=`` is well-typed in control-flow of the same uniformity with a right-value type "tval" and uniformity ``u``
+#. Check that the expression on the right side of the ``=`` is well-typed with a right-value type "tval"
 #. Check that "tval" is neither a pointer type nor an array reference type
-#. Check that the expression on the left side is well-typed in control-flow of the same uniformity with a left-value type
+#. Check that the expression on the left side is well-typed with a left-value type
 #. Check that the right-value type associated with this left-value type is "tval"
 #. Check that the address space associated with this left-value type is not ``constant``
-#. If that left-value type is uniform:
-
-    #. Check that the control-flow is uniform
-    #. Check that ``u`` is uniform
-
-#. Then the assignment is well-typed, and its type is "tval" with uniformity ``u``
+#. Then the assignment is well-typed, and its type is "tval"
 
 .. math::
     :nowrap:
 
     \begin{align*}
         \ottdruleassignment{}
-        \ottdruleassignmentXXuniform{}
     \end{align*}
 
 A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
 
 If an expression is well-typed and its type is an left-value type, it can also be treated as if it were of the associated right-value type.
 
-An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed and of a non-uniform left-value type (respectively of a non-uniform pointer type).
+An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed with a left-value type (respectively of a pointer type).
 The associated right-value types and address spaces are left unchanged by these two operators.
 
-An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed and of a non-uniform left-value type.
+An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed with a left-value type.
 The associated right-value types and address spaces are left unchanged by this operator.
-The resulting type is always non-uniform.
 
 .. note::
     The dynamic behaviour depends on whether the expression is a left-value array type or not, but it makes no difference during validation.
     ``@x`` for a variable ``x`` with a non-array type is valid, it will merely produce an array reference for which only the index 0 can be used without trapping.
-
-.. note::
-    All of these operations only operate on non-uniform types. This is by design: we don't want to allow aliasing of uniform variables, as it would be very difficult to track and could lead to non-uniform accesses to them.
 
 .. math::
     :nowrap:
@@ -1128,16 +1043,12 @@ The resulting type is always non-uniform.
 
 To check that an array dereference ``e1[e2]`` is well-typed:
 
-#. Check that ``e2`` is well-typed in control-flow of the same uniformity with the type ``uint32``
-#. Check that ``e1`` is well-typed in control-flow of the same uniformity
+#. Check that ``e2`` is well-typed with the type ``uint32``
+#. Check that ``e1`` is well-typed 
 #. If the type of ``e1`` is an array of elements of type ``T``, then the whole expression is well-typed and its type is ``T``.
-   In that case, the uniformity of the result is the lower of the uniformities of ``e1`` and ``e2``.
-#. Else if the type of ``e1`` is a left-value type, whose associated type is an array of elements of type ``T``:
-   
-    #. If this left-value type is uniform, then check that the type of ``e2`` is uniform
-    #. The whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1`` and the same uniformity as the type of ``e1``
-
-#. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, the same address space as the type of ``e1``, and it is non-uniform
+#. Else if the type of ``e1`` is a left-value type, whose associated type is an array of elements of type ``T``,
+   the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
+#. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, the same address space as the type of ``e1``
 #. Else the expression is ill-typed
 
 .. math::
@@ -1157,17 +1068,14 @@ To check that an array dereference ``e1[e2]`` is well-typed:
 
 To check that a function call is well-typed:
 
-#. Check that each argument is well-typed (at the same uniformity as the control-flow around the call)
+#. Check that each argument is well-typed
 #. Make a set of all the functions in the global environment that share the same name and number of parameters
 #. For each function in that set:
 
-    #. Check that each argument can be given a type that match the type of the parameter (ignoring uniformity)
+    #. Check that each argument can be given a type that match the type of the parameter
     #. Otherwise, remove the function from the set
 
 #. Check that the set now contains a single function
-#. Make a new environment from the global environment that maps each parameter to a left-value type of the corresponding type, in the ``thread`` address space, with uniformity that is the lower
-   of the uniformity of the control-flow around the call, and the uniformity of the argument.
-#. Check that the function body is well-typed as a block in this environment and control-flow of the same uniformity as that around the call.
 #. Then the function call is well-typed, and its type is the return type of that function
 
 .. note::
@@ -1177,16 +1085,6 @@ To check that a function call is well-typed:
     A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function ``foo``
     that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
     The programmer can easily make their intent clear with something like ``int x = 42; foo(x);``.
-
-.. todo::
-    The new environment bit is subtly misleading: it is ok making the left-value type non-uniform even if the argument is uniform; as the argument is a right-value type and could be treated as non-uniform.
-    Technically this is (correctly) implied by the rules, but far from obvious; and the non-determinism is starting to really hurt (it is a fairly simple inference problem, but inference is scary in general)
-
-.. note::
-    This scheme is not modular, in that the typing of a function depends on where it is called.
-    It has been judged acceptable so far, as we will be compiling entire compilation units at once anyway; but it remains unpleasant.
-    In particular, the fact that a function that is never called will never have type errors seems inconvenient.
-    I have some hope of modifying it to type each function once, gathering a minmum set of requirements on its call sites, and then just checking that each call site respects these.
 
 .. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
 
@@ -1951,9 +1849,6 @@ not return pointers. Every construction of a pointer must be initialized upon de
 
 Array References
 """"""""""""""""
-
-Uniform Qualifier
-"""""""""""""""""
 
 Numerical Compliance
 """"""""""""""""""""
