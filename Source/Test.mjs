@@ -6061,6 +6061,14 @@ tests.shaderStages = function()
             }
         `),
         e => e instanceof WTypeError);
+    checkFail(() => doPrep(`
+        vertex float4 bar() : SV_Position {
+            return float4(0, 1, 2, 3);
+        }
+        vertex float4 foo() : SV_Position {
+            return bar();
+        }
+    `), e => e instanceof WTypeError);
 }
 
 tests.casts = function()
