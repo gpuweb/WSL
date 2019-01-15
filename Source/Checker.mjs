@@ -377,6 +377,7 @@ export default class Checker extends Visitor {
                 throw new WTypeError(func.origin.originString, "Incorrect number of parameters for " + func.name + " (expected 1, got " + func.parameters.length + ")");
             break;
         case "operator==":
+        case "operator!=":
         case "operator<":
         case "operator<=":
         case "operator>":

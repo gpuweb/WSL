@@ -694,35 +694,48 @@ For each top-level declaration:
         #. It must have a single argument
         #. That argument must not be a pointer, array reference or array
 
-   #. If the name of the function is ``operator.field=`` for some name ``field`` 
+   #. Else if the name of the function is ``operator.field=`` for some name ``field`` 
 
         #. It must have exactly two arguments
         #. Its first argument must not be a pointer, array reference or array
 
-   #. If the name of the function is ``operator&.field`` for some name ``field``
+   #. Else if the name of the function is ``operator&.field`` for some name ``field``
 
         #. It must have exactly one argument
         #. Its return type must be a pointer type
         #. Its argument must be a pointer type
 
-   #. If the name of the function is ``operator[]``
+   #. Else if the name of the function is ``operator[]``
 
         #. It must have exactly two argument
         #. Its first argument must not be a pointer, array reference or array.
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
  
-   #. If the name of the function is ``operator[]=``
+   #. Else if the name of the function is ``operator[]=``
 
         #. It must have exactly three arguments
         #. Its first argument must not be a pointer, array reference or array
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
 
-   #. If the name of the function is ``operator&[]``
+   #. Else if the name of the function is ``operator&[]``
 
         #. It must have exactly two arguments
         #. Its return type must be a pointer type
         #. Its first argument must be an array reference type
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+
+   #. Else if the name of the function is ``operator++`` or ``operator--``
+
+        #. It must have exactly one argument
+        #. Its argument type and its return type must be the same
+
+   #. Else if the name of the function is ``operator+`` or ``operator-``, it must have one or two arguments
+   #. Else if the name of the function is ``operator*``, ``operator/``, ``operator%``, ``operator&``, ``operator|``, ``operator^``, ``operator<<`` or ``operator>>``, it must have exactly two arguments
+   #. Else if the name of the function is ``operator~``, it must have exactly one argument
+   #. Else if the name of the function is ``operator==``, ``operator!=``, ``operator<``, ``operator>``, ``operator<=`` or ``operator>=``
+
+        #. It must have exactly two arguments
+        #. Its return type must be bool
 
    #. If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set
    #. Otherwise add a new mapping from that function name to a singleton set containing that declaration
