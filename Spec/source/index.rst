@@ -389,13 +389,15 @@ The following strings are reserved keywords of the language:
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Qualifier                     | nointerpolation noperspective uniform specialized centroid sample                       |
 +-------------------------------+-----------------------------------------------------------------------------------------+
+| 'Semantics' qualifier         | SV_InstanceID SV_VertexID PSIZE SV_Position SV_IsFrontFace SV_SampleIndex               |
+|                               | SV_InnerCoverage SV_Target SV_Depth SV_Coverage SV_DispatchThreadId SV_GroupID          |
+|                               | SV_GroupIndex SV_GroupThreadID attribute register specialized                           |
++-------------------------------+-----------------------------------------------------------------------------------------+
 | Reserved for future extension | protocol auto const static                                                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
 .. todo::
     Decide whether we support the trap statement or not, and harmonize the different sections of the spec in that regard.
-
-.. todo:: Find a way to explain the 'Semantic' grammar element here, or at least the relevant keywords
 
 ``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
 
@@ -450,7 +452,7 @@ We use non-bold text surrounded by quotes for text terminals (keywords, punctuat
 Top-level declarations
 """"""""""""""""""""""
 
-A valid file is made of a sequence of 0 or more top-level declarations, followed by the special End-Of-File token.
+A valid compilation unit is made of a sequence of 0 or more top-level declarations.
 
 .. productionlist::
     topLevelDecl: ";" | `typedef` | `structDef` | `enumDef` | `funcDef`
@@ -472,13 +474,21 @@ A valid file is made of a sequence of 0 or more top-level declarations, followed
 .. productionlist::
     funcDef: `funcDecl` "{" `stmt`* "}"
     funcDecl: `entryPointDecl` | `normalFuncDecl` | `castOperatorDecl`
-    entryPointDecl: ("vertex" | "fragment") `type` `Identifier` `parameters`
+    entryPointDecl: ("vertex" | "fragment" | "[" `numthreadsSemantic` "]" "compute") `type` `Identifier` `parameters`
+    numthreadsSemantic: "numthreads" "(" `IntLiteral` "," `IntLiteral` "," `IntLiteral` ")"
     normalFuncDecl: `type` (`Identifier` | `OperatorName`) `parameters`
     castOperatorDecl: "operator" `type` `parameters`
     parameters: "(" ")" | "(" `parameter` ("," `parameter`)* ")"
-    parameter: `type` `Identifier`
+    parameter: `type` `Identifier` | `type` `Identifier` ":" `semantic`
 
 .. note:: the return type is put after the "operator" keyword when declaring a cast operator, mostly because it is also the name of the created function. 
+
+.. productionlist::
+    semantic: `builtInSemantic` | `stageInOutSemantic` | `resourceSemantic` | `specializationConstantSemantic`
+    builtInSemantic: "SV_InstanceID" | "SV_VertexID" | "PSIZE" | "SV_Position" | "SV_IsFrontFace" | "SV_SampleIndex" | "SV_InnerCoverage" | "SV_Target" `IntLiteral` | "SV_Depth" | "SV_Coverage" | "SV_DispatchThreadID" | "SV_GroupID" | "SV_GroupIndex" | "SV_GroupThreadID"
+    stageInOutSemantic: "attribute" "(" `IntLiteral` ")"
+    resourceSemantic: "register" "(" `Identifier` ")" | "register" "(" `Identifier` "," `Identifier` ")"
+    specializationConstantSemantic: "specialized"
 
 Statements
 """"""""""
