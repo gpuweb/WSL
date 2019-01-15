@@ -79,15 +79,14 @@ ATTRIBUTE: 'attribute';
 REGISTER: 'register';
 SPECIALIZED: 'specialized';
 
-NATIVE: 'native';
-RESTRICTED: 'restricted';
-// Note: these could be only keyword in the native mode, but I decided to make them always reserved. to bikeshed.
-
 UNDERSCORE: '_';
 AUTO: 'auto';
 PROTOCOL: 'protocol';
 CONST: 'const';
 STATIC: 'static';
+NATIVE: 'native';
+RESTRICTED: 'restricted';
+SPACEKEYWORD: 'space';
 // Note: these are currently not used by the grammar, but I would like to make them reserved keywords for future expansion of the language. to bikeshed
 
 Qualifier: 'nointerpolation' | 'noperspective' | 'uniform' | 'centroid' | 'sample';

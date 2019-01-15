@@ -379,7 +379,7 @@ Keywords and punctuation
 The following strings are reserved keywords of the language:
 
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Top level                     | struct typedef enum operator vertex fragment space compute numthreads                   |
+| Top level                     | struct typedef enum operator vertex fragment compute numthreads                         |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Control flow                  | if else switch case default while do for break continue fallthrough return trap         |
 +-------------------------------+-----------------------------------------------------------------------------------------+
@@ -393,7 +393,7 @@ The following strings are reserved keywords of the language:
 |                               | SV_InnerCoverage SV_Target SV_Depth SV_Coverage SV_DispatchThreadId SV_GroupID          |
 |                               | SV_GroupIndex SV_GroupThreadID attribute register specialized                           |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Reserved for future extension | protocol auto const static restricted native                                            |
+| Reserved for future extension | protocol auto const static restricted native space                                      |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
 .. todo::
@@ -417,19 +417,10 @@ Similarily, the following elements of punctuation are valid tokens:
 | Other                | ``?`` ``:`` ``;`` ``,`` ``[`` ``]`` ``{`` ``}`` ``(`` ``)``                                   |
 +----------------------+-----------------------------------------------------------------------------------------------+
 
-Identifiers and operator names
-""""""""""""""""""""""""""""""
+Identifiers
+"""""""""""
 
 An identifier is any sequence of characters or underscores, that does not start by a digit, that is not a single underscore (the single underscore is reserved for future extension), and that is not a reserved keyword.
-
-Operator names can be either of the 4 following possibilities:
-
-- the string ``operator``, followed immediately with one of the following strings: ``>>``, ``<<``, ``+``, ``-``, ``*``, ``/``, ``%``, ``&&``, ``||``, ``&``, ``|``, ``^``, ``>=``, ``<=``, ``==``, ``!=``, ``>``, ``<``, ``++``, ``--``, ``!``, ``~``, ``[]``, ``[]=``, ``&[]``.
-- the string ``operator.`` followed immediately with what would be a valid identifier x. We call this token a 'getter for x'.
-- the string ``operator.`` followed immediately with what would be a valid identifier x, followed immediately with the character ``=``. We call this token 'a setter for x'.
-- the string ``operator&.`` followed immediately with what would be a valid identifier x. We call this token an 'address taker for x'.
-
-.. note:: Thanks to the rule that token are read greedily, the string "operator.foo" is a single token (a getter for foo), and not the keyword "operator" followed by the punctuation "." followed by the identifier "foo".
 
 Whitespace and comments
 """""""""""""""""""""""
@@ -465,7 +456,7 @@ A valid compilation unit is made of a sequence of 0 or more top-level declaratio
 
 .. productionlist::
     structDef: "struct" `Identifier` "{" `structElement`* "}"
-    structElement: `type` `Identifier` ";"
+    structElement: `type` `Identifier` (":" `semantic`)? ";"
 
 .. productionlist::
     enumDef: "enum" `Identifier` (":" `type`)? "{" `enumElement` ("," `enumElement`)* "}"
@@ -473,15 +464,21 @@ A valid compilation unit is made of a sequence of 0 or more top-level declaratio
 
 .. productionlist::
     funcDef: `funcDecl` "{" `stmt`* "}"
-    funcDecl: `entryPointDecl` | `normalFuncDecl` | `castOperatorDecl`
+    funcDecl: (`entryPointDecl` | `normalFuncDecl` | `castOperatorDecl`) (":" `semantic`)?
     entryPointDecl: ("vertex" | "fragment" | "[" `numthreadsSemantic` "]" "compute") `type` `Identifier` `parameters`
     numthreadsSemantic: "numthreads" "(" `IntLiteral` "," `IntLiteral` "," `IntLiteral` ")"
-    normalFuncDecl: `type` (`Identifier` | `OperatorName`) `parameters`
+    normalFuncDecl: `type` (`Identifier` | `operatorName`) `parameters`
     castOperatorDecl: "operator" `type` `parameters`
     parameters: "(" ")" | "(" `parameter` ("," `parameter`)* ")"
-    parameter: `type` `Identifier` | `type` `Identifier` ":" `semantic`
+    parameter: `type` `Identifier` (":" `semantic`)?
 
 .. note:: the return type is put after the "operator" keyword when declaring a cast operator, mostly because it is also the name of the created function. 
+
+.. productionlist::
+    operatorName: "operator" (">>" | "<<" | "+" | "-" | "*" | "/" | "%" | "&&" | "||" | "&" | "|" | "^" | ">=" | "<=" | "==" | "!=" | ">" | "<" | "++" | "--" | "!" | "~" | "[]" | "[]=" | "&[]" | "." `Identifier` | "." `Identifier` "=" | "&." `Identifier`)
+
+.. note::
+    We call ``operator.x`` a getter for x, ``operator.x=`` a setter for x, and ``operator&.x`` an address taker for x.
 
 .. productionlist::
     semantic: `builtInSemantic` | `stageInOutSemantic` | `resourceSemantic` | `specializationConstantSemantic`
