@@ -225,6 +225,7 @@ formula :: formula_ ::=
     | i <= n :: :: indexvar_leq
     | i >= n :: :: indexvar_geq
     | i < n :: :: indexvar_lesser
+    | i > n :: :: indexvar_greater
     | x -> val in R :: :: val_in_env
     | fid -> <( x0 , .. , xn )> ( y0 : addr0 , .. , ym : addrm ) { s0 .. sk } :: :: fid_resolving
     | E = E' :: :: event_eq
@@ -762,8 +763,8 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
     R |- x -> val ;
 
     rv = Default(tval)
-    ----------------------- :: load_invalid_default
-    R |- Invalid_LVal -> rv
+    ------------------------- :: load_invalid_default
+    R |- Invalid_LVal -> rv ;
 
     ------------------------------- :: load_invalid_trap
     R |- Invalid_LVal -> TrapValue;
