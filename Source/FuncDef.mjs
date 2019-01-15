@@ -34,7 +34,6 @@ export default class FuncDef extends Func {
     {
         super(origin, name, returnType, parameters, isCast, shaderType, semantic, attributeBlock);
         this._body = body;
-        this.isRestricted = false;
     }
 
     get body() { return this._body; }

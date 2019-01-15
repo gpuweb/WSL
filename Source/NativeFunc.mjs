@@ -34,7 +34,6 @@ export default class NativeFunc extends Func {
     {
         super(origin, name, returnType, parameters, isCast);
         this._stage = stage;
-        this.isRestricted = false;
         this.implementation = null;
         this._implementationData = null;
         this.visitImplementationData = (implementationData, visitor) => null;

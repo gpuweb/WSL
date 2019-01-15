@@ -136,7 +136,7 @@ export default class Lexer {
             if (/^(struct|typedef|if|else|enum|continue|break|switch|case|default|for|while|do|return|constant|device|threadgroup|thread|operator|null|true|false)$/.test(RegExp.lastMatch))
                 return result("keyword");
 
-            if (this._originKind == "native" && /^(native|restricted)$/.test(RegExp.lastMatch))
+            if (this._originKind == "native" && /^(native)$/.test(RegExp.lastMatch))
                 return result("keyword");
 
             return result("identifier");

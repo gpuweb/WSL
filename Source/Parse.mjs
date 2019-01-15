@@ -1518,25 +1518,6 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
         return parseNativeFunc(stage);
     }
 
-    function parseRestrictedFuncDef()
-    {
-        let maybeError = consume("restricted");
-        if (maybeError instanceof WSyntaxError)
-            return maybeError;
-        let result;
-        if (tryConsume("native")) {
-            result = parseNativeFunc();
-            if (result instanceof WSyntaxError)
-                return result;
-        } else {
-            result = parseFuncDef();
-            if (result instanceof WSyntaxError)
-                return result;
-        }
-        result.isRestricted = true;
-        return result;
-    }
-
     function parseEnumMember()
     {
         let name = consumeKind("identifier");
@@ -1600,11 +1581,6 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
             if (native instanceof WSyntaxError)
                 throw native;
             program.add(native);
-        } else if (originKind == "native" && token.text == "restricted") {
-            let restrictedFuncDef = parseRestrictedFuncDef();
-            if (restrictedFuncDef instanceof WSyntaxError)
-                throw restrictedFuncDef;
-            program.add(restrictedFuncDef);
         } else if (token.text == "struct") {
             let struct = parseStructType();
             if (struct instanceof WSyntaxError)
