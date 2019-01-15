@@ -1660,7 +1660,7 @@ To reduce a function call by one step:
     #. For each parameter of the function, from left to right:
            
         #. Lookup the address of that parameter
-        #. Emit a store of the value of the corresponding argument to that address, of a size appropriate to the type of it
+        #. Emit a store of the value of the corresponding argument to that address, of a size appropriate to the type of it. That store is po-after any other store emitted by this step for previous parameters.
         #. Modify the new environment to have a binding from that parameter name to that address
 
     #. Make a block statement from the body of the function, annotated with this new environment
@@ -1725,12 +1725,12 @@ Memory locations
 .. The next paragraph was copied verbatim from the source of the Vulkan spec.
 
 A memory location identifies unique storage for 8 bits of data.
-Memory operations access a _set of memory locations_ consisting of one or
+Memory operations access a set of memory locations consisting of one or
 more memory locations at a time, e.g. an operation accessing a 32-bit
 integer in memory would read/write a set of four memory locations.
 Two sets of memory locations overlap if the intersection of their sets of
 memory locations is non-empty.
-A memory operation must: not affect memory at a memory location not within
+A memory operation must not affect memory at a memory location not within
 its set of memory locations.
 
 Memory events and program order
@@ -1752,13 +1752,11 @@ There are a few possible such events:
     Add a note here giving an informal mapping of these to Vulkan/MSL/HLSL.
 
 There is furthermore a total order ``po`` (program order) on all such events by any given thread. An event is before another by ``po`` if it is emitted by an
-execution rule that is executed by this thread before the rule that emitted the other event.
+execution rule that is executed by this thread before the rule that emitted the other event. Additionally the store events emitted by the call execution rule
+are ordered by ``po`` in the order of the corresponding parameters (as written in that rule).
 
 .. note::
-    ``po`` is guaranteed to be a total order for a given thread because no execution rule emits more than one memory event.
-
-.. todo::
-    Verify that is true. I think the current rules treat large stores as several accesses, instead of one access to multiple memory location. It should be fixed.
+    ``po`` is guaranteed to be a total order for a given thread because the call rule is the only one that emits several memory events.
 
 .. todo::
     Rewrite the rest of the model here, translating the kinds of atomics provided; and formalizing what we mean about races.
