@@ -138,6 +138,7 @@ export default class ReturnChecker extends Visitor {
                 return this.returnStyle.HasntReturnedYet;
             }
         }
+        return this.returnStyle.HasntReturnedYet;
     }
 
     visitSwitchStatement(node)
@@ -179,6 +180,11 @@ export default class ReturnChecker extends Visitor {
     visitBreak(node)
     {
         return this.returnStyle.DefinitelyDoesntReturn;
+    }
+
+    visitVariableDecl(node)
+    {
+        return this.returnStyle.HasntReturnedYet;
     }
 
     visitContinue(node)
