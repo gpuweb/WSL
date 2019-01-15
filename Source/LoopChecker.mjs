@@ -40,7 +40,7 @@ export default class LoopChecker extends Visitor {
 
     visitFuncDef(node)
     {
-        if (this._loopDepth != 0)
+        if (this._loopDepth != 0 || this._switchDepth != 0)
             throw new WTypeError(node.origin.originString, "LoopChecker does not understand nested functions.");
         super.visitFuncDef(node);
     }
