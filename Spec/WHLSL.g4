@@ -151,7 +151,7 @@ enumMember: Identifier ('=' constexpression)? ;
 
 numthreadsSemantic: NUMTHREADS '(' IntLiteral ',' IntLiteral ',' IntLiteral ')' ;
 
-funcDef: RESTRICTED? funcDecl block;
+funcDef: funcDecl block;
 funcDecl
     : (VERTEX | FRAGMENT | ('[' numthreadsSemantic ']' COMPUTE)) type Identifier parameters (':' semantic)?
     | type (Identifier | OperatorName) parameters (':' semantic)?

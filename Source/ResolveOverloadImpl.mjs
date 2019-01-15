@@ -59,16 +59,6 @@ export function resolveOverloadImpl(functions, argumentTypes, returnType, allowE
     successes = successes.filter(
         overload => overload.unificationContext.conversionCost == minimumConversionCost);
 
-    // If any of the signatures are restricted then we consider those first. This is an escape mechanism for
-    // built-in things.
-    // FIXME: It should be an error to declare a function that is at least as specific as a restricted function.
-    // https://bugs.webkit.org/show_bug.cgi?id=176580
-    let hasRestricted = successes.reduce(
-        (result, overload) => result || overload.func.isRestricted,
-        false);
-    if (hasRestricted)
-        successes = successes.filter(overload => overload.func.isRestricted);
-
     // We are only interested in functions that are at least as specific as all of the others. This means
     // that they can be "turned around" and applied onto all of the other functions in the list.
     let prunedSuccesses = [];

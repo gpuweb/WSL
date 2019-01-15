@@ -49,7 +49,6 @@ export default class StatementCloner extends Rewriter {
             node.parameters.map(parameter => parameter.visit(this)),
             node.body.visit(this),
             node.isCast, node.shaderType, attributeBlock);
-        result.isRestricted = node.isRestricted;
         return result;
     }
 
@@ -60,7 +59,6 @@ export default class StatementCloner extends Rewriter {
             node.returnType.visit(this),
             node.parameters.map(parameter => parameter.visit(this)),
             node.isCast, node.stage);
-        result.isRestricted = node.isRestricted;
         return result;
     }
 
