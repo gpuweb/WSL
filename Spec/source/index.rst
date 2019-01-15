@@ -804,7 +804,7 @@ A type can either be:
     - A structure type, defined by its name
     - An enum type, defined by its name
     - ``void``
-    - An array with an associated right-value type and a size (a number of elements)
+    - An array with an associated right-value type and a size (a number of elements). The size must be a positive integer that fits in 32 bits
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
 
