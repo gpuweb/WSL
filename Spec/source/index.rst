@@ -379,7 +379,7 @@ Keywords and punctuation
 The following strings are reserved keywords of the language:
 
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Top level                     | struct typedef enum operator vertex fragment native restricted space compute numthreads |
+| Top level                     | struct typedef enum operator vertex fragment space compute numthreads                   |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Control flow                  | if else switch case default while do for break continue fallthrough return trap         |
 +-------------------------------+-----------------------------------------------------------------------------------------+
@@ -393,7 +393,7 @@ The following strings are reserved keywords of the language:
 |                               | SV_InnerCoverage SV_Target SV_Depth SV_Coverage SV_DispatchThreadId SV_GroupID          |
 |                               | SV_GroupIndex SV_GroupThreadID attribute register specialized                           |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Reserved for future extension | protocol auto const static                                                              |
+| Reserved for future extension | protocol auto const static restricted native                                            |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
 .. todo::
