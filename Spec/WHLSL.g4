@@ -97,11 +97,10 @@ Identifier: ValidIdentifier ;
 // Note: this currently excludes unicode, but allows digits in the middle of identifiers. We could easily restrict or extend this definition. to bikeshed
 
 OperatorName
-    : 'operator' ('>>' | '<<' | '+' | '-' | '*' | '/' | '%' | '&&' | '||' | '&' | '^' | '|' | '>=' | '<=' | '==' | '<' | '>' | '++' | '--' | '!' | '~' | '[]' | '[]=' | '&[]')
+    : 'operator' ('>>' | '<<' | '+' | '-' | '*' | '/' | '%' | '&&' | '||' | '&' | '^' | '|' | '>=' | '<=' | '==' | '!=' | '<' | '>' | '++' | '--' | '!' | '~' | '[]' | '[]=' | '&[]')
     | 'operator&.' ValidIdentifier
     | 'operator.' ValidIdentifier '='
     | 'operator.' ValidIdentifier ;
-// Note: operator!= is not user-definable, it is automatically derived from operator==
 
 /*
  * Parser: Top-level

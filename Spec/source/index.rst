@@ -422,7 +422,7 @@ An identifier is any sequence of characters or underscores, that does not start 
 
 Operator names can be either of the 4 following possibilities:
 
-- the string ``operator``, followed immediately with one of the following strings: ``>>``, ``<<``, ``+``, ``-``, ``*``, ``/``, ``%``, ``&&``, ``||``, ``&``, ``|``, ``^``, ``>=``, ``<=``, ``>``, ``<``, ``++``, ``--``, ``!``, ``~``, ``[]``, ``[]=``, ``&[]``.
+- the string ``operator``, followed immediately with one of the following strings: ``>>``, ``<<``, ``+``, ``-``, ``*``, ``/``, ``%``, ``&&``, ``||``, ``&``, ``|``, ``^``, ``>=``, ``<=``, ``==``, ``!=``, ``>``, ``<``, ``++``, ``--``, ``!``, ``~``, ``[]``, ``[]=``, ``&[]``.
 - the string ``operator.`` followed immediately with what would be a valid identifier x. We call this token a 'getter for x'.
 - the string ``operator.`` followed immediately with what would be a valid identifier x, followed immediately with the character ``=``. We call this token 'a setter for x'.
 - the string ``operator&.`` followed immediately with what would be a valid identifier x. We call this token an 'address taker for x'.
@@ -589,9 +589,6 @@ WHLSL matches the precedence and associativity of operators from C++, with one e
 so that they cannot be chained. Chaining them has sufficiently surprising results that it is not a clear
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.
-
-There is exactly one piece of syntactic sugar in the above rules: the ``!=`` operator.
-``e0 != e1`` is equivalent with ``! (e0 == e1)``.
 
 .. productionlist::
     maybeEffectfulExpr: (`effAssignment` ("," `effAssignment`)*)?

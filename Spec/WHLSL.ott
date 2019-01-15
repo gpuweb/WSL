@@ -273,44 +273,8 @@ s --> s' :: :: desugaring_stmt :: '' {{com Desugaring statements}} by
     -------------------------------------------------------------------------------------- :: multiple_vdecls
     { s0..sn tval vdecl0, vdecl1, .., vdeclk; s'0..s'm} --> {s0..sn tval vdecl0; tval vdecl1, .., vdeclk; s'0..s'm}
 
-    ------------------------------------------------------------- :: initialized_vdecl
-    { s0..sn tval x = e; s'0..s'm} --> {s0..sn tval x; x = e; s'0..s'm}
-
-% TODO: replace foo(e0,..,en) by foo<>(e0,..,en)
-% Both in expressions, and in top-level declarations
 % TODO: also desugar syntactic types that have an addressSpace as a prefix.
 % Also make it an error to have an addressSpace and neither array ref nor ptr.
-defn
-e --> e' :: :: desugaring_expr :: '' {{com Desugaring expressions}} by
-    
-    ----------------------- :: not_equals_operator
-    e != e' --> ! (e == e')
-
-%   defns
-%   well_formed :: '' ::=
-%   defn
-%   G |- well_formed ( td ) :: :: top_level :: '' by
-%
-%       G |- {s0..sn} : {Return tval}
-%       ---------------------------------- :: func_trivial
-%       G |- well_formed(tval f<()>() {s0..sn})
-%
-%       G[x0 -> LVal(tval0, thread)] |- well_formed (tval f<()>(tval1 x1, .., tvalm xm) {s0..sn})
-%       -------------------------------------------------------------------- :: func_param
-%       G |- well_formed (tval f<()>(tval0 x0, tval1 x1, .., tvalm xm) {s0..sn})
-%
-%       G[x -> tval'] |- well_formed (tval f<(tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
-%       ---------------------------------------------------------------------------------------- :: func_constexpr
-%       G |- well_formed (tval f<(tval' x, tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
-%
-%       y0 -> Protocol namedSigs0 in G /\ .. /\ yi -> Protocol namedSigsi in G
-%       namedSigs = U namedSigs0 .. namedSigsi
-%       tid = makeFresh()
-%       G[x -> TVar tid namedSigs] |- well_formed (tval f<(tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn})
-%       ------------------------------------------------------------------------------------------------------ :: func_tvar
-%       G |- well_formed (tval f<(x : y0 + .. + yi, tparam0, .., tparamk)> (tval0 x0, .., tvalm xm) {s0..sn}) 
-%       % TODO: maybe add some check here that the different protocols are not incompatible.
-%       % Can we even have incompatible protocols?
 
 defns
 typing :: '' ::=
