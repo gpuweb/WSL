@@ -36,6 +36,11 @@ export default class HighZombieFinder extends Visitor {
         throw new Error(node.origin.originString + ": High zombie: " + node);
     }
 
+    visitReadModifyWriteExpression(node)
+    {
+        this._found(node);
+    }
+
     visitDotExpression(node)
     {
         this._found(node);
@@ -44,11 +49,6 @@ export default class HighZombieFinder extends Visitor {
     visitIndexExpression(node)
     {
         this._found(node);
-    }
-
-    visitCallExpression(node)
-    {
-        super.visitCallExpression(node);
     }
 }
 
