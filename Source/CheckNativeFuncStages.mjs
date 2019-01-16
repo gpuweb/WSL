@@ -41,8 +41,10 @@ export function checkNativeFuncStages(program)
 
         visitCallExpression(node)
         {
-            if ((node.func instanceof NativeFunc) && node.func.stage && node.func.stage != this._entryPoint.shaderType)
-                throw new WTypeError(node.origin, `Cannot call ${node.func.stage} function ${node.func.name} inside ${this._entryPoint.shadeType} entry point`);
+            if ((node.func == program.intrinsics.ddx || node.func == program.intrinsics.ddy) && this._entryPoint.shaderType != "fragment")
+                throw new WTypeError(node.origin, `Cannot call ${node.func.name} inside ${this._entryPoint.shaderType} entry point`);
+            if ((node.func == program.intrinsics.allMemoryBarrierWithGroupSync || node.func == program.intrinsics.deviceMemoryBarrierWithGroupSync || node.func == program.intrinsics.groupMemoryBarrierWithGroupSync) && this._entryPoint.shaderType != "compute")
+                throw new WTypeError(node.origin, `Cannot call ${node.func.name} inside ${this._entryPoint.shaderType} entry point`);
             node.func.visit(this);
         }
     }

@@ -818,7 +818,7 @@ export let standardLibrary = (function() {
             }
 
             for (let nativeFunction of nativeFragmentFunctions) {
-                print(`native fragment float ${nativeFunction}(float);`);
+                print(`native float ${nativeFunction}(float);`);
                 print(`half ${nativeFunction}(half x) {`);
                 print(`    return half(${nativeFunction}(float(x)));`);
                 print(`}`);
@@ -1803,9 +1803,9 @@ export let standardLibrary = (function() {
         }
         print();
 
-        print(`native compute void AllMemoryBarrierWithGroupSync();`);
-        print(`native compute void DeviceMemoryBarrierWithGroupSync();`);
-        print(`native compute void GroupMemoryBarrierWithGroupSync();`);
+        print(`native void AllMemoryBarrierWithGroupSync();`);
+        print(`native void DeviceMemoryBarrierWithGroupSync();`);
+        print(`native void GroupMemoryBarrierWithGroupSync();`);
         print();
 
         for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]) {

@@ -30,17 +30,15 @@
 import { Func } from "./Func.mjs";
 
 export default class NativeFunc extends Func {
-    constructor(origin, name, returnType, parameters, isCast = false, stage = null)
+    constructor(origin, name, returnType, parameters, isCast = false)
     {
         super(origin, name, returnType, parameters, isCast);
-        this._stage = stage;
         this.implementation = null;
         this._implementationData = null;
         this.visitImplementationData = (implementationData, visitor) => null;
     }
 
     get isNative() { return true; }
-    get stage() { return this._stage; }
 
     get implementationData() { return this._implementationData; }
     set implementationData(newImplData) { this._implementationData = newImplData; }
@@ -48,8 +46,6 @@ export default class NativeFunc extends Func {
     toDeclString()
     {
         let result = "native ";
-        if (this.stage)
-            result += `${this.stage} `;
         result += super.toDeclString();
         return result;
     }

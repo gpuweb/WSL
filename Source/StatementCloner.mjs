@@ -33,6 +33,7 @@ import { FuncDef } from "./FuncDef.mjs";
 import { FuncNumThreadsAttribute } from "./FuncNumThreadsAttribute.mjs";
 import { NativeFunc } from "./NativeFunc.mjs";
 import { NativeType } from "./NativeType.mjs";
+import { Node } from "./Node.mjs";
 import { Rewriter } from "./Rewriter.mjs";
 import { StructType } from "./StructType.mjs";
 import { TypeDef } from "./TypeDef.mjs";
@@ -48,7 +49,7 @@ export default class StatementCloner extends Rewriter {
             node.returnType.visit(this),
             node.parameters.map(parameter => parameter.visit(this)),
             node.body.visit(this),
-            node.isCast, node.shaderType, attributeBlock);
+            node.isCast, node.shaderType, Node.visit(node.semantic, this), attributeBlock);
         return result;
     }
 
@@ -58,7 +59,7 @@ export default class StatementCloner extends Rewriter {
             node.origin, node.name,
             node.returnType.visit(this),
             node.parameters.map(parameter => parameter.visit(this)),
-            node.isCast, node.stage);
+            node.isCast);
         return result;
     }
 

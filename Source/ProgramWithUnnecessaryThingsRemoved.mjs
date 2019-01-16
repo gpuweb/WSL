@@ -30,6 +30,7 @@
 import { Anything } from "./NameContext.mjs";
 import { NameFinder } from "./NameFinder.mjs";
 import { Program } from "./Program.mjs";
+import { StatementCloner } from "./StatementCloner.mjs";
 
 export function programWithUnnecessaryThingsRemoved(program)
 {
@@ -51,7 +52,13 @@ export function programWithUnnecessaryThingsRemoved(program)
     nameFinder.add("uint");
     nameFinder.add("float");
     nameFinder.add("vector");
+    nameFinder.add("matrix");
     nameFinder.add("sampler");
+    nameFinder.add("ddx");
+    nameFinder.add("ddy");
+    nameFinder.add("AllMemoryBarrierWithGroupSync");
+    nameFinder.add("DeviceMemoryBarrierWithGroupSync");
+    nameFinder.add("GroupMemoryBarrierWithGroupSync");
 
     // Pull in things as necessary.
     while (nameFinder.worklist.length) {
@@ -61,9 +68,10 @@ export function programWithUnnecessaryThingsRemoved(program)
     }
 
     let result = new Program();
+    let cloner = new StatementCloner();
     for (let name of nameFinder.set) {
         for (let thing of program.globalNameContext.underlyingThings(Anything, name))
-            result.add(thing);
+            result.add(thing.visit(cloner));
     }
 
     return result;

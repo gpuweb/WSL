@@ -1476,7 +1476,7 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
         return result;
     }
 
-    function parseNativeFunc(stage = null)
+    function parseNativeFunc()
     {
         let func = parseFuncDecl();
         if (func instanceof WSyntaxError)
@@ -1487,8 +1487,8 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
         if (maybeError instanceof WSyntaxError)
             return maybeError;
         if (func.shaderType || func.semantic)
-            return fail("Native functions can't be entry points or have semantics.");
-        return new NativeFunc(func.origin, func.name, func.returnType, func.parameters, func.isCast, stage);
+            return fail(`Native functions can't be entry points or have semantics: ${func}.`);
+        return new NativeFunc(func.origin, func.name, func.returnType, func.parameters, func.isCast);
     }
 
     function parseNative()
@@ -1512,10 +1512,7 @@ export function parse(program, origin, originKind, lineNumberOffset, text)
                 return new MatrixType(origin, name.text, args);
             return new NativeType(origin, name.text, args);
         }
-        let stage = tryConsume("vertex", "fragment", "compute");
-        if (stage)
-            stage = stage.text;
-        return parseNativeFunc(stage);
+        return parseNativeFunc();
     }
 
     function parseEnumMember()
