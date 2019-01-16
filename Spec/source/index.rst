@@ -854,7 +854,7 @@ To check a do-while statement:
 #. Check that the condition is well-typed, of type ``bool``
 #. Check that the body of the loop is a well-typed statement whose behaviours we will call B
 #. Check that B does not contain a return of a pointer type, or of an array reference type
-#. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing.
+#. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing
 #. Then the do-while statement is well-typed, and its behaviours is this new set
 
 .. math::
@@ -1469,8 +1469,9 @@ Array references are actually bounds-checked fat-pointers.
 The ``&`` and ``*`` operators simply convert between left-values and pointers.
 To reduce ``& e``:
 
-#. If ``e`` is an lvalue, replace the whole expression by a pointer to the same address.
-#. Else reduce ``e``.
+#. If ``e`` is a valid lvalue, replace the whole expression by a pointer to the same address
+#. Else if ``e`` is an invalid lvalue, either replace the whole expression with null, or trap
+#. Else reduce ``e``
 
 Symmetrically, to reduce ``* e``:
 
@@ -1494,6 +1495,7 @@ More precisely, to reduce ``@ e``:
 
 #. If ``e`` is an LValue and was of type LValue of an array of size ``n`` during typing, replace it by an array reference to the same address, same address space, and with a bound of ``n``
 #. Else if it is an LValue and was of type LValue of a non-array type during typing, replace it by an array reference to the same address, same address space, and with a bound of ``1``
+#. Else if it is an invalid lvalue, either replace the whole expression by null, or trap
 #. Else reduce it
 
 There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
