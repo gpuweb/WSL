@@ -597,6 +597,8 @@ so that they cannot be chained. Chaining them has sufficiently surprising result
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.
 
+``x -> y`` is purely syntactic sugar for ``(*x).y``, so we will ignore the ``->`` operator in the rest of this specification.
+
 .. productionlist::
     maybeEffectfulExpr: (`effAssignment` ("," `effAssignment`)*)?
     effAssignment: `exprPrefix` `assignOperator` `expr` | `effPrefix`
