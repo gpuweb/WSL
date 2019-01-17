@@ -969,7 +969,7 @@ Literals are always well-typed and are of any type that can contain them (depend
 
 The type of an expression in parentheses, is the type of the expression in the parentheses
 
-A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the type of its second operand.
+A comma expression is well-typed if both of its operands are well-typed and right-value types. In that case, its type is the type of its second operand.
 
 .. math::
     :nowrap:
