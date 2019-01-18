@@ -662,6 +662,7 @@ For each top-level declaration:
    #. If there is already a type of the same name in the environment, the program is invalid
    #. If two or more fields of the struct have the same name, the program is invalid
    #. Add the struct to the environment as a new type.
+
    #. For each field of the struct:
 
         #. Add to the environment a mapping from the name ``operator.field`` (where ``field`` is replaced by the name of the field) to a function declaration with one argument,
@@ -746,6 +747,7 @@ For each top-level declaration:
     My check for anders seems a bit more complete than the one in the implementation.
     In particular, I reject operator&.foo on array refs, and operator&[] on pointers.
     Get the implementation(s) and the spec closer.
+    New: operator&[] on pointers seem to actually make sense, it is on array refs that it is confusing.
 
 Other validation steps
 ----------------------
@@ -814,6 +816,7 @@ More formally we define two mutually recursive judgments: "In typing environment
 A type can either be:
 
 - A left-value type with an associated right-value type and an address space
+- An abstract left-value type with an associated right-value type
 - A right-value type, which can be any of the following:
     
     - A basic type such as ``bool`` or ``uint``
@@ -823,6 +826,9 @@ A type can either be:
     - An array with an associated right-value type and a size (a number of elements). The size must be a positive integer that fits in 32 bits
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
+
+Informally, a left-value type is anything whose address can be taken, whereas an abstract left-value type is anything that can be assigned to.
+Any value with a left-value type of non-constant address space can be given an abstract left-value type, and any value with an abstract left-value type (or left-value type even with a constant address space) can be given a right-value type, but the opposite to those is not true.
 
 A behaviour is any of the following:
 
@@ -895,7 +901,7 @@ To check a switch statement:
 
 The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.
 
-The statement ``return e;`` is well-typed if ``e`` is a well-typed expression of type T and its behaviours is then {Return T}.
+The statement ``return e;`` is well-typed if ``e`` is a well-typed expression with a right-value type T and its behaviours is then {Return T}.
 
 .. The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
 
@@ -944,9 +950,6 @@ To check a block:
         \ottdruleblock{}
     \end{align*}
 
-.. note::
-    The fact that Fallthrough is forbidden in the remnant of the block is purely to forbid some trivial case of dead code.
-
 .. todo::
     Change the variable declaration ott rules to support threadgroup local variables
 
@@ -962,14 +965,18 @@ Finally a statement that consists of a single expression (followed by a semicolo
 Typing expressions
 """"""""""""""""""
 
-Literals are always well-typed and are of any type that can contain them (depending on which is required for validation to succeed).
-``true`` and ``false`` are always boolean.
+Literals are always well-typed and of the following right-value types:
+
+- ``true`` and ``false`` are always boolean.
+- float literals are of any floating-point right-value type
+- unsigned int literals (marked by an ``u`` at the end) are of any unsigned integer type large enough to contain them
+- int literals are of any integer type large enough to contain them
 
 ``null`` is always well-typed and its type can be any pointer or array reference type (depending on which is required for validation to succeed).
 
 The type of an expression in parentheses, is the type of the expression in the parentheses
 
-A comma expression is well-typed if both of its operands are well-typed and right-value types. In that case, its type is the type of its second operand.
+A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.
 
 .. math::
     :nowrap:
@@ -1006,9 +1013,8 @@ To check that an assignment is well-typed:
 
 #. Check that the expression on the right side of the ``=`` is well-typed with a right-value type "tval"
 #. Check that "tval" is neither a pointer type nor an array reference type
-#. Check that the expression on the left side is well-typed with a left-value type
-#. Check that the right-value type associated with this left-value type is "tval"
-#. Check that the address space associated with this left-value type is not ``constant``
+#. Check that the expression on the left side is well-typed with an abstract left-value type
+#. Check that the right-value type associated with this abstract left-value type is "tval"
 #. Then the assignment is well-typed, and its type is "tval"
 
 .. math::
@@ -1020,7 +1026,9 @@ To check that an assignment is well-typed:
 
 A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
 
-If an expression is well-typed and its type is an left-value type, it can also be treated as if it were of the associated right-value type.
+If an expression is well-typed and its type is an abstract left-value type, it can also be treated as if it were of the associated right-value type.
+If an expression is well-typed and its type is a left-value type, and its address space is not constant, it can also be treated as if it were of the associated abstract left-value type.
+If an expression is well-typed and its type is a left-value type, and its address space is constant, it can also be treated as if it were of the associated right-value type.
 
 An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed with a left-value type (respectively of a pointer type).
 The associated right-value types and address spaces are left unchanged by these two operators.
@@ -1043,6 +1051,30 @@ The associated right-value types and address spaces are left unchanged by this o
         \ottdruletakeXXrefXXlval{}
     \end{align*}
 
+To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an identifier ``foo``):
+
+#. If ``e`` is well-typed
+
+    #. If ``e`` has a left-value type, and there is a function called ``operator&.foo`` with a first parameter whose type is a pointer to the same right-value type with the same address space,
+        then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
+    #. Else if ``e`` has an abstract left-value type, and there is a function called ``operator.foo=`` with a first parameter whose type is the corresponding right-value type,
+        then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.
+    #. Else if there is a function called ``operator.foo`` with a parameter whose type matches the type of ``e``,
+        then the whole expression is well-typed and has the return type of that function.
+
+#. Else if ``e`` is an identifier
+
+    #. Check that there is an enum with that name in the global environment
+    #. Check that this enum has an element named ``foo``
+    #. Then ``e.foo`` is well-typed, with the type of that enum
+
+.. todo::
+    This ordering of first checking for getters/setters/address-takers and only looking at enums if e is not a well-typed expression matches the reference implementation,
+    but I have no idea whether it was a deliberate decision or something we should revisit.
+
+.. todo::
+    Fix the whole array dereference thing for index getter/setter/ander.
+
 To check that an array dereference ``e1[e2]`` is well-typed:
 
 #. Check that ``e2`` is well-typed with the type ``uint32``
@@ -1050,7 +1082,7 @@ To check that an array dereference ``e1[e2]`` is well-typed:
 #. If the type of ``e1`` is an array of elements of type ``T``, then the whole expression is well-typed and its type is ``T``.
 #. Else if the type of ``e1`` is a left-value type, whose associated type is an array of elements of type ``T``,
    the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
-#. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, the same address space as the type of ``e1``
+#. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, and the same address space as the type of ``e1``
 #. Else the expression is ill-typed
 
 .. math::
@@ -1238,14 +1270,6 @@ Here is how to reduce a ``Join(s)`` statement:
    #. Replace the ``Join`` statement by its argument
 
 #. Else reduce its argument
-
-.. math::
-    :nowrap:
-
-    \begin{align*}
-        \ottdrulejoinXXelim{}\\
-        \ottdrulejoinXXreduce{}
-    \end{align*}
 
 .. note:: Popping the last value from the control flow stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.
 
@@ -1453,14 +1477,6 @@ To reduce a ``JoinExpr`` by one step:
 
 #. If its operand is not a lvalue, and can be reduced, then reduce it by one step
 #. Else pop one element from the control stack, and replace the whole expression by the operand.
-
-.. math::
-    :nowrap:
-
-    \begin{align*}
-        \ottdrulejoinXXexprXXreduce{}\\
-        \ottdrulejoinXXexprXXelim{}
-    \end{align*}
 
 Pointers and references
 """""""""""""""""""""""

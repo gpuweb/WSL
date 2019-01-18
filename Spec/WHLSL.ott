@@ -390,7 +390,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     ------------ :: parens
     G |- (e) : t
 
-    G |- e : tval
+    G |- e : t
     G |- e' : tval'
     ------------------ :: comma
     G |- e, e' : tval'

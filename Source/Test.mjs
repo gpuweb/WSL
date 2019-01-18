@@ -5673,9 +5673,9 @@ tests.recursiveSetters = function()
             int a;
             int b;
         }
-        int operator.c(Bar bar) { return bar.a + bar.b; }
+        int operator.c(Bar bar) { return bar.a; }
         Bar operator.bar(Foo foo) { Bar b; b.a = foo.x; b.b = foo.y; return b; }
-        Bar operator.c=(Bar bar, int newval) { bar.a = newval - bar.b; return bar; }
+        Bar operator.c=(Bar bar, int newval) { bar.a = newval; return bar; }
         Foo operator.bar=(Foo foo, Bar newval) { foo.x = newval.a; foo.y = newval.b; return foo; }
         test int f() {
             Foo foo;
@@ -5684,7 +5684,7 @@ tests.recursiveSetters = function()
             return foo.x*10 + foo.y;
         }
     `);
-    checkInt(program, callFunction(program, "f", []), 53);
+    checkInt(program, callFunction(program, "f", []), 83);
 }
 
 tests.pointerIndexGetter = function()
