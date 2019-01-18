@@ -398,6 +398,7 @@ The following strings are reserved keywords of the language:
 
 .. todo::
     Decide whether we support the trap statement or not, and harmonize the different sections of the spec in that regard.
+    https://github.com/gpuweb/WHLSL/issues/301 
 
 ``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
 
@@ -450,6 +451,7 @@ A valid compilation unit is made of a sequence of 0 or more top-level declaratio
 
 .. todo:: We may want to also allow variable declarations at the top-level if it can easily be supported by all of our targets. (Myles: We can emulate it an all the targets, but the targets themselves only allow constant variables
     at global scope. We should follow suit.)
+    https://github.com/gpuweb/WHLSL/issues/310
 
 .. productionlist::
     typedef: "typedef" `Identifier` "=" `type` ";"
@@ -644,6 +646,7 @@ A function declaration for the purpose of this mapping is characterised by a tup
 
 .. todo::
     Explain how this environment starts with elements from the std lib.
+    related to https://github.com/gpuweb/WHLSL/issues/294
 
 For each top-level declaration:
 
@@ -724,7 +727,7 @@ For each top-level declaration:
 
         #. It must have exactly two arguments
         #. Its return type must be a pointer type
-        #. Its first argument must be an array reference type
+        #. Its first argument must be a pointer type
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
 
    #. Else if the name of the function is ``operator++`` or ``operator--``
@@ -742,12 +745,6 @@ For each top-level declaration:
 
    #. If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set
    #. Otherwise add a new mapping from that function name to a singleton set containing that declaration
-
-.. todo::
-    My check for anders seems a bit more complete than the one in the implementation.
-    In particular, I reject operator&.foo on array refs, and operator&[] on pointers.
-    Get the implementation(s) and the spec closer.
-    New: operator&[] on pointers seem to actually make sense, it is on array refs that it is confusing.
 
 Other validation steps
 ----------------------
@@ -952,6 +949,7 @@ To check a block:
 
 .. todo::
     Change the variable declaration ott rules to support threadgroup local variables
+    https://github.com/gpuweb/WHLSL/issues/63
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and its set of behaviours is then {Nothing}.
 
@@ -1071,6 +1069,7 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
 .. todo::
     This ordering of first checking for getters/setters/address-takers and only looking at enums if e is not a well-typed expression matches the reference implementation,
     but I have no idea whether it was a deliberate decision or something we should revisit.
+    https://github.com/gpuweb/WHLSL/issues/312
 
 .. todo::
     Fix the whole array dereference thing for index getter/setter/ander.

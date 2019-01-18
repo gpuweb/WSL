@@ -5648,7 +5648,7 @@ tests.anderWithBadIndex = function()
 }
 
 // FIXME: currently the variable of type Foo wins over the enum, and there is no error message.
-// Is this wanted?
+// Is this wanted? https://github.com/gpuweb/WHLSL/issues/312
 tests.structFieldEnumElemClash = function()
 {
     let program = doPrep(`
