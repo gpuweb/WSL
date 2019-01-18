@@ -1030,7 +1030,7 @@ The associated right-value types and address spaces are left unchanged by this o
 
 .. note::
     The dynamic behaviour depends on whether the expression is a left-value array type or not, but it makes no difference during validation.
-    ``@x`` for a variable ``x`` with a non-array type is valid, it will merely produce an array reference for which only the index 0 can be used without trapping.
+    ``@x`` for a variable ``x`` with a non-array type is valid, it will merely produce an array reference for which only the index 0 can be used.
 
 .. math::
     :nowrap:

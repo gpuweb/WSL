@@ -5647,6 +5647,46 @@ tests.anderWithBadIndex = function()
     `), e => e instanceof Error);
 }
 
+// FIXME: currently the variable of type Foo wins over the enum, and there is no error message.
+// Is this wanted?
+tests.structFieldEnumElemClash = function()
+{
+    let program = doPrep(`
+        struct Foo { int x; }
+        enum Bar { x = 42, y = 0 }
+        test int f() {
+            Foo Bar;
+            return Bar.x;
+        }
+    `);
+    checkInt(program, callFunction(program, "f", []), 0);
+}
+
+tests.recursiveSetters = function()
+{
+    let program = doPrep(`
+        struct Foo {
+            int x;
+            int y;
+        }
+        struct Bar {
+            int a;
+            int b;
+        }
+        int operator.c(Bar bar) { return bar.a + bar.b; }
+        Bar operator.bar(Foo foo) { Bar b; b.a = foo.x; b.b = foo.y; return b; }
+        Bar operator.c=(Bar bar, int newval) { bar.a = newval - bar.b; return bar; }
+        Foo operator.bar=(Foo foo, Bar newval) { foo.x = newval.a; foo.y = newval.b; return foo; }
+        test int f() {
+            Foo foo;
+            foo.x = foo.y = 3;
+            foo.bar.c = 8;
+            return foo.x*10 + foo.y;
+        }
+    `);
+    checkInt(program, callFunction(program, "f", []), 53);
+}
+
 tests.pointerIndexGetter = function()
 {
     checkFail(
