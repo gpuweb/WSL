@@ -1071,33 +1071,25 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
     but I have no idea whether it was a deliberate decision or something we should revisit.
     https://github.com/gpuweb/WHLSL/issues/312
 
-.. todo::
-    Fix the whole array dereference thing for index getter/setter/ander.
-
 To check that an array dereference ``e1[e2]`` is well-typed:
 
 #. Check that ``e2`` is well-typed with the type ``uint32``
 #. Check that ``e1`` is well-typed 
-#. If the type of ``e1`` is an array of elements of type ``T``, then the whole expression is well-typed and its type is ``T``.
-#. Else if the type of ``e1`` is a left-value type, whose associated type is an array of elements of type ``T``,
-   the whole expression is well-typed, and its type is a left-value with an associated type of ``T`` and the same address space as the type of ``e1``
-#. Else if the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, and the same address space as the type of ``e1``
+#. If the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, and the same address space as the type of ``e1``
+#. Else if ``e1`` has a left-value type, and there is a function called ``operator&[]`` with a first parameter whose type is a pointer to the same right-value type with the same address space,
+   then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
+#. Else if ``e1`` has an abstract left-value type, and there is a function called ``operator[]=`` with a first parameter whose type is the corresponding right-value type,
+    then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the third parameter of that function.
+#. Else if there is a function called ``operator.[]`` with a parameter whose type matches the type of ``e1``,
+    then the whole expression is well-typed and has the return type of that function.
 #. Else the expression is ill-typed
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \ottdrulearrayXXindexXXrval{}\\
-        \ottdrulearrayXXindexXXlval{}\\
         \ottdrulearrayXXrefXXindex{}
     \end{align*}
-
-.. note::
-    The rules shown above can be applied in two different orders in the case of an array dereference of a left-value of an array.
-    The left-value can either be treated as a right-value (base) array type by the rule lval\_access then the dereferencing can be validated by array\_index\_rval
-    or the dereference can first be validated by array\_index\_lval, and the result then converted to a right-value type by the rule lval\_access.
-    This apparent ambiguity is benign because the result is the same in both cases.
 
 To check that a function call is well-typed:
 
@@ -1118,6 +1110,10 @@ To check that a function call is well-typed:
     A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function ``foo``
     that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
     The programmer can easily make their intent clear with something like ``int x = 42; foo(x);``.
+
+.. todo:
+    This rule for overloading resolution is very different from the implementation, the two should be brought back in sync one way or another.
+    https://github.com/gpuweb/WHLSL/issues/313
 
 .. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
 
@@ -1400,6 +1396,10 @@ We define the following kinds of values:
 - Struct values. These are a sequence of bytes of the right size, and can be interpreted as a tuple of their elements (plus padding bits)
 - Array values. These are also a sequence of bytes of the right size, and can also be interpreted as a sequence of their elements (plus padding bits).
 
+.. note::
+    Abstract left-value types were used in the typing section to represent things that can be assigned to.
+    At runtime they are either left-values, or normal values with a setter applicable to them.
+
 In this section we describe how to reduce each kind of expression to another expression or to a value.
 Left values are the only kind of values that can be further reduced.
 
@@ -1483,18 +1483,37 @@ Pointers and references
 WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
 Array references are actually bounds-checked fat-pointers.
 
-The ``&`` and ``*`` operators simply convert between left-values and pointers.
+The ``&`` and ``*`` operators simply convert between left-values and pointers. ``&`` is a bit more tricky, because it must correctly deal with overloads of the address-taking operator, as well as with array references.
 To reduce ``& e``:
 
 #. If ``e`` is a valid lvalue, replace the whole expression by a pointer to the same address
 #. Else if ``e`` is an invalid lvalue, either replace the whole expression with null, or trap
+#. Else if ``e`` is of the form ``e1.foo`` for some identifier ``foo``:
+
+    #. If ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&.foo``, with an argument which is a pointer to the same address and address-space as ``e1``
+    #. Else if ``e1`` is an invalid lvalue, replace the whole expression by null or trap
+    #. Else reduce ``e1``
+
+#. Else if ``e`` is of the form ``e1[e2]``:
+
+    #. If ``e1`` can be reduced and is not (valid or not) lvalue, reduce it
+    #. Else if ``e2`` can be reduced, reduce it
+    #. ASSERT(``e2`` is a non-negative integer)
+    #. Else if ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&[]``, with a first argument which is a pointer to the same address and address-space as ``e1``, and with a second argument which is ``e2``
+    #. Else if ``e1`` is an invalid lvalue, either replace the whole expression by null or trap
+    #. Else
+
+        #. ASSERT(``e1`` is an array reference)
+        #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a pointer in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
+        #. Else, either trap or replace the whole expression by null
+
 #. Else reduce ``e``
 
-Symmetrically, to reduce ``* e``:
+To reduce ``* e``:
 
-#. If ``e`` is null, then a compliant implementation can either trap or replace the whole expression by an invalid left-value
-#. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address
-#. Else reduce ``e``.
+#. If ``e`` is null, either trap or replace the whole expression by an invalid left-value
+#. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address in the same address-space
+#. Else reduce ``e``
 
 .. math::
     :nowrap:
@@ -1520,30 +1539,29 @@ The ``[]`` dereferencing operator is polymorphic: its first operand can be eithe
 to an array.
 To reduce ``e1[e2]`` by one step:
 
-#. If ``e2`` can be reduced, then reduce it by one step
-#. Else if the first operand is null, a compliant implementation can either trap or replace the whole expression by an invalid left-value
-#. Else if the first operand is an array
+#. If ``e1`` can be reduced and is not a (valid or not) lvalue, reduce it
+#. Else if ``e2`` can be reduced, reduce it
+#. ASSERT(``e2`` is a non-negative integer)
+#. Else if ``e1`` is either null or an invalid lvalue, either trap or replace the whole expression by an invalid left-value
+#. Else if ``e1`` is an array reference:
 
-    #. ASSERT(``e2`` is a non-negative integer value)
-    #. If the value is equal or greater than the size of the array (known from typing information), either trap or replace the whole expression by the default value of the type of elements of the array or replace ``e2`` by a valid in-bounds value and continue
-    #. Else replace the whole expression by the corresponding element of the array
+    #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a left-value in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
+    #. Else, either trap or replace the whole expression by an invalid lvalue
 
-#. Else if the first operand is a left-value
+#. Else if ``e1`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&[]``, with a first argument which is a pointer to the same address and address-space as ``e1``, and with a second argument which is ``e2``
+#. Else, replace the whole expression by a call to ``operator[]`` with a first argument which is ``e1`` and a second argument which is ``e2``
 
-   #. ASSERT(``e2`` is a non-negative integer value)
-   #. If the value is equal or greater than the size of the array pointed to by the left-value (known from typing information), either trap or replace the whole expression by an invalid left-value or replace ``e2`` by a valid in-bounds value and continue
-   #. Offset the address pointed to by the left-value by the product of the stride size (annotated during typing) and ``e2``
-   #. And replace the whole expression by the resulting left-value (without changing its address space)
+The dot operator is used for two purposes: accessing the fields of structs, and getting an element of an enum.
+Additionally, it can be overloaded (through ``operator&.foo``, ``operator.foo=`` and ``operator.foo``).
+To reduce ``e.foo`` for some identifier `foo``:
 
-#. Else if the first operand is an array reference
-
-   #. ASSERT(``e2`` is a non-negative integer value)
-   #. If the value is equal or greater than the size carried by the array reference, trap or replace the whole expression by an invalid left-value or replace ``e2`` by a valid in-bounds value and continue
-   #. Make a left-value with the same address-space as ``e1``, with an address that is the address pointed to by ``e1``, offset by the product of the stride size (annotated during typing) and ``e2``
-   #. And replace the whole expression by it
+#. If ``e`` can be reduced and is not a (valid or not) lvalue, reduce it
+#. Else if ``e`` is an invalid lvalue, either replace the whole expression by an invalid lvalue or trap
+#. Else if ``e`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&.foo``, with an argument that is ``e``
+#. Else, replace the whole expression by a call to ``operator.foo`` with an argument that is ``e``
 
 .. todo::
-    Include the related formal rules
+    Basically all of the ott rules for this section and the next must be redone now that I added the dot operator and overloading of the various getters/setters/anders.
 
 Variables and assignment
 """"""""""""""""""""""""
@@ -1565,14 +1583,22 @@ To reduce an invalid left-value, either trap or replace it by the default value 
 
 To reduce an assignment ``e1 = e2``:
 
-#. If ``e1`` is not a lvalue (valid or not), and can be reduced, reduce it.
-#. Else if ``e2`` can be reduced, reduce it.
-#. Else if ``e1`` is an invalid lvalue, either replace the entire expression by the value on the right of the equal or trap
-#. Else
-   
-    #. ASSERT(``e1`` is a valid lvalue)
+#. If ``e1`` is a lvalue
+
     #. Emit a store to the address of the lvalue, of the value on the right of the equal, of a size appropriate for the type of that value
     #. Replace the entire expression by the value on the right of the equal.
+
+#. Else if ``e1`` is an invalid lvalue
+
+    #. If ``e2`` can be reduced, reduce it
+    #. Else, either replace the whole expression by ``e2`` or trap
+
+#. Else if ``e1`` had a left-value type during typing, reduce it
+#. Else if ``e1`` is of the form ``e3.foo``, replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator.foo=`` with the arguments ``e3`` and ``e2``
+#. Else
+
+    #. ASSERT(``e1`` is of the form ``e3[e4]``)
+    #. Replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator[]=`` with the arguments ``e3``, ``e4``, and ``e2``
 
 .. Should we make the sizes of loads/stores more explicit?
 
