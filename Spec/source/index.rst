@@ -881,6 +881,7 @@ To check a switch statement:
 #. If there is a default, check that there is at least one value in that type which is not covered by the cases
 #. Else check that for all values in that type, there is one case that covers it
 #. Check that the body of each case (and default) is well-typed when treating them as blocks
+#. Check that the behaviours of the last such body does not include Fallthrough
 #. Make a set of behaviours that is the union of the behaviours of all of these bodies
 #. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
 #. Remove Break and Fallthrough from this set (if they are in it) and add Nothing
