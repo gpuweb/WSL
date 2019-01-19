@@ -867,7 +867,8 @@ To check a do-while statement:
     :nowrap:
 
     \begin{align*}
-        \ottdruledoXXwhile{}
+        \ottdruledoXXwhileXXbreak{}\\
+        \ottdruledoXXwhileXXnoXXbreak{}
     \end{align*}
 
 .. note::
@@ -893,7 +894,8 @@ To check a switch statement:
     :nowrap:
 
     \begin{align*}
-       \ottdruleswitch{}\\
+       \ottdruleswitchXXbreak{}\\
+       \ottdruleswitchXXnoXXbreak{}\\
        \ottdrulecase{}\\
        \ottdruledefault{}\\
        \ottdruleswitchXXblock{}
