@@ -859,8 +859,9 @@ To check a do-while statement:
 #. Check that the condition is well-typed, of type ``bool``
 #. Check that the body of the loop is a well-typed statement whose behaviours we will call B
 #. Check that B does not contain a return of a pointer type, or of an array reference type
-#. Make a new set of behaviours from B by removing Break and Continue (if they are present) and adding Nothing
-#. Then the do-while statement is well-typed, and its behaviours is this new set
+#. If Continue is in B, remove it
+#. If Break is in B, remove it and add Nothing to B
+#. Then the do-while statement is well-typed, and its behaviours is B
 
 .. math::
     :nowrap:
@@ -884,7 +885,8 @@ To check a switch statement:
 #. Check that the behaviours of the last such body does not include Fallthrough
 #. Make a set of behaviours that is the union of the behaviours of all of these bodies
 #. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
-#. Remove Break and Fallthrough from this set (if they are in it) and add Nothing
+#. If Fallthrough is in this set, remove it
+#. If Break is in this set, remove it and add Nothing
 #. Then the switch statement is well-typed, and its behaviours is this last set
 
 .. math::
