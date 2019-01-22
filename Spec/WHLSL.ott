@@ -3,8 +3,8 @@ indexvar i, j, k, n, m ::=
 
 grammar
 td :: top_level_decl_ ::= {{com top-level declaration}}
-    | tval f <( tparam0 , .. , tparamk )> ( tval0 x0 , .. , tvalm xm ) { s0 .. sn } :: :: func_decl
-    | typedef x <( tparam0 , .. , tparamk )> = tval ; :: :: typedef
+    | tval f ( tval0 x0 , .. , tvalm xm ) { s0 .. sn } :: :: func_decl
+    | typedef x = tval ; :: :: typedef
 
 tparam :: type_parameter_ ::= {{com type parameter}}
     | tval x :: :: constexpr
@@ -71,8 +71,8 @@ e :: expr_ ::= {{com expression}}
     | & e :: :: address_taking
     | @ e :: :: array_reference_making
     | e [ e' stride ] :: :: array_index {{tex [[e]] [ [[e']] ]_{[[stride]]} }}
-    | x <( targ0 , .. , targm )> ( e0 , .. , en ) :: :: call
-    | fid <( rv0 , .. , rvn )> ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
+    | x ( e0 , .. , en ) :: :: call
+    | fid ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
     | val :: :: val {{com only during exec, except literals}}
     | Call s :: :: call_construct {{com only during exec}}
 
@@ -100,27 +100,9 @@ G {{tex \Gamma}} , Gglobal {{tex \Gamma_{global} }} :: env_ ::= {{com typing env
 
 envMapping :: env_mapping_ ::= 
     | t :: :: var {{com $x$ is of type $\tau$}}
-    | Func { sig0 , .. , sign } :: :: func {{com $x$ is a function whose signatures are $sig0$ to $sign$}}
-    | SyntaxFunc { sigx0 , .. , sigxn } :: :: func_syntax
     | Nothing :: :: nothing {{tex \emptyset}} {{com to remove $x$ from $\Gamma$}}
-    | Protocol namedSigs :: :: protocol
-    % TODO: I now believe that this is wrong, and that protocols should live in their own namespace.
-    % Otherwise it is impossible to refer to a protocol as both a type variable (aka Self) and as a constraint on other type variables, when defining its signatures
-
-namedSigs :: named_signatures_ ::=
-    | { x0 -> sig0 , .. , xn -> sign } :: :: explicit
-    | U namedSigs0 .. namedSigsn :: :: union
-
-sigx :: signature_syntax_ ::=
-    | <( tparamAnon0 , .. , tparamAnonm )> ( tval0 , .. , tvaln ) -> tval :: :: sigx
-
-sig :: signature_ ::=
-    | <( tparamAnon0 , .. , tparamAnonm )> ( tval0 , .. , tvaln ) -> tval :: :: sig
-    % TODO: fix these tparamAnanon, they are clearly wrong.
-
-tparamAnon :: tparam_anon_ ::=
-    | t :: :: constexpr
-    | { y0 , .. , yn } :: :: tvar 
+% TODO: make the typing environment explicit.
+% It should have three components: one for variables, one for functions and one for types
 
 B :: behaviour_ ::= {{com statement behaviour}}
     | { b0 , .. , bn } :: :: set
@@ -184,8 +166,6 @@ terminals :: terminals_ ::=
     | <- :: :: load {{tex \leftarrow}}
     | -> :: :: mapsto {{tex \mapsto}}
     | --> :: :: desugars {{tex \leadsto}}
-    | <( :: :: generic_open {{tex {<} }} % For removing extraneous spaces around '<' and '>' when they are used in that position.
-    | )> :: :: generic_close {{tex {>} }}
     | in :: :: in {{tex \in}}
     | \/ :: :: math_or {{tex \vee}}
     | /\ :: :: math_and {{tex \wedge}}
@@ -220,7 +200,7 @@ formula :: formula_ ::=
     | i < n :: :: indexvar_lesser
     | i > n :: :: indexvar_greater
     | x -> val in R :: :: val_in_env
-    | fid -> <( x0 , .. , xn )> ( y0 : addr0 , .. , ym : addrm ) { s0 .. sk } :: :: fid_resolving
+    | fid -> ( y0 : addr0 , .. , ym : addrm ) { s0 .. sk } :: :: fid_resolving
     | E = E' :: :: event_eq
     | R = R' :: :: exec_env_eq
     | s = s' :: :: stmt_eq
@@ -498,9 +478,9 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     % G |- e0 : tval0 /\../\ G |- en : tvaln
     % x -> Func{sig0, .., sigk} in G
-    % exists i . sigi = <( )> (tval0, .., tvaln) -> tval
+    % exists i . sigi = (tval0, .., tvaln) -> tval
     % -------------------------------------------------- :: call_no_targ
-    % G |- x <( )> (e0, .., en) : tval
+    % G |- x (e0, .., en) : tval
     % TODO: add an updated formal rule for function calls
 
 defns
@@ -692,14 +672,14 @@ R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions
 
     R |- e -> e' ; E
     ------------------------------------------------------------------------------------------------------------------ :: call_reduce
-    R |- fid<(rv0, .., rvn)>(rv'0, .., rv'm, e, e0, .., ek) -> fid<(rv0, .., rvn)>(rv'0, .., rv'm, e', e0, .., ek) ; E
+    R |- fid(rv'0, .., rv'm, e, e0, .., ek) -> fid(rv'0, .., rv'm, e', e0, .., ek) ; E
 
-    fid -> <(x0, .., xn)>(y0:addr0, .., ym:addrm) {s0 .. sk}
+    fid -> (y0:addr0, .., ym:addrm) {s0 .. sk}
     E = Sequence(addr0 <- rv'0, .., addrm <- rv'm)
     R' = R[x0 -> rv0, .., xn -> rvn]
     R'' = R'[y0 -> LVal(addr0), .., ym -> LVal(addrm)]
     -------------------------------------------------------------------- :: call_resolve
-    R |- fid<(rv0, .., rvn)>(rv'0, .., rv'm) -> Call {R'' s0 .. sk} ; E
+    R |- fid(rv'0, .., rv'm) -> Call {R'' s0 .. sk} ; E
 
     R |- s -> s' ; E
     --------------------------- :: call_construct_reduce
