@@ -599,6 +599,8 @@ so that they cannot be chained. Chaining them has sufficiently surprising result
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.
 
+The prefix form of increment and decrement (``++e`` and ``--e``) are syntactic sugar for ``e += 1`` and ``e -= 1``.
+
 ``x -> y`` is purely syntactic sugar for ``(*x).y``, so we will ignore the ``->`` operator in the rest of this specification.
 
 .. productionlist::
@@ -1096,6 +1098,17 @@ To check that an array dereference ``e1[e2]`` is well-typed:
         \ottdrulearrayXXrefXXindex{}
     \end{align*}
 
+To check that an expression ``e++``, or ``e--`` is well-typed:
+
+#. Check that ``e`` is well-typed, with an abstract left-value type
+#. Check that a call to ``operator+(e, e)`` (respectively ``operator-(e, e)``) would be well-typed, with a right-value type that matches ``e``
+
+To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
+
+#. Check that ``e1`` is well-typed, with an abstract left-value type
+#. Check that ``e2`` is well-typed
+#. Check that a call to ``operator+(e1, e2)`` (respectively with the corresponding operators) would be well-typed, with a right-value type that matches ``e``
+
 To check that a function call is well-typed:
 
 #. Check that each argument is well-typed
@@ -1586,9 +1599,29 @@ To reduce a (valid) lvalue:
 
 To reduce an invalid left-value, either trap or replace it by the default value of that type.
 
+We now define a notion of "reducing ``e`` to an abstract left-value" as follows:
+
+#. If ``e`` is a (valid or not) lValue, fail
+#. Else if ``e`` is of the form ``e1.foo``
+
+    #. If ``e1`` can be reduced one step to an abstract left-value, do it
+    #. Else fail
+
+#. Else if ``e`` is of the form ``e1[e2]``
+
+    #. If ``e1`` can be reduced one step to an abstract left-value, do it
+    #. Else if ``e2`` can be reduced one step (normally), do it
+    #. Else fail
+
+#. Else
+
+    #. ASSERT(``e`` can be reduced)
+    #. Reduce ``e``
+
 To reduce an assignment ``e1 = e2``:
 
-#. If ``e1`` is a lvalue
+#. If ``e1`` can be reduced to an abstract left-value, do it
+#. Else if ``e1`` is a lvalue
 
     #. Emit a store to the address of the lvalue, of the value on the right of the equal, of a size appropriate for the type of that value
     #. Replace the entire expression by the value on the right of the equal.
@@ -1606,6 +1639,25 @@ To reduce an assignment ``e1 = e2``:
     #. Replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator[]=`` with the arguments ``e3``, ``e4``, and ``e2``
 
 .. Should we make the sizes of loads/stores more explicit?
+
+Operators
+"""""""""
+
+To reduce an expression ``e++`` or ``e--``:
+
+#. If ``e1`` had a left-value type during typing, and is not a lValue (valid or not), then reduce it
+#. Else if it can be reduced to an abstract left-value, do it
+#. Else
+
+    #. Let ``addr`` be the address associated to this operation
+    #. Replace the whole expression by ``LVal(addr, thread) = e, e = LVal(addr, thread) + 1, LVal(addr, thread)`` (replacing the ``+`` by ``-`` for ``e--``)
+
+To reduce an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
+
+#. If ``e1`` had a left-value type during typing, and is not a lValue (valid or not), then reduce it
+#. Else if it can be reduced to an abstract left-value, do it
+#. Else if ``e2`` can be reduced, do it
+#. Else replace the whole expression by an assignment to ``e1`` of the result of the corresponding operator, called on ``e1`` and ``e2``
 
 Calls
 """""
