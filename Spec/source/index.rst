@@ -1102,12 +1102,20 @@ To check that an expression ``e++``, or ``e--`` is well-typed:
 
 #. Check that ``e`` is well-typed, with an abstract left-value type
 #. Check that a call to ``operator+(e, e)`` (respectively ``operator-(e, e)``) would be well-typed, with a right-value type that matches ``e``
+#. Then the expression is well-typed, and of the right-value type of ``e``
+
+.. todo::
+    Decide whether we want the result to be a right-value type (like now), or the exact same type as ``e``.
+    The later would allow things like x++ ++; (which sounds reasonable to me), but also x++ = 4; (which is a lot weirder).
+    The same question applies to x += 3, x = 3, etc..
+    https://github.com/gpuweb/WHLSL/issues/315
 
 To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
 
 #. Check that ``e1`` is well-typed, with an abstract left-value type
 #. Check that ``e2`` is well-typed
 #. Check that a call to ``operator+(e1, e2)`` (respectively with the corresponding operators) would be well-typed, with a right-value type that matches ``e``
+#. Then the expression is well-typed, and of the right-value type of ``e``
 
 To check that a function call is well-typed:
 
@@ -1140,7 +1148,7 @@ Phase 4. Annotations for execution
 
 We resolved each overloaded function call in the previous section. They must now be annotated with which function is actually being called.
 
-Every variable declaration, and every function parameter must be associated with a unique store identifier.
+Every variable declaration, every function parameter, and every postfix increment/decrement must be associated with a unique store identifier.
 This identifier in turn refers to a set of contiguous bytes, of the right size; these sets are disjoint.
 
 Each control barrier must be annotated with a unique barrier identifier.
@@ -1723,6 +1731,20 @@ Parentheses have no effect at runtime (beyond their effect during parsing).
 The comma operator simply reduces its first operand as long as it can, then drops it and is replaced by its second operand.
 
 .. I don't mention the ! operator here, because it has no weirdness/interest: it is just a special syntax for a standard library function.
+
+Generated functions
+-------------------
+
+We saw in the validation section that many functions can be automatically generated:
+
+- address-takers for each field of each struct
+- an indexed address-taker for each array type
+- (indexed) getters and setters for each (indexed) address-taker
+
+In this section we will describe how they behave at runtime.
+
+.. todo::
+    Actually do it.
 
 Memory model
 ------------
