@@ -1577,7 +1577,12 @@ To reduce ``e1[e2]`` by one step:
 #. Else if ``e1`` is an array reference:
 
     #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a left-value in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
-    #. Else, either trap or replace the whole expression by an invalid lvalue or replace ``e2`` by an integer that is within the bounds of ``e1``
+    #. Else, either
+
+        - Trap
+        - Or replace the whole expression by an invalid lvalue
+        - Or replace the whole expression by an LValue in the same address space as ``e1``, with an address which is greater or equal than the address of ``e1``, and such that the sum of this address and the stride of ``e1`` is less than the bound of ``e1`` times the stride of ``e1``
+          (or more understandably, an address that lets a subsequent well-typed access fall within the bounds)
 
 #. Else if ``e1`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&[]``, with a first argument which is a pointer to the same address and address-space as ``e1``, and with a second argument which is ``e2``
 #. Else, replace the whole expression by a call to ``operator[]`` with a first argument which is ``e1`` and a second argument which is ``e2``
@@ -1610,7 +1615,15 @@ To reduce a (valid) lvalue:
     The 2nd step is to prevent races from allowing the creation of invalid enum values, which could cause problems to switches without default cases.
     We don't need a similar rules for pointers or array references, because we do not allow potentially racy assignments to variables of these types.
 
-To reduce an invalid left-value, either trap or replace it by the default value of that type.
+To reduce an invalid left-value, any of the following is acceptable:
+
+- Trap
+- Replace it by the default value of that type.
+
+.. todo::
+    We should extend this possible behavior to also accept (0,0,0,X) for some specific values of X for "vector reads" to match https://github.com/gpuweb/spirv-execution-env/blob/master/execution-env.md
+    I just have to figure out what exactly these vector reads map to in WHLSL.
+    https://github.com/gpuweb/WHLSL/issues/316
 
 We now define a notion of "reducing ``e`` to an abstract left-value" as follows:
 
@@ -1751,17 +1764,16 @@ In this section we will describe how they behave at runtime.
 For each field ``foo`` with type ``T`` of a struct ``Bar``, 4 address-takers are generated, one for each address-space.
 Each of them return a pointer to an address that is the sum of the address of their parameter and the offset required to hit the corresponding field.
 
-For each type of the form ``T[n]`` which is used in the program, 4 address-takers are generated, one for each address-space.
-Each of them compares its second parameter with ``n``.
-If it is smaller, then they return a pointer to an address that is the sum of the address of their first parameter and the product of their second argument and the size of ``T``.
-If it is greater or equal, then they may either:
-
-- Trap
-- Return null
-- Or return a pointer as if their second parameter was an arbitrary non-negative integer smaller than ``n``.
-
 .. note::
     We describe these functions in this way, because they are not writable directly in the language.
+
+For each type of the form ``T[n]`` which is used in the program, the following declarations are generated:
+.. code-block::
+
+    thread T* operator&[](thread T[n]* a, uint32 i) { return &((@a)[i]); }
+    threadgroup T* operator&[](threadgroup T[n]* a, uint32 i) { return &((@a)[i]); }
+    device T* operator&[](device T[n]* a, uint32 i) { return &((@a)[i]); }
+    constant T* operator&[](constant T[n]* a, uint32 i) { return &((@a)[i]); }
 
 For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)`` for some ``address-space``, the following declarations are generated:
 .. code-block::
