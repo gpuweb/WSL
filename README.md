@@ -49,3 +49,24 @@ prompt> node --experimental-modules Source/Test.mjs
 ```
 
 Or, load Source/Test.html in your browser (assuming your browser supports ES modules, which most modern browsers do).
+
+## Building the spec
+
+The specification is contained in Spec/, and in particular in Spec/source/index.rst
+
+To build it requires the following:
+- ott (https://www.cl.cam.ac.uk/~pes20/ott/)
+- sphinx (http://www.sphinx-doc.org/en/master/)
+- latex (and various latex packages)
+- dvipng
+
+All of the dependencies can be installed on Mac (assuming that XCode and MacPorts are installed) with the following commands:
+- sudo port install opam
+- opam init
+- opam install ott
+- sudo port install py-sphinx
+- sudo port install texlive-latex
+- sudo port install texlive-latex-extra
+- sudo port install dvipng
+
+Actually building the document can be done by simply running make singlehtml in /Spec, and it can be seen by opening Spec/build/singlehtml/index.html
