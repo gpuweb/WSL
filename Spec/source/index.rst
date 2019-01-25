@@ -776,8 +776,8 @@ Then each typedef must be resolved, meaning that each mention of it in the progr
 .. note::
     This last step is guaranteed to terminate thanks to the acyclicity check before it.
 
-Checking the coherence of operators
-"""""""""""""""""""""""""""""""""""
+Checking the coherence of operators and functions
+"""""""""""""""""""""""""""""""""""""""""""""""""
 
 For every declaration of a function with a name of the form ``operator&.field`` for some name ``field`` with argument type ``thread T1*`` and return type ``thread T2*``:
 
@@ -798,6 +798,8 @@ If a function with the name ``operator[]=`` is defined:
 
     #. There must be a function with the name ``operator[]`` which is defined
     #. For each declaration of the former with arguments type ``(t1, t2, t3)``, there must be a declaration of the latter with argument type ``(t1, t2)``, and return type ``t3``
+
+If there are two function declarations with the same names, number of parameters, types of their parameters, then the program is invalid.
 
 Typing of functions
 -------------------
@@ -1534,7 +1536,7 @@ To reduce ``& e``:
 
         #. ASSERT(``e1`` is an array reference)
         #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a pointer in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
-        #. Else, either trap or replace the whole expression by null
+        #. Else, either trap or replace the whole expression by null or replace ``e2`` by an integer that is within the bounds of ``e1``
 
 #. Else reduce ``e``
 
@@ -1575,7 +1577,7 @@ To reduce ``e1[e2]`` by one step:
 #. Else if ``e1`` is an array reference:
 
     #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a left-value in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
-    #. Else, either trap or replace the whole expression by an invalid lvalue
+    #. Else, either trap or replace the whole expression by an invalid lvalue or replace ``e2`` by an integer that is within the bounds of ``e1``
 
 #. Else if ``e1`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&[]``, with a first argument which is a pointer to the same address and address-space as ``e1``, and with a second argument which is ``e2``
 #. Else, replace the whole expression by a call to ``operator[]`` with a first argument which is ``e1`` and a second argument which is ``e2``
@@ -1746,21 +1748,20 @@ We saw in the validation section that many functions can be automatically genera
 
 In this section we will describe how they behave at runtime.
 
-For each field ``foo`` with type ``T`` of a struct ``Bar``, the following address-takers is generated:
-.. code-block::
+For each field ``foo`` with type ``T`` of a struct ``Bar``, 4 address-takers are generated, one for each address-space.
+Each of them return a pointer to an address that is the sum of the address of their parameter and the offset required to hit the corresponding field.
 
-    thread T* operator&.foo(thread Bar* b) { return &(b->foo); }
-    threadgroup T* operator&.foo(threadgroup Bar* b) { return &(b->foo); }
-    device T* operator&.foo(device Bar* b) { return &(b->foo); }
-    constant T* operator&.foo(constant Bar* b) { return &(b->foo); }
+For each type of the form ``T[n]`` which is used in the program, 4 address-takers are generated, one for each address-space.
+Each of them compares its second parameter with ``n``.
+If it is smaller, then they return a pointer to an address that is the sum of the address of their first parameter and the product of their second argument and the size of ``T``.
+If it is greater or equal, then they may either:
 
-For each type of the form ``T[n]`` which is used in the program, the following indexed address-takers are generated:
-.. code-block::
+- Trap
+- Return null
+- Or return a pointer as if their second parameter was an arbitrary non-negative integer smaller than ``n``.
 
-    thread T* operator&[](thread T[n]* a, uint32 i) { return &((*a)[i]); }
-    threadgroup T* operator&[](threadgroup T[n]* a, uint32 i) { return &((\*a)[i]); }
-    device T* operator&[](device T[n]* a, uint32 i) { return &((\*a)[i]); }
-    constant T* operator&[](constant T[n]* a, uint32 i) { return &((\*a)[i]); }
+.. note::
+    We describe these functions in this way, because they are not writable directly in the language.
 
 For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)`` for some ``address-space``, the following declarations are generated:
 .. code-block::
@@ -1769,7 +1770,7 @@ For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)
     Bar operator.foo=(Bar b, T newval) { b.foo = newval; return b; }
 
 .. note::
-    The ``b.foo`` part in both of the above use the address-taker, as b is a function parameter and thus a left value
+    The ``b.foo`` part in both of the above use the address-taker, as ``b`` is a function parameter and thus a left value
 
 For each declaration of the form ``address-space T2* operator&[](thread T1* a, uint32 i)`` for some ``address-space``, the following declarations are generated:
 .. code-block::
@@ -1778,7 +1779,7 @@ For each declaration of the form ``address-space T2* operator&[](thread T1* a, u
     T1 operator[]=(T1 a, uint32 i, T2 newval) { a[i] = newval; return a; }
 
 .. note::
-    Similarily, ``a[i]`` in both of the above use the indexed address-taker, as a is a function parameter, and thus a left-value.
+    Similarily, ``a[i]`` in both of the above use the indexed address-taker, as ``a`` is a function parameter, and thus a left-value.
     Such generated getters and setters may look useless, but they are used when something is not a left-value, for example because of nested calls to getters/setters.
     For example you could have a struct Foo, with a getter for the field bar, returning a struct Bar, with an ander for the field baz.
     When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar is not a left-value. So we instead use the generated getter (that behind the scene copies foo.bar into its parameter, and then use the ander).
