@@ -10,15 +10,17 @@ tparam :: type_parameter_ ::= {{com type parameter}}
     | tval x :: :: constexpr
     | x : y0 + .. + yn :: :: type_variable
 
+dpid :: divergence_point_identifier_ ::=
+
 s :: stmt_ ::= {{com statement}}
     | if ( e ) s :: :: if_then {{com Desugared}}
     | while ( e ) s :: :: while {{com Desugared}}
     | for ( eOrVDecls ; eOrNothing ; eOrNothing' ) s :: :: for {{com Desugared}}
     | tval vdecl0 , .. , vdecln ; :: :: multi_vdecls {{com partly desugared}}
     | ; :: :: empty {{com Desugared}}
-    | if ( e ) s else s' :: :: if
-    | do s while ( e ) ; :: :: do_while
-    | switch ( e ) { sc0 : sblock0 .. scn : sblockn } :: :: switch
+    | if dpid ( e ) s else s' :: :: if
+    | do dpid s while ( e ) ; :: :: do_while
+    | switch dpid ( e ) { sc0 : sblock0 .. scn : sblockn } :: :: switch
     | break ; :: :: break
     | continue ; :: :: continue
     | fallthrough ; :: :: fallthrough
@@ -31,6 +33,9 @@ s :: stmt_ ::= {{com statement}}
     | tval x : sid = e ; :: :: resolved_init_vdecl {{com post-monomorphisation}}
     | Loop ( s , s' ) :: :: loop_construct {{com Special, only during execution}}
     | Cases ( s0 , .. , sn ) :: :: cases_construct {{com Special, only during execution}}
+    | Join ( s ) :: :: join_construct {{com Special, only during execution}}
+%TODO: make the dpid less visible/obnoxious.
+% Maybe also make it more explicit the allocation of new identifiers?
 
 sc :: switch_case_ ::=
     | case rval :: :: case
@@ -59,9 +64,9 @@ blockAnnot :: block_annotation_ ::=
 e :: expr_ ::= {{com expression}}
     | ( e ) :: :: parens
     | e , e' :: :: comma
-    | e || e' :: :: or {{tex [[e]]\:{||}\:[[e']]}}
-    | e && e' :: :: and {{tex [[e]]\:{\&\&}\:[[e']]}}
-    | e0 ? e1 : e2 :: :: ternary {{tex [[e0]]\:{?}\:[[e1]]:[[e2]]}}
+    | e || dpid e' :: :: or {{tex [[e]]\:{||}\:[[e']]}}
+    | e && dpid e' :: :: and {{tex [[e]]\:{\&\&}\:[[e']]}}
+    | e0 ? dpid e1 : e2 :: :: ternary {{tex [[e0]]\:{?}\:[[e1]]:[[e2]]}}
     | ! e :: :: not {{tex \:![[e]]}}
     | e == e' :: :: equals_operator
     | e != e' :: :: not_equals_operator {{com Desugared}} {{tex [[e]]\;!\mkern-\thickmuskip=[[e']]}}
@@ -75,6 +80,7 @@ e :: expr_ ::= {{com expression}}
     | fid ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
     | val :: :: val {{com only during exec, except literals}}
     | Call s :: :: call_construct {{com only during exec}}
+    | JoinExpr ( e ) :: :: join_expr_construct {{com only during exec}}
 
 val :: val_ ::=
     | rval :: :: rval
@@ -158,6 +164,11 @@ E :: memory_event_ ::= {{com memory event}}
     | addr -> rval :: :: load {{com load}}
     | Sequence ( E0 , .. , En ) :: :: multiple_events
 
+S :: divergence_stack_ ::= {{com divergence stack}}
+    | :: :: nothing
+    | push ( rval , dpid ) :: :: push
+    | pop ( ) :: :: pop
+
 fid :: function_identifier_ ::=
 
 terminals :: terminals_ ::=
@@ -218,13 +229,13 @@ defn
 s --> s' :: :: desugaring_stmt :: '' {{com Desugaring statements}} by
 
     ----------------------------- :: if_then
-    if (e) s --> if (e) s else {}
+    if (e) s --> if dpid (e) s else {}
 
     -------- :: empty_stmt
     ; --> {}
 
     -------------------------------------- :: while
-    while (e) s --> if (e) do s while (e);
+    while (e) s --> if (e) do dpid s while (e);
 
     -------------------------------------------------------------------------- :: for_empty_cond
     for (eOrVDecls ; ; eOrNothing) s --> for (eOrVDecls ; true ; eOrNothing) s
@@ -259,24 +270,24 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     B'' = (B + B')
     Return Ptr(tval, as) not in B''
     Return Ref(tval, as) not in B''
-    ------------------------------ :: if
-    G |- if (e) s else s' : B''
+    -------------------------------- :: if
+    G |- if dpid (e) s else s' : B''
 
     G |- e : bool
     G |- s : B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
     Break in B
-    ---------------------------------------------------------- :: do_while_break
-    G |- do s while (e); : (B \ {Break, Continue}) + {Nothing}
+    --------------------------------------------------------------- :: do_while_break
+    G |- do dpid s while (e); : (B \ {Break, Continue}) + {Nothing}
 
     G |- e : bool
     G |- s : B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
     Break not in B
-    ------------------------------------- :: do_while_no_break
-    G |- do s while (e); : B \ {Continue}
+    ------------------------------------------ :: do_while_no_break
+    G |- do dpid s while (e); : B \ {Continue}
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -289,8 +300,8 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     Break in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
-    ----------------------------------------------------------------------------------------- :: switch_break
-    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Nothing}
+    ---------------------------------------------------------------------------------------------- :: switch_break
+    G |- switch dpid (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Nothing}
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -303,8 +314,8 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     Break not in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
-    -------------------------------------------------------------------- :: switch_no_break
-    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : B \ {Fallthrough}
+    ------------------------------------------------------------------------- :: switch_no_break
+    G |- switch dpid (e) {sc0: sblock0 .. scn : sblockn } : B \ {Fallthrough}
 
     --------------------- :: break
     G |- break; : {Break}
@@ -402,21 +413,21 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     G |- e : bool
     G |- e' : bool
-    ------------------- :: or
-    G |- e || e' : bool
+    ------------------------- :: or
+    G |- e || dpid e' : bool
 
     G |- e : bool
     G |- e' : bool
-    ------------------- :: and
-    G |- e && e' : bool
+    ------------------------ :: and
+    G |- e && dpid e' : bool
 
     G |- e0 : bool
     G |- e1 : tval
     G |- e2 : tval
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
-    ------------------------ :: ternary
-    G |- e0 ? e1 : e2 : tval
+    ------------------------------ :: ternary
+    G |- e0 ? dpid e1 : e2 : tval
 
     G |- e : bool
     -------------- :: not
@@ -427,7 +438,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     as != constant
     tval != Ptr(tval', as')
     tval != Ref(tval', as')
-    ------------------------ :: assignment
+    ----------------------- :: assignment
     G |- e = e' : tval
 
     x -> t in G
@@ -435,11 +446,11 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- x : t
 
     G |- e : LVal(tval, as)
-    ----------------------------- :: lval_access
+    ----------------------- :: lval_access
     G |- e : tval
 
     G |- e : LVal(tval, as)
-    ----------------------------- :: address_taking
+    ----------------------- :: address_taking
     G |- &e : Ptr(tval, as)
     % can the unary operator & be overloaded?
     % It seems that no
@@ -459,7 +470,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     G |- e : [tval]
     G |- e' : uint32
-    -------------------------- :: array_index_rval
+    ----------------- :: array_index_rval
     G |- e[e'] : tval
     % There is a choice between applying array_index_lval and then lval_access, or lval_access and then array_index_rval.
     % It is not problematic, because the rules are confluent, so either choice leads to the same result.
@@ -486,308 +497,324 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 defns
 exec :: '' ::=
 defn
-R |- e -> e' ; E :: :: exec_expr :: '' {{com Small-step reduction on expressions}} {{tex [[R]] \vdash [[e]] \xrightarrow{[[E]]} [[e']]}} by
+R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on expressions}} {{tex [[R]] \vdash [[e]] \xrightarrow[ [[S]] ]{[[E]]} [[e']]}} by
 
-    ------------------------------------------- :: and_true
-    R |- true && e -> e ;
+    ------------------------------------------------------ :: and_true
+    R |- true && dpid e -> JoinExpr(e) ;; push(true, dpid)
 
     --------------------------- :: and_false
-    R |- false && e -> false ;
+    R |- false && dpid e -> false ;;
 
-    R |- e0 -> e0' ; E
-    ---------------------------------- :: and_reduce
-    R |- e0 && e1 -> e0' && e1 ; E
+    R |- e0 -> e0' ; E ; S
+    -------------------------------------------- :: and_reduce
+    R |- e0 && dpid e1 -> e0' && dpid e1 ; E ; S
 
-    ------------------------- :: or_true
-    R |- true || e -> true ;
+    ------------------------------ :: or_true
+    R |- true || dpid e -> true ;;
 
-    ----------------------- :: or_false
-    R |- false || e -> e ;
+    -------------------------------------------------------- :: or_false
+    R |- false || dpid e -> JoinExpr(e) ;; push(false, dpid)
 
-    R |- e0 -> e0' ; E
-    ------------------------------ :: or_reduce
-    R |- e0 || e1 -> e0' || e1 ; E
+    R |- e0 -> e0' ; E ; S
+    -------------------------------------------- :: or_reduce
+    R |- e0 || dpid e1 -> e0' || dpid e1 ; E ; S
 
-    --------------------------- :: ternary_true
-    R |- true ? e1 : e2 -> e1 ;
+    ------------------------------------------------------------ :: ternary_true
+    R |- true ? dpid e1 : e2 -> JoinExpr(e1) ;; push(true, dpid)
 
-    ---------------------------- :: ternary_false
-    R |- false ? e1 : e2 -> e2 ;
+    -------------------------------------------------------------- :: ternary_false
+    R |- false ? dpid e1 : e2 -> JoinExpr(e2) ;; push(false, dpid)
 
-    R |- e0 -> e0' ; E
-    ------------------------------------------ :: ternary_reduce
-    R |- e0 ? e1 : e2 -> e0' ? e1 : e2 ; E
+    R |- e0 -> e0' ; E ; S
+    ---------------------------------------------------- :: ternary_reduce
+    R |- e0 ? dpid e1 : e2 -> e0' ? dpid e1 : e2 ; E ; S
 
     ---------------------- :: comma_next
-    R |- rval, e1 -> e1 ;
+    R |- rval, e1 -> e1 ;;
 
-    R |- e0 -> e0' ; E
-    --------------------------- :: comma_reduce
-    R |- e0, e1 -> e0', e1 ; E
+    R |- e0 -> e0' ; E ; S
+    ------------------------------ :: comma_reduce
+    R |- e0, e1 -> e0', e1 ; E ; S
 
     ------------------ :: parens_exec
-    R |- ( e ) -> e ;
+    R |- ( e ) -> e ;;
 
     ----------------------- :: not_true
-    R |- ! true -> false ;
+    R |- ! true -> false ;;
 
     ----------------------- :: not_false
-    R |- ! false -> true ;
+    R |- ! false -> true ;;
 
-    -------------------------------- :: deref_ptr
-    R |- * Ptr(addr) -> LVal(addr) ;
+    --------------------------------- :: deref_ptr
+    R |- * Ptr(addr) -> LVal(addr) ;;
 
-    ----------------------------- :: deref_null
-    R |- * null -> Invalid_LVal ;
+    ------------------------------ :: deref_null
+    R |- * null -> Invalid_LVal ;;
 
-    R |- e -> e' ; E
-    -------------------- :: deref_reduce
-    R |- * e -> * e' ; E
+    R |- e -> e' ; E ; S
+    ------------------------ :: deref_reduce
+    R |- * e -> * e' ; E ; S
 
-    e != LVal(addr)
-    R |- e -> e' ; E
-    --------------------- :: take_ptr_reduce
-    R |- & e -> & e' ; E
+    e != val
+    R |- e -> e' ; E ; S
+    ------------------------ :: take_ptr_reduce
+    R |- & e -> & e' ; E ; S
 
     -------------------------------- :: take_ptr_lval
-    R |- & LVal(addr) -> Ptr(addr);
+    R |- & LVal(addr) -> Ptr(addr);;
 
-    ---------------------------- :: take_ptr_invalid
-    R |- & Invalid_LVal -> null;
+    ----------------------------- :: take_ptr_invalid
+    R |- & Invalid_LVal -> null;;
 
-    e != LVal(addr)
-    R |- e -> e' ; E
-    -------------------- :: make_ref_reduce
-    R |- @ e -> @ e' ; E
+    e != val
+    R |- e -> e' ; E ; S
+    ------------------------ :: make_ref_reduce
+    R |- @ e -> @ e' ; E ; S
 
-    ---------------------------------- :: make_ref_lval
-    R |- @ LVal(addr) -> Ref(addr, i);
+    ----------------------------------- :: make_ref_lval
+    R |- @ LVal(addr) -> Ref(addr, i);;
     % TODO: find a way to express the fact that i is decided at compile time.. it should probably be made part of the @ expression
 
-    ---------------------------- :: make_ref_invalid
-    R |- @ Invalid_LVal -> null;
+    ----------------------------- :: make_ref_invalid
+    R |- @ Invalid_LVal -> null;;
 
     % Note: we might want to eliminate the next few rules, and instead put them into the definition of operator[] on the default types?
     % it would allow for nicer interaction with protocols.
-    e0 != LVal(addr)
-    R |- e0 -> e0' ; E
-    ---------------------------- :: array_left_reduce
-    R |- e0 [e1] -> e0' [e1] ; E
+    e0 != val
+    R |- e0 -> e0' ; E ; S
+    -------------------------------- :: array_left_reduce
+    R |- e0 [e1] -> e0' [e1] ; E ; S
 
     e0 = LVal(addr) \/ e0 = [rval0, .., rvaln] \/ e0 = Ref(addr, j)
-    R |- e1 -> e1' ; E
+    R |- e1 -> e1' ; E ; S
     --------------------------------------------------------------- :: array_right_reduce
-    R |- e0 [e1] -> e0 [e1'] ; E
+    R |- e0 [e1] -> e0 [e1'] ; E ; S
     
     i = uint
     i <= n
     ------------------------------------------ :: array_lit_access_valid
-    R |- [rval0, .., rvaln] [uint] -> rvali ;
+    R |- [rval0, .., rvaln] [uint] -> rvali ;;
 
     i = uint
     i > n
-    --------------------------------------------- :: array_lit_access_trap
-    R |- [rval0, .., rvaln] [uint] -> TrapValue ;
+    ---------------------------------------------- :: array_lit_access_trap
+    R |- [rval0, .., rvaln] [uint] -> TrapValue ;;
 
     i = uint
     i > n
     j <= n
-    ----------------------------------------- :: array_lit_access_clamped
-    R |- [rval0, .., rvaln] [uint] -> rvalj ;
+    ------------------------------------------ :: array_lit_access_clamped
+    R |- [rval0, .., rvaln] [uint] -> rvalj ;;
 
     i = uint
     i <= n
     ----------------------------------------------- :: array_lval_access_valid
-    R |- LVal(addr) [uint k] -> LVal(addr + i*k) ;
+    R |- LVal(addr) [uint k] -> LVal(addr + i*k) ;;
     % TODO: express better the size check, making it clear that the size information comes from the typing phase.
 
     i = uint
     i > n
-    ------------------------------------------ :: array_lval_access_invalid
-    R |- LVal(addr) [uint k] -> Invalid_LVal ;
+    ------------------------------------------- :: array_lval_access_invalid
+    R |- LVal(addr) [uint k] -> Invalid_LVal ;;
 
     i = uint
     i > n
     j <= n
-    ---------------------------------------------- :: array_lval_access_clamped
-    R |- LVal(addr) [uint k] -> LVal(addr + j*k) ;
+    ----------------------------------------------- :: array_lval_access_clamped
+    R |- LVal(addr) [uint k] -> LVal(addr + j*k) ;;
 
     i = uint
     i < j
     ------------------------------------------------- :: array_ref_access_valid
-    R |- Ref(addr, j) [uint k] -> LVal(addr + i*k) ;
+    R |- Ref(addr, j) [uint k] -> LVal(addr + i*k) ;;
 
     i = uint
     i >= j
-    ------------------------------------------ :: array_ref_access_invalid
-    R |- Ref(addr, j) [uint k] -> Invalid_LVal ;
+    --------------------------------------------- :: array_ref_access_invalid
+    R |- Ref(addr, j) [uint k] -> Invalid_LVal ;;
 
     i = uint
     i >= j
     n < j
-    ------------------------------------------------ :: array_ref_access_clamped
-    R |- Ref(addr, j) [uint k] -> LVal(addr + n*k) ;
+    ------------------------------------------------- :: array_ref_access_clamped
+    R |- Ref(addr, j) [uint k] -> LVal(addr + n*k) ;;
 
-    ------------------------------------ :: array_null_access
-    R |- null [uint k] -> Invalid_LVal ;
+    ------------------------------------- :: array_null_access
+    R |- null [uint k] -> Invalid_LVal ;;
 
     x -> val in R
     ---------------- :: environment_access
-    R |- x -> val ;
+    R |- x -> val ;;
 
     rv = Default(tval)
-    ------------------------- :: load_invalid_default
-    R |- Invalid_LVal -> rv ;
+    -------------------------- :: load_invalid_default
+    R |- Invalid_LVal -> rv ;;
 
-    ------------------------------- :: load_invalid_trap
-    R |- Invalid_LVal -> TrapValue;
+    --------------------------------- :: load_invalid_trap
+    R |- Invalid_LVal -> TrapValue ;;
 
     rval a valid value for this type
-    --------------------------------------- :: load_valid
-    R |- LVal(addr) -> rval ; addr -> rval
+    ---------------------------------------- :: load_valid
+    R |- LVal(addr) -> rval ; addr -> rval ;
 
     rval1 not a valid value for this type
     rval2 a valid value for this type
-    ------------------------------------------- :: load_invalid
-    R |- LVal(addr) -> rval2 ; addr -> rval1
+    ------------------------------------------ :: load_invalid
+    R |- LVal(addr) -> rval2 ; addr -> rval1 ;
 
     e0 != LVal(addr)
     e0 != Invalid_LVal
-    R |- e0 -> e0' ; E
-    ----------------------------- :: assign_left_reduce
-    R |- e0 = e1 -> e0' = e1 ; E
+    R |- e0 -> e0' ; E ; S
+    -------------------------------- :: assign_left_reduce
+    R |- e0 = e1 -> e0' = e1 ; E ; S
 
-    R |- e1 -> e1' ; E
-    ---------------------------- :: assign_right_reduce
-    R |- e0 = e1 -> e0 = e1' ; E
+    R |- e1 -> e1' ; E ; S
+    -------------------------------- :: assign_right_reduce
+    R |- e0 = e1 -> e0 = e1' ; E ; S
 
-    --------------------------------------------- :: assign_execute
-    R |- LVal(addr) = rval -> rval ; addr <- rval
+    ----------------------------------------------- :: assign_execute
+    R |- LVal(addr) = rval -> rval ; addr <- rval ;
 
-    ---------------------------------- :: assign_invalid_ignore
-    R |- Invalid_LVal = rval -> rval ;
+    ----------------------------------- :: assign_invalid_ignore
+    R |- Invalid_LVal = rval -> rval ;;
 
-    --------------------------------------- :: assign_invalid_trap
-    R |- Invalid_LVal = rval -> TrapValue ;
+    ---------------------------------------- :: assign_invalid_trap
+    R |- Invalid_LVal = rval -> TrapValue ;;
 
-    R |- e -> e' ; E
-    ------------------------------------------------------------------------------------------------------------------ :: call_reduce
-    R |- fid(rv'0, .., rv'm, e, e0, .., ek) -> fid(rv'0, .., rv'm, e', e0, .., ek) ; E
+    R |- e -> e' ; E ; S
+    -------------------------------------------------------------------------------------- :: call_reduce
+    R |- fid(rv'0, .., rv'm, e, e0, .., ek) -> fid(rv'0, .., rv'm, e', e0, .., ek) ; E ; S
 
     fid -> (y0:addr0, .., ym:addrm) {s0 .. sk}
     E = Sequence(addr0 <- rv'0, .., addrm <- rv'm)
     R' = R[x0 -> rv0, .., xn -> rvn]
     R'' = R'[y0 -> LVal(addr0), .., ym -> LVal(addrm)]
-    -------------------------------------------------------------------- :: call_resolve
-    R |- fid(rv'0, .., rv'm) -> Call {R'' s0 .. sk} ; E
+    ----------------------------------------------------- :: call_resolve
+    R |- fid(rv'0, .., rv'm) -> Call {R'' s0 .. sk} ; E ;
 
-    R |- s -> s' ; E
-    --------------------------- :: call_construct_reduce
-    R |- Call s -> Call s' ; E
+    R |- s -> s' ; E ; S
+    ------------------------------ :: call_construct_reduce
+    R |- Call s -> Call s' ; E ; S
 
-    -------------------------------- :: call_return
-    R |- Call return rval; -> rval ;
+    --------------------------------- :: call_return
+    R |- Call return rval; -> rval ;;
 
-    --------------------------- :: call_return_void
-    R |- Call return; -> Void ;
+    ---------------------------- :: call_return_void
+    R |- Call return; -> Void ;;
 
-    ------------------------ :: call_end_function
-    R |- Call {R'} -> Void ;
+    ------------------------- :: call_end_function
+    R |- Call {R'} -> Void ;;
+
+    e != val
+    R |- e -> e' ; E ; S
+    ---------------------------------------- :: join_expr_reduce
+    R |- JoinExpr(e) -> JoinExpr(e') ; E ; S
+
+    ------------------------------------ :: join_expr_elim
+    R |- JoinExpr(val) -> val ;; pop()
 
 defn
-R |- s -> s' ; E :: :: exec_stmt :: '' {{com Small-step reduction on statements}} {{tex [[R]] \vdash [[s]] \xrightarrow{[[E]]} [[s']]}} by
+R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on statements}} {{tex [[R]] \vdash [[s]] \xrightarrow[ [[S]] ]{[[E]]} [[s']]}} by
 
     ----------------------------- :: block_annotate
-    R |- {s0..sn} -> {R s0..sn};
+    R |- {s0..sn} -> {R s0..sn};;
 
-    R |- s -> s' ; E
-    ----------------------------------------- :: block_reduce
-    Rout |- {R s s1..sn} -> {R s' s1..sn} ; E
+    R |- s -> s' ; E ; S
+    --------------------------------------------- :: block_reduce
+    Rout |- {R s s1..sn} -> {R s' s1..sn} ; E ; S
 
     --------------------------------------- :: block_next_stmt
-    Rout |- {R {R'} s1..sn} -> {R s1..sn};
+    Rout |- {R {R'} s1..sn} -> {R s1..sn};;
 
     s = break; \/ s = continue; \/ s = fallthrough; \/ s = return rval; \/ s = return; \/ s = trap;
     ----------------------------------------------------------------------------------------------- :: block_terminator
-    Rout |- {R s s1..sn} -> s;
+    Rout |- {R s s1..sn} -> s;;
 
     R' = R[x -> LVal(sid)]
     rv = Default(tval)
-    ----------------------------------------------------------- :: block_vdecl
-    Rout |- {R tval x : sid; s1..sn} -> {R' s1..sn} ; sid <- rv
+    ------------------------------------------------------------- :: block_vdecl
+    Rout |- {R tval x : sid; s1..sn} -> {R' s1..sn} ; sid <- rv ;
 
-    R[x -> LVal(sid)] |- e -> e';
-    ----------------------------------------------------------------------- :: block_vdecl_reduce
-    Rout |- {R tval x : sid = e; s1..sn} -> {R tval x : sid = e'; s1..sn} ;
+    R[x -> LVal(sid)] |- e -> e' ; E ; S
+    ----------------------------------------------------------------------------- :: block_vdecl_reduce
+    Rout |- {R tval x : sid = e; s1..sn} -> {R tval x : sid = e'; s1..sn} ; E ; S
 
     R' = R[x -> LVal(sid)]
-    ---------------------------------------------------------------- :: block_vdecl_complete
-    Rout |- {R tval x : sid = rv; s1..sn} -> {R' s1..sn} ; sid <- rv
+    ------------------------------------------------------------------ :: block_vdecl_complete
+    Rout |- {R tval x : sid = rv; s1..sn} -> {R' s1..sn} ; sid <- rv ;
 
-    R |- e -> e' ; E
-    ------------------ :: effectful_expr_reduce
-    R |- e; -> e'; ; E
+    R |- e -> e' ; E ; S
+    ---------------------- :: effectful_expr_reduce
+    R |- e; -> e'; ; E ; S
 
-    ------------------ :: effectful_expr_elim
-    R |- rval; -> {} ;
+    ------------------- :: effectful_expr_elim
+    R |- rval; -> {} ;;
 
-    R |- e -> e' ; E
-    -------------------------------- :: return_reduce
-    R |- return e; -> return e'; ; E
+    R |- e -> e' ; E ; S
+    ------------------------------------ :: return_reduce
+    R |- return e; -> return e'; ; E ; S
 
-    R |- e -> e' ; E
-    ---------------------------------------------- :: if_reduce
-    R |- if (e) s else s' -> if (e') s else s' ; E
+    R |- e -> e' ; E ; S
+    ------------------------------------------------------------ :: if_reduce
+    R |- if dpid (e) s else s' -> if dpid (e') s else s' ; E ; S
 
-    ----------------------------- :: if_true
-    R |- if (true) s else s' -> s;
+    ------------------------------------------------------------ :: if_true
+    R |- if dpid (true) s else s' -> Join(s) ;; push(true, dpid)
     
-    -------------------------------- :: if_false
-    R |- if (false) s else s' -> s';
+    --------------------------------------------------------------- :: if_false
+    R |- if dpid (false) s else s' -> Join(s') ;; push(false, dpid)
 
-    -------------------------------------------------------------- :: do_while_loop
-    R |- do s while(e); -> Loop(s, if(e) do s while(e); else {});
+    -------------------------------------------------------------------------- :: do_while_loop
+    R |- do dpid s while(e); -> Loop(s, if dpid (e) do dpid s while(e); else {}) ;;
 
-    R |- s1 -> s1' ; E
-    -------------------------------------- :: loop_reduce
-    R |- Loop(s1, s2) -> Loop(s1', s2) ; E
+    R |- s1 -> s1' ; E ; S
+    ------------------------------------------ :: loop_reduce
+    R |- Loop(s1, s2) -> Loop(s1', s2) ; E ; S
 
     ----------------------------- :: loop_break
-    R |- Loop(break;, s2) -> {};
+    R |- Loop(break;, s2) -> {};;
 
     s1 = {R'} \/ s1 = continue;
     --------------------------- :: loop_next_iteration
-    R |- Loop(s1, s2) -> s2;
+    R |- Loop(s1, s2) -> s2;;
     
     s1 = fallthrough; \/ s1 = return; \/ s1 = return rval; \/ s1 = trap;
     -------------------------------------------------------------------- :: loop_other_terminator
-    R |- Loop(s1, s2) -> s1;
+    R |- Loop(s1, s2) -> s1;;
 
-    R |- e -> e' ; E
-    ---------------------------------------------------------------------------------------------- :: switch_reduce
-    R |- switch(e) {sc0:sblock0 .. scn:sblockn} -> switch(e') {sc0:sblock0 .. scn:sblockn} ; E
+    R |- e -> e' ; E ; S
+    ---------------------------------------------------------------------------------------------------------- :: switch_reduce
+    R |- switch dpid (e) {sc0:sblock0 .. scn:sblockn} -> switch dpid (e') {sc0:sblock0 .. scn:sblockn} ; E ; S
 
 %TODO: the next two rules don't fit on the page. I should find a way to compact them. Maybe with the </xi//i/> notation? 
     s = {sblock} /\ s0 = {sblock'0} /\ .. /\ sm = {sblock'm}
-    --------------------------------------------------------------------------------------------------------------------- :: switch_case_found
-    R |- switch(rv) {sc0:sblock0 .. scn:sblockn case rv: sblock sc'0:sblock'0 .. sc'm:sblock'm} -> Cases(s, s0, .., sm) ;
+    ------------------------------------------------------------------------------------------------------------------------------------------- :: switch_case_found
+    R |- switch dpid (rv) {sc0:sblock0 .. scn:sblockn case rv: sblock sc'0:sblock'0 .. sc'm:sblock'm} -> Cases(s, s0, .., sm) ;; push(rv, dpid)
 
     rv not in sc0 .. scn
     rv not in sc'0 .. sc'm
     s = {sblock} /\ s0 = {sblock'0} /\ .. /\ sm = {sblock'm}
-    --------------------------------------------------------------------------------------------------------------------- :: switch_default
-    R |- switch(rv) {sc0:sblock0 .. scn:sblockn default: sblock sc'0:sblock'0 .. sc'm:sblock'm} -> Cases(s, s0, .., sm) ;
+    ------------------------------------------------------------------------------------------------------------------------------------------- :: switch_default
+    R |- switch dpid (rv) {sc0:sblock0 .. scn:sblockn default: sblock sc'0:sblock'0 .. sc'm:sblock'm} -> Cases(s, s0, .., sm) ;; push(rv, dpid)
 
-    R |- s -> s' ; E
-    ------------------------------------------------------ :: cases_reduce
-    R |- Cases(s, s0, .., sn) -> Cases(s', s0, .., sn) ; E
+    R |- s -> s' ; E ; S
+    ---------------------------------------------------------- :: cases_reduce
+    R |- Cases(s, s0, .., sn) -> Cases(s', s0, .., sn) ; E ; S
 
-    ---------------------------------------------------------- :: cases_fallthrough
-    R |- Cases(fallthrough;, s0, .., sn) -> Cases(s0, .., sn);
+    ----------------------------------------------------------- :: cases_fallthrough
+    R |- Cases(fallthrough;, s0, .., sn) -> Cases(s0, .., sn);;
 
-    -------------------------------------- :: cases_break
-    R |- Cases(break;, s0, .., sn) -> {} ;
+    --------------------------------------------- :: cases_break
+    R |- Cases(break;, s0, .., sn) -> {} ;; pop()
 
     s = continue; \/ s = return; \/ s = return rval; \/ s = trap;
     ------------------------------------------------------------- :: cases_other_terminator
-    R |- Cases(s, s0, .., sn) -> s ;
+    R |- Cases(s, s0, .., sn) -> s ;; pop()
+
+    R |- s -> s' ; E ; S
+    -------------------------------- :: join_reduce
+    R |- Join(s) -> Join(s') ; E ; S
+
+    s = break; \/ s = continue; \/ s = fallthrough; \/ s = return; \/ s = return e;
+    ------------------------------------------------------------------------------- :: join_elim
+    R |- Join(s) -> s ;; pop()

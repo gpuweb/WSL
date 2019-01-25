@@ -1369,7 +1369,7 @@ Loops
 We add yet another kind of statement: the ``Loop(s, s')`` construct that takes as arguments a pair of statements.
 Informally, its first argument represent the current iteration of a loop, and its second argument is a continuation for the rest of the loop.
 
-Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, if(e) do s while(e); else {})``.
+Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, if(e) do s while(e); else {})``, keeping the same divergence point identifier.
 
 .. math::
     :nowrap:
