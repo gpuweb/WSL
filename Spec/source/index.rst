@@ -1158,6 +1158,8 @@ This identifier in turn refers to a set of contiguous bytes, of the right size; 
 
 Each control barrier must be annotated with a unique barrier identifier.
 
+Each branch, switch, loop, ternary expression, boolean or expression and boolean and expression must be annotated with a unique divergence point identifier.
+
 Every variable declaration that does not have an initializing value, must get an initializing value that is the default value for its type.
 These default values are computed as follows:
 
@@ -1215,10 +1217,10 @@ take in one step.
 The per-thread state is made of a few element:
 
 - The program being executed. Each transition transforms it.
-- A control-flow stack. This is a stack of values, which tracks whether we are in a branch, and is used by the rules for barriers to check that control-flow is uniform.
+- A divergence stack. This is a stack of pairs of divergence point identifiers and values, which tracks whether we are in a branch, and is used by the rules for barriers and derivatives to check that control-flow is uniform.
 - An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function.
 
-Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, emitting the following memory events."
+Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, emitting the following memory events, and modifying the divergence stack in these ways."
 
 In some of these rules we use ``ASSERT`` to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
 Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.
@@ -1271,7 +1273,7 @@ Here is how to reduce a branch (if-then-else construct, remember that if-then is
 
 #. If the expression in the if is ``true`` or ``false``.
 
-   #. Push that value on the control flow stack
+   #. Push that value and the divergence point identifier of the branch on the divergence stack
    #. Replace the branch by the statement in the then (for ``true``) or else (for ``false``) branch, wrapped in the ``Join`` construct
 
 #. Else reduce that expression
@@ -1291,13 +1293,13 @@ Here is how to reduce a ``Join(s)`` statement:
 
 #. If the argument of the ``Join`` is a terminator (``break;``, ``continue;``, ``fallthrough;``, ``return e?;`` or ``trap;``) or an empty block
 
-   #. ASSERT(the control flow stack is not empty)
-   #. Pop the last value from the control flow stack
+   #. ASSERT(the divergence stack is not empty)
+   #. Pop the last element from the divergence stack
    #. Replace the ``Join`` statement by its argument
 
 #. Else reduce its argument
 
-.. note:: Popping the last value from the control flow stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.
+.. note:: Popping the last element from the divergence stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.
 
 Switches
 """"""""
@@ -1313,7 +1315,7 @@ Here is how to reduce a switch statement by one step:
     #. Wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
     #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
-    #. Push ``val`` on the control-flow stack
+    #. Push ``val`` and the divergence point identifier of the switch on the divergence stack
 
 #. Else
 
@@ -1322,7 +1324,7 @@ Here is how to reduce a switch statement by one step:
     #. Find the ``default`` case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
     #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
-    #. Push ``val`` on the control-flow stack
+    #. Push ``val`` and the divergence point identifier of the switch on the divergence stack
 
 .. math::
     :nowrap:
@@ -1339,14 +1341,14 @@ Here is how to reduce a ``Cases`` construct by one step:
 #. If the first argument is the ``fallthrough;`` statement, remove it (reducing the total number of arguments by 1)
 #. Else if the first argument is the ``break;`` statement:
 
-   #. ASSERT(the control flow stack is not empty)
-   #. Pop the last value from the control flow stack
+   #. ASSERT(the divergence stack is not empty)
+   #. Pop the last element from the divergence stack
    #. Replace the entire construct by an empty block
 
 #. Else if the first argument is another terminator statement, that cannot be reduced (i.e. ``continue;``, ``trap;``, ``return value;`` or ``return;``)
 
-   #. ASSERT(the control flow stack is not empty)
-   #. Pop the last value from the control flow stack
+   #. ASSERT(the divergence stack is not empty)
+   #. Pop the last element from the divergence stack
    #. Replace the entire construct by its first argument
 
 #. Else reduce the first argument by one step
@@ -1396,13 +1398,13 @@ Here is how to reduce a ``Loop(s, s')`` statement by one step:
     \end{align*}
 
 .. note::
-    These operations do not need to explicitly modify the control-flow stack, because each iteration of a loop executes an ``if`` statement that does it.
+    These operations do not need to explicitly modify the divergence stack, because each iteration of a loop executes an ``if`` statement that does it.
 
 Barriers and uniform control flow
 """""""""""""""""""""""""""""""""
 
 There is no rule in the per-thread semantics for *control barriers*.
-Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction with the same identifier, and their control-flow stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
+Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction with the same identifier, and their divergence stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
 
 Other
 """""
@@ -1438,7 +1440,7 @@ Operations affecting control-flow
 """""""""""""""""""""""""""""""""
 
 Just like we added ``Join``, ``Cases`` and ``Loop`` construct to deal with control-flow affecting statements, we add a ``JoinExpr`` construct to deal with control-flow affecting expressions.
-``JoinExpr`` takes as argument an expression and return an expression. Its only use is (informally) as a marker that the control-flow stack will have to be popped to access its content.
+``JoinExpr`` takes as argument an expression and return an expression. Its only use is (informally) as a marker that the divergence stack will have to be popped to access its content.
 
 There are three kinds of expressions that can cause a divergence in control-flow: the boolean and (i.e. ``&&``, that short-circuits), the boolean or (i.e. ``||``, that also short-circuits), and ternary conditions.
 
@@ -1449,7 +1451,7 @@ To reduce a boolean and by one step:
 #. Else
 
     #. ASSERT(its first operand is ``true``)
-    #. Push ``true`` on the control-flow stack.
+    #. Push ``true`` and the corresponding divergence point identifier on the divergence stack.
     #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct.
 
 .. math::
@@ -1468,7 +1470,7 @@ Very similarily, to reduce a boolean or by one step:
 #. Else
 
     #. ASSERT(its first operand is ``false``)
-    #. Push ``false`` on the control-flow stack.
+    #. Push ``false`` and the corresponding divergence point identifier on the divergence stack.
     #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct.
 
 .. math::
@@ -1485,13 +1487,13 @@ To reduce a ternary condition by one step:
 #. If its first operand can be reduced, reduce it
 #. Else if its first operand is ``true``
 
-    #. Push ``true`` on the control-flow stack.
+    #. Push ``true`` and the corresponding divergence point identifier on the divergence stack.
     #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct
 
 #. Else
 
     #. ASSERT(its first operand is ``false``)
-    #. Push ``false`` on the control-flow stack.
+    #. Push ``false`` and the corresponding divergence point identifier on the divergence stack.
     #. Replace the whole operation by its third operand wrapped in a ``JoinExpr`` construct.
 
 .. math::
@@ -1506,7 +1508,11 @@ To reduce a ternary condition by one step:
 To reduce a ``JoinExpr`` by one step:
 
 #. If its operand is not a lvalue, and can be reduced, then reduce it by one step
-#. Else pop one element from the control stack, and replace the whole expression by the operand.
+#. Else:
+
+   #. ASSERT(the divergence stack is not empty)
+   #. Pop the last element from the divergence stack
+   #. Replace the whole expression by its operand
 
 Pointers and references
 """""""""""""""""""""""
