@@ -667,16 +667,9 @@ For each top-level declaration:
    #. If there is already a type of the same name in the environment, the program is invalid
    #. If two or more fields of the struct have the same name, the program is invalid
    #. Add the struct to the environment as a new type.
-
-   #. For each field of the struct:
-
-        #. Add to the environment a mapping from the name ``operator.field`` (where ``field`` is replaced by the name of the field) to a function declaration with one argument,
-                   whose return type is the type of the field and whose argument type is the struct itself
-        #. Add to the environment a mapping from the name ``operator.field=`` (where ``field`` is replaced by the name of the field) to a function declaration with two arguments,
-                   whose return type is the type of the struct itself, whose first argument type is the type of the struct itself, and whose second argument type is the type of the field
-        #. Add to the environment a mapping from the name ``operator&.field=`` (where ``field`` is replaced by the name of the field) to 4 function declarations with one argument,
-                    whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each
-                    address space, that address space is used both by the pointer argument and by the return type
+   #. For each field of the struct, add to the environment a mapping from the name ``operator&.field=`` (where ``field`` is replaced by the name of the field) to 4 function declarations with one argument,
+        whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each
+        address space, that address space is used both by the pointer argument and by the return type
 
 #. If it is an enum
 
@@ -785,6 +778,16 @@ Then each typedef must be resolved, meaning that each mention of it in the progr
 
 Checking the coherence of operators
 """""""""""""""""""""""""""""""""""
+
+For every declaration of a function with a name of the form ``operator&.field`` for some name ``field`` with argument type ``thread T1*`` and return type ``thread T2*``:
+
+    #. Add a declaration of a function ``operator.field=`` for the same name ``field``, with argument types ``T1`` and ``T2``, and return type ``T1``
+    #. Add a declaration of a function ``operator.field`` for the same name ``field``, with argument type ``T1`` and return type ``T2``
+
+For every declaration of the function ``operator&[]`` with argument types ``thread T1*`` and ``uint32``, and return type ``thread T2*``:
+
+    #. Add a declaration of a function ``operator[]=`` with argument types ``T1``, ``uint32`` and ``T2``, and return type ``T1``
+    #. Add a declaration of a function ``operator[]`` with argument types ``T1`` and ``uint32``, and return type ``T2``
 
 For every function with a name of the form ``operator.field=`` for some name ``field`` which is defined:
 
@@ -1738,13 +1741,47 @@ Generated functions
 We saw in the validation section that many functions can be automatically generated:
 
 - address-takers for each field of each struct
-- an indexed address-taker for each array type
-- (indexed) getters and setters for each (indexed) address-taker
+- indexed address-takers for each array type
+- (indexed) getters and setters for each (indexed) address-taker in the thread address space
 
 In this section we will describe how they behave at runtime.
 
-.. todo::
-    Actually do it.
+For each field ``foo`` with type ``T`` of a struct ``Bar``, the following address-takers is generated:
+.. code-block::
+
+    thread T* operator&.foo(thread Bar* b) { return &(b->foo); }
+    threadgroup T* operator&.foo(threadgroup Bar* b) { return &(b->foo); }
+    device T* operator&.foo(device Bar* b) { return &(b->foo); }
+    constant T* operator&.foo(constant Bar* b) { return &(b->foo); }
+
+For each type of the form ``T[n]`` which is used in the program, the following indexed address-takers are generated:
+.. code-block::
+
+    thread T* operator&[](thread T[n]* a, uint32 i) { return &((*a)[i]); }
+    threadgroup T* operator&[](threadgroup T[n]* a, uint32 i) { return &((\*a)[i]); }
+    device T* operator&[](device T[n]* a, uint32 i) { return &((\*a)[i]); }
+    constant T* operator&[](constant T[n]* a, uint32 i) { return &((\*a)[i]); }
+
+For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)`` for some ``address-space``, the following declarations are generated:
+.. code-block::
+
+    T operator.foo(Bar b) { return b.foo; }
+    Bar operator.foo=(Bar b, T newval) { b.foo = newval; return b; }
+
+.. note::
+    The ``b.foo`` part in both of the above use the address-taker, as b is a function parameter and thus a left value
+
+For each declaration of the form ``address-space T2* operator&[](thread T1* a, uint32 i)`` for some ``address-space``, the following declarations are generated:
+.. code-block::
+
+    T2 operator[](T1 a, uint32 i) { return a[i]; }
+    T1 operator[]=(T1 a, uint32 i, T2 newval) { a[i] = newval; return a; }
+
+.. note::
+    Similarily, ``a[i]`` in both of the above use the indexed address-taker, as a is a function parameter, and thus a left-value.
+    Such generated getters and setters may look useless, but they are used when something is not a left-value, for example because of nested calls to getters/setters.
+    For example you could have a struct Foo, with a getter for the field bar, returning a struct Bar, with an ander for the field baz.
+    When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar is not a left-value. So we instead use the generated getter (that behind the scene copies foo.bar into its parameter, and then use the ander).
 
 Memory model
 ------------
