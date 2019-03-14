@@ -22,7 +22,7 @@ for (let type of [`half`, `float`]) {
 }
 print(`native typedef sampler;`);
 for (let type of [`Texture1D`, `RWTexture1D`, `Texture1DArray`, `RWTexture1DArray`, `Texture2D`, `RWTexture2D`, `Texture2DArray`, `RWTexture2DArray`, `Texture3D`, `RWTexture3D`, `TextureCube`]) {
-    for (let typeArgumentBase of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]) {
+    for (let typeArgumentBase of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         for (let size of [``, `2`, `3`, `4`]) {
             print(`native typedef ${type}<${typeArgumentBase}${size}>;`);
         }
@@ -1888,7 +1888,7 @@ for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
 }
 print();
 
-for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]) {
+for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
     for (let length of [``, `2`, `3`, `4`]) {
         print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location);`);
         print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location, int offset);`);
