@@ -29,7 +29,7 @@ for (let type of [`Texture1D`, `RWTexture1D`, `Texture1DArray`, `RWTexture1DArra
     }
 }
 for (let type of [`TextureDepth2D`, `RWTextureDepth2D`, `TextureDepth2DArray`, `RWTextureDepth2DArray`, `TextureDepthCube`]) {
-    for (let typeArgument of [`float`, `half`]) {
+    for (let typeArgument of [`float`]) {
         print(`native typedef ${type}<${typeArgument}>;`);
     }
 }
@@ -2062,7 +2062,7 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
     }
 }
 
-for (let type of [`half`, `float`]) {
+for (let type of [`float`]) {
     print(`native ${type} Sample(TextureDepth2D<${type}>, sampler, float2 location);`);
     print(`native ${type} Sample(TextureDepth2D<${type}>, sampler, float2 location, int2 offset);`);
     print(`native ${type} SampleCmp(TextureDepth2D<${type}>, sampler, float2 location, ${type} CompareValue);`);
