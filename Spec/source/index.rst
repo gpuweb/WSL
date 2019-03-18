@@ -1986,16 +1986,15 @@ The following types represent textures:
 * Texture3D<T>
 * RWTexture3D<T>
 * TextureCube<T>
-* TextureDepth2D<S>
-* RWTextureDepth2D<S>
-* TextureDepth2DArray<S>
-* RWTextureDepth2DArray<S>
-* TextureDepthCube<S>
+* TextureDepth2D<float>
+* RWTextureDepth2D<float>
+* TextureDepth2DArray<float>
+* RWTextureDepth2DArray<float>
+* TextureDepthCube<float>
 
 .. todo:: Texture2DMS<T>, TextureDepth2DMS<float>
 
 Each of the above types accepts a "type argument". The "T" types above may be any scalar or vector integral or floating point type.
-The "S" types above may be float or half.
 
 If the type argument, including the ``<>`` characters is missing, is is assumed to be ``float4``.
 
