@@ -705,6 +705,7 @@ For each top-level declaration:
         #. It must have exactly one argument
         #. Its return type must be a pointer type
         #. Its argument must be a pointer type
+        #. Both its return type and its argument type must be in the same address space
 
    #. Else if the name of the function is ``operator[]``
 
@@ -723,6 +724,7 @@ For each top-level declaration:
         #. It must have exactly two arguments
         #. Its return type must be a pointer type
         #. Its first argument must be a pointer type
+        #. Both its return type and its first argument type must be in the same address space
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
 
    #. Else if the name of the function is ``operator++`` or ``operator--``
