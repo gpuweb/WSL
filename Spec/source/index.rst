@@ -628,9 +628,12 @@ Validation includes all of typing. If a program is valid, it is also annotated w
 (for example, accesses to fixed-size arrays are annotated with the size for the bounds-check).
 
 The validation rules are presented in several steps:
-- First we explain how the typing environment is built from the top-level declarations
-- Then we provide global validation rules (mostly checking the absence of recursion)
-- Finally we provide the typing rules
+
+- First we explain how the typing environment is built from the top-level declarations (:ref:`global_typing_environment_label`)
+- Then we provide global validation rules, including checking the absence of recursion (:ref:`global_validation_label`)
+- Finally we provide the typing rules (:ref:`typing_label`)
+
+.. _global_typing_environment_label:
 
 Building the global typing environment
 --------------------------------------
@@ -646,7 +649,7 @@ A type for the purpose of this mapping is either an enum characterized by a set 
 A variable declaration for the purpose of this mapping is characterized by its type.
 A function declaration for the purpose of this mapping is characterised by a tuple of the return type, the number and types of the parameters, and the body of the function.
 
-This environment is initialized with the types and function declarations from the standard library.
+This environment is initialized with the types and function declarations from the standard library, see :ref:`standard_library_label`.
 
 For each top-level declaration:
 
@@ -741,6 +744,8 @@ For each top-level declaration:
    #. If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set
    #. Otherwise add a new mapping from that function name to a singleton set containing that declaration
 
+.. _global_validation_label:
+
 Other validation steps
 ----------------------
 
@@ -800,6 +805,8 @@ If a function with the name ``operator[]=`` is defined:
     #. For each declaration of the former with arguments type ``(t1, t2, t3)``, there must be a declaration of the latter with argument type ``(t1, t2)``, and return type ``t3``
 
 If there are two function declarations with the same names, number of parameters, and types of their parameters, then the program is invalid.
+
+.. _typing_label:
 
 Typing of functions
 -------------------
@@ -1855,6 +1862,8 @@ are ordered by ``po`` in the order of the corresponding parameters (as written i
 
 .. todo::
     Rewrite the rest of the model here, translating the kinds of atomics provided; and formalizing what we mean about races.
+
+.. _standard_library_label:
 
 Standard library
 ================
