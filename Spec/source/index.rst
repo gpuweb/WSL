@@ -646,9 +646,7 @@ A type for the purpose of this mapping is either an enum characterized by a set 
 A variable declaration for the purpose of this mapping is characterized by its type.
 A function declaration for the purpose of this mapping is characterised by a tuple of the return type, the number and types of the parameters, and the body of the function.
 
-.. todo::
-    Explain how this environment starts with elements from the std lib.
-    related to https://github.com/gpuweb/WHLSL/issues/294
+This environment is initialized with the types and function declarations from the standard library.
 
 For each top-level declaration:
 
@@ -801,7 +799,7 @@ If a function with the name ``operator[]=`` is defined:
     #. There must be a function with the name ``operator[]`` which is defined
     #. For each declaration of the former with arguments type ``(t1, t2, t3)``, there must be a declaration of the latter with argument type ``(t1, t2)``, and return type ``t3``
 
-If there are two function declarations with the same names, number of parameters, types of their parameters, then the program is invalid.
+If there are two function declarations with the same names, number of parameters, and types of their parameters, then the program is invalid.
 
 Typing of functions
 -------------------
@@ -1790,7 +1788,7 @@ For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)
     Bar operator.foo=(Bar b, T newval) { b.foo = newval; return b; }
 
 .. note::
-    The ``b.foo`` part in both of the above use the address-taker, as ``b`` is a function parameter and thus a left value
+    The ``b.foo`` part in both of the above uses the address-taker, as ``b`` is a function parameter and thus a left value
 
 For each declaration of the form ``address-space T2* operator&[](thread T1* a, uint32 i)`` for some ``address-space``, the following declarations are generated:
 .. code-block::
@@ -1802,7 +1800,7 @@ For each declaration of the form ``address-space T2* operator&[](thread T1* a, u
     Similarily, ``a[i]`` in both of the above use the indexed address-taker, as ``a`` is a function parameter, and thus a left-value.
     Such generated getters and setters may look useless, but they are used when something is not a left-value, for example because of nested calls to getters/setters.
     For example you could have a struct Foo, with a getter for the field bar, returning a struct Bar, with an ander for the field baz.
-    When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar is not a left-value. So we instead use the generated getter (that behind the scene copies foo.bar into its parameter, and then use the ander).
+    When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar is not a left-value. So we instead use the generated getter (that behind the scene copies foo.bar into its parameter, and then uses the ander).
 
 Memory model
 ------------
