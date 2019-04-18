@@ -656,7 +656,7 @@ For each top-level declaration:
 #. If it is a variable declaration
 
    #. If there is already a variable of the same name in the environment, the program is invalid
-   #. Add it to the mapping with a type Left-value of its declared type in the Constant address space (see later the section on typing for details of types)
+   #. Add it to the mapping with a type Left-value of its declared type in the Constant address space (see :ref:`typing_expressions_label` for details on types of values)
 
 #. If it is a typedef
 
@@ -978,6 +978,8 @@ Finally a statement that consists of a single expression (followed by a semicolo
     \begin{align*}
         \ottdruleexpr{}
     \end{align*}
+
+.. _typing_expressions_label:
 
 Typing expressions
 """"""""""""""""""
