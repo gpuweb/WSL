@@ -874,9 +874,10 @@ To check an if-then-else statement:
        \ottdruleif{}
     \end{align*}
 
-To check a do-while statement:
+To check a do-while or for statement:
 
 #. Check that the condition is well-typed, of type ``bool``
+#. If it is a for statement, check that the expression that is executed at the end of each iteration is well-typed
 #. Check that the body of the loop is a well-typed statement whose behaviours we will call B
 #. Check that B does not contain a return of a pointer type, or of an array reference type
 #. If Continue is in B, remove it
