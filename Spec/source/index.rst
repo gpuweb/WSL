@@ -434,6 +434,8 @@ The second kind is a multi-line comment, that starts with the string ``/*`` and 
 
 .. note:: Multi-line comments cannot be nested, as the first ``*/`` closes the outermost ``/*``
 
+.. _parsing_label:
+
 Parsing
 -------
 
@@ -516,15 +518,19 @@ The first of these two productions is merely syntactic sugar for the second:
     forStmt: "for" "(" (`maybeEffectfulExpr` | `variableDecls`) ";" `expr`? ";" `expr`? ")" `stmt`
     doWhileStmt: "do" `stmt` "while" "(" `expr` ")" ";"
 
-Similarily, we desugar first for loops into while loops, and then all while loops into do while loops.
-First, if the second element of the for is empty we replace it by "true".
-Then, we apply the following two rules:
-
-.. math::
-    \textbf{for} (X_{pre} ; e_{cond} ; e_{iter}) \, s \leadsto \{ X_{pre} ; \textbf{while} (e_{cond}) \{ s \, e_{iter} ; \} \}
+Similarily, we desugar all while loops into do while loops.
 
 .. math::
     \textbf{while} (e)\, s \leadsto \textbf{if} (e) \textbf{do}\, s\, \textbf{while}(e)
+
+We also partly desugar for loops:
+
+#. If the second element of the for is empty we replace it by "true".
+#. If the third element of the for is empty we replace it by "null". (any effect-free expression would work as well).
+#. If the first element of the for is not empty, we hoist it out of the loop, into a newly created block that includes the loop:
+
+.. math::
+    \textbf{for} (X_{pre} ; e_{cond} ; e_{iter}) \, s \leadsto \{ X_{pre} ; \textbf{for} ( ; e_{cond} ; e_{iter}) \, s \}
 
 .. productionlist::
     switchStmt: "switch" "(" `expr` ")" "{" `switchCase`* "}"
@@ -532,7 +538,7 @@ Then, we apply the following two rules:
 
 .. productionlist::
     variableDecls: `type` `variableDecl` ("," `variableDecl`)*
-    variableDecl: `Identifier` ("=" `expr`)?
+    variableDecl: `Identifier` ("=" `possibleTernaryConditional`)?
 
 Complex variable declarations are also mere syntactic sugar.
 Several variable declarations separated by commas are the same as separating them with semicolons and repeating the type for each one.
@@ -1375,24 +1381,32 @@ Here is how to reduce a ``Cases`` construct by one step:
 Loops
 """""
 
-We add yet another kind of statement: the ``Loop(s, s')`` construct that takes as arguments a pair of statements.
-Informally, its first argument represent the current iteration of a loop, and its second argument is a continuation for the rest of the loop.
+We add yet another kind of statement: the ``Loop(s, s', s'')`` construct that takes as arguments three statements.
+Informally, its first argument represents the current iteration of a loop, its second argument is to be executed at the end of the iteration, and its third argument is a continuation for the rest of the loop.
 
-Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, if(e) do s while(e); else {})``, keeping the same divergence point identifier.
+Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, {}, if(e) do s while(e); else {})``, keeping the same divergence point identifier.
+Any ``for (;e;e') s`` statement is reduced to the following in one step ``if (e) Loop(s, e';, for(;e;e') s) else {}``, keeping the same divergence point identifier.
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \ottdruledoXXwhileXXloop{}
+        \ottdruledoXXwhileXXloop{}\\
+        \ottdruleforXXloop{}
     \end{align*}
 
-.. note:: while loops and for loops are desugared into do while loops, see the Parsing section.
+.. note:: while loops are desugared into do while loops, see :ref:`parsing_label`.
+
+.. note:: we only treat the case where for loops have no initialization, because it is desugared, see :ref:`parsing_label`.
 
 Here is how to reduce a ``Loop(s, s')`` statement by one step:
 
 #. If ``s`` is the ``break;`` statement, replace the whole construct by the empty block: ``{}``
-#. Else if ``s`` is the empty block or the ``continue;`` statement, replace the whole construct by its second argument ``s'``
+#. Else if ``s`` is the empty block or the ``continue;`` statement
+
+    #. If the second argument ``s'`` is the empty statement, replace the whole construct by its third argument ``s''``
+    #. Else reduce ``s'`` by a step
+
 #. Else if ``s`` is another terminator (``fallthrough;``, ``return;``, ``return rval;`` or ``trap;``), replace the whole construct by it
 #. Else reduce ``s`` by one step
 
@@ -1402,6 +1416,7 @@ Here is how to reduce a ``Loop(s, s')`` statement by one step:
     \begin{align*}
         \ottdruleloopXXbreak{}\\
         \ottdruleloopXXnextXXiteration{}\\
+        \ottdruleloopXXincrement{}\\
         \ottdruleloopXXotherXXterminator{}\\
         \ottdruleloopXXreduce{}
     \end{align*}

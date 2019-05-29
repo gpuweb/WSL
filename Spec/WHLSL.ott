@@ -15,7 +15,8 @@ dpid :: divergence_point_identifier_ ::=
 s :: stmt_ ::= {{com statement}}
     | if ( e ) s :: :: if_then {{com Desugared}}
     | while ( e ) s :: :: while {{com Desugared}}
-    | for ( eOrVDecls ; eOrNothing ; eOrNothing' ) s :: :: for {{com Desugared}}
+    | for ( eOrVDecls ; eOrNothing ; eOrNothing' ) s :: :: for {{com partly desugared}}
+    | for dpid ( ; e ; e' ) s :: :: for_desugared
     | tval vdecl0 , .. , vdecln ; :: :: multi_vdecls {{com partly desugared}}
     | ; :: :: empty {{com Desugared}}
     | if dpid ( e ) s else s' :: :: if
@@ -31,7 +32,7 @@ s :: stmt_ ::= {{com statement}}
     | e ; :: :: effectful_expr
     | tval x : sid ; :: :: resolved_vdecl {{com post-monomorphisation variable declaration}}
     | tval x : sid = e ; :: :: resolved_init_vdecl {{com post-monomorphisation}}
-    | Loop ( s , s' ) :: :: loop_construct {{com Special, only during execution}}
+    | Loop ( s , s' , s'' ) :: :: loop_construct {{com Special, only during execution}}
     | Cases ( s0 , .. , sn ) :: :: cases_construct {{com Special, only during execution}}
     | Join ( s ) :: :: join_construct {{com Special, only during execution}}
 %TODO: make the dpid less visible/obnoxious.
@@ -243,11 +244,8 @@ s --> s' :: :: desugaring_stmt :: '' {{com Desugaring statements}} by
     --------------------------------------------------------------------------- :: for_empty_incr
     for (eOrVDecls ; e ; ) s --> for (eOrVDecls ; e ; null) s
 
-    ------------------------------------------------ :: for_init_expr
-    for (e ; e' ; e'') s --> {e; while(e') {s e'';}}
-
-    ------------------------------------------------ :: for_init_empty
-    for ( ; e' ; e'') s --> while(e') {s e'';}
+    ------------------------------------------------- :: for_init_expr
+    for (e ; e' ; e'') s --> {e; for ( ; e' ; e'') s}
 
     ------------------------------------------------------------------------------------------ :: for_init_vdecls
     for (tval vdecl0 , .. , vdecln ; e' ; e'') s --> {tval vdecl0 , .. , vdecln; while(e') {s e'';}}
@@ -282,12 +280,30 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- do dpid s while (e); : (B \ {Break, Continue}) + {Nothing}
 
     G |- e : bool
+    G |- e' : t
+    G |- s : B
+    Return Ptr(tval, as) not in B
+    Return Ref(tval, as) not in B
+    Break in B
+    --------------------------------------------------------------- :: for_break
+    G |- for dpid (;e;e') s : (B \ {Break, Continue}) + {Nothing}
+
+    G |- e : bool
     G |- s : B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
     Break not in B
     ------------------------------------------ :: do_while_no_break
     G |- do dpid s while (e); : B \ {Continue}
+
+    G |- e : bool
+    G |- e' : t
+    G |- s : B
+    Return Ptr(tval, as) not in B
+    Return Ref(tval, as) not in B
+    Break not in B
+    ------------------------------------------ :: for_no_break
+    G |- for dpid (;e;e') s : B \ {Continue}
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -764,23 +780,31 @@ R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on stateme
     --------------------------------------------------------------- :: if_false
     R |- if dpid (false) s else s' -> Join(s') ;; push(false, dpid)
 
-    -------------------------------------------------------------------------- :: do_while_loop
-    R |- do dpid s while(e); -> Loop(s, if dpid (e) do dpid s while(e); else {}) ;;
+    ----------------------------------------------------------------------------------- :: do_while_loop
+    R |- do dpid s while(e); -> Loop(s, {}, if dpid (e) do dpid s while(e); else {}) ;;
+
+    -------------------------------------------------------------------------------------- :: for_loop
+    R |- for dpid (; e ; e' ) s -> if dpid (e) Loop(s, e';, for dpid (;e;e') s) else {} ;;
 
     R |- s1 -> s1' ; E ; S
-    ------------------------------------------ :: loop_reduce
-    R |- Loop(s1, s2) -> Loop(s1', s2) ; E ; S
+    -------------------------------------------------- :: loop_reduce
+    R |- Loop(s1, s2, s3) -> Loop(s1', s2, s3) ; E ; S
 
-    ----------------------------- :: loop_break
-    R |- Loop(break;, s2) -> {};;
+    --------------------------------- :: loop_break
+    R |- Loop(break;, s2, s3) -> {};;
 
     s1 = {R'} \/ s1 = continue;
-    --------------------------- :: loop_next_iteration
-    R |- Loop(s1, s2) -> s2;;
+    -------------------------------- :: loop_next_iteration
+    R |- Loop(s1, {R''}, s2) -> s2;;
+
+    s1 = {R'} \/ s1 = continue;
+    R |- s2 -> s2' ; E ; S
+    -------------------------------------------------- :: loop_increment
+    R |- Loop(s1, s2, s3) -> Loop(s1, s2', s3) ; E ; S
     
     s1 = fallthrough; \/ s1 = return; \/ s1 = return rval; \/ s1 = trap;
     -------------------------------------------------------------------- :: loop_other_terminator
-    R |- Loop(s1, s2) -> s1;;
+    R |- Loop(s1, s2, s3) -> s1;;
 
     R |- e -> e' ; E ; S
     ---------------------------------------------------------------------------------------------------------- :: switch_reduce
