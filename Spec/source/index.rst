@@ -900,7 +900,7 @@ To check a do-while or for statement:
 To check a switch statement:
 
 #. Check that the expression being switched on is well-typed 
-#. Check that its type is either an integer type (``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``) or an enum type
+#. Check that its type is either an integer type (``int`` or ``uint``) or an enum type
 #. Check that each value ``v`` in a ``case v`` in this switch is well-typed with the same type
 #. Check that no two such cases have the same value
 #. If there is a default, check that there is at least one value in that type which is not covered by the cases
@@ -1052,11 +1052,11 @@ To check that an assignment is well-typed:
         \ottdruleassignment{}
     \end{align*}
 
-A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
-
 If an expression is well-typed and its type is an abstract left-value type, it can also be treated as if it were of the associated right-value type.
 If an expression is well-typed and its type is a left-value type, and its address space is not constant, it can also be treated as if it were of the associated abstract left-value type.
-If an expression is well-typed and its type is a left-value type, and its address space is constant, it can also be treated as if it were of the associated right-value type.
+If an expression is well-typed and its type is a left-value type, it can also be treated as if it were of the associated right-value type.
+
+A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
 
 An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed with a left-value type (respectively of a pointer type).
 The associated right-value types and address spaces are left unchanged by these two operators.
@@ -1072,8 +1072,10 @@ The associated right-value types and address spaces are left unchanged by this o
     :nowrap:
 
     \begin{align*}
+        \ottdrulealvalXXtoXXrval{}\\
+        \ottdrulelvalXXtoXXalval{}\\
+        \ottdrulelvalXXtoXXrval{}\\
         \ottdrulevariableXXname{}\\
-        \ottdrulelvalXXaccess{}\\
         \ottdruleaddressXXtaking{}\\
         \ottdruleptrXXderef{}\\
         \ottdruletakeXXrefXXlval{}

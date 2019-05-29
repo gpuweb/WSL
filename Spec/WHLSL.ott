@@ -127,6 +127,7 @@ b :: single_behaviour_ ::=
 
 t {{tex \tau}} :: type_ ::= {{com type}}
     | LVal ( tval , addressSpace ) :: :: lval {{com left value}}
+    | ALVal ( tval ) :: :: abstract_lval {{com abstract left value}}
     | tval :: :: tval {{tex [[tval]] }}
 tval {{tex {\tau^{val} } }} :: type_value_ ::=
     | Ptr ( tval , addressSpace ) :: :: ptr {{com pointer}}
@@ -449,21 +450,29 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     -------------- :: not
     G |- !e : bool
 
-    G |- e : LVal(tval, as)
+    G |- e : ALVal(tval)
     G |- e' : tval
-    as != constant
     tval != Ptr(tval', as')
     tval != Ref(tval', as')
     ----------------------- :: assignment
     G |- e = e' : tval
 
+    G |- e : ALVal (tval)
+    --------------------- :: alval_to_rval
+    G |- e : tval
+
+    G |- e: LVal(tval, as)
+    as != constant
+    ---------------------- :: lval_to_alval
+    G |- e: ALVal(tval)
+
+    G |- e : LVal(tval, as)
+    ----------------------- :: lval_to_rval
+    G |- e : tval
+
     x -> t in G
     ----------- :: variable_name
     G |- x : t
-
-    G |- e : LVal(tval, as)
-    ----------------------- :: lval_access
-    G |- e : tval
 
     G |- e : LVal(tval, as)
     ----------------------- :: address_taking
