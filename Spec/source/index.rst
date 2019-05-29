@@ -439,7 +439,7 @@ The second kind is a multi-line comment, that starts with the string ``/*`` and 
 Parsing
 -------
 
-In this section we will describe the grammar of WHLSL programs, using the usual BNF metalanguage (https://en.wikipedia.org/wiki/Backus–Naur_form).
+In this section we will describe the grammar of WHLSL programs, using the usual BNF metalanguage (`https://en.wikipedia.org/wiki/Backus–Naur_form <https://en.wikipedia.org/wiki/Backus–Naur_form>`_).
 We use names starting with an upper case letter to refer to lexical tokens defined in the previous section, and names starting with a lower case letter to refer to non-terminals. These are linked (at least in the HTML version of this document).
 We use non-bold text surrounded by quotes for text terminals (keywords, punctuation, etc..).
 
@@ -538,7 +538,7 @@ We also partly desugar for loops:
 
 .. productionlist::
     variableDecls: `type` `variableDecl` ("," `variableDecl`)*
-    variableDecl: `Identifier` ("=" `possibleTernaryConditional`)?
+    variableDecl: `Identifier` ("=" `ternaryConditional`)?
 
 Complex variable declarations are also mere syntactic sugar.
 Several variable declarations separated by commas are the same as separating them with semicolons and repeating the type for each one.
