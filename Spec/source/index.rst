@@ -888,11 +888,13 @@ To check a do-while statement:
 
     \begin{align*}
         \ottdruledoXXwhileXXbreak{}\\
-        \ottdruledoXXwhileXXnoXXbreak{}
+        \ottdruledoXXwhileXXnoXXbreak{}\\
+        \ottdruleforXXbreak{}\\
+        \ottdruleforXXnoXXbreak{}\\
     \end{align*}
 
 .. note::
-    We do not give rules for for loops, or for while loops, or for if-then statements without an else, because all of those are syntactic sugar that are eliminated during parsing.
+    We do not give rules for while loops, or for if-then statements without an else, because they are syntactic sugar that are eliminated during parsing (see :ref:`parsing_label`).
 
 To check a switch statement:
 
