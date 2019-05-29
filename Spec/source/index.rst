@@ -1439,6 +1439,16 @@ If a statement is just an expression (``effectfulExpr`` in the grammar), it is e
 
 If a statement is a return followed by an expression, and the expression can be reduced, then the statement can as well by reducing the expression.
 
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleeffectfulXXexprXXreduce{}\\
+        \ottdruleeffectfulXXexprXXelim{}\\
+        \ottdrulereturnXXreduce{}\\
+    \end{align*}
+
+
 The standard library also offers atomic operations and fences (a.k.a. *memory barriers*, not to be confused with *control barriers*).
 Each of these emit a specific memory event when they are executed, whose semantics is described in the memory model section.
 
