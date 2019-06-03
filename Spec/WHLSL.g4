@@ -232,10 +232,6 @@ effSuffix
     | '(' expr ')' ;
 // Note: this last case is to allow craziness like "(x < y ? z += 42 : w += 13);" 
 // TODO: Not sure at all how useful it is, I also still have to double check that it introduces no ambiguity.
-limitedSuffixOperator
-    : '.' Identifier 
-    | '->' Identifier 
-    | '[' expr ']' ;
 
 expr: (possibleTernaryConditional ',')* possibleTernaryConditional;
 // TODO: I tried to mimic https://en.cppreference.com/w/cpp/language/operator_precedence with regards to assignment and ternary conditionals, but it still needs some testing
@@ -255,6 +251,10 @@ possibleAdd: possibleMult (('+' | '-') possibleMult)* ;
 possibleMult: possiblePrefix (('*' | '/' | '%') possiblePrefix)* ;
 possiblePrefix: prefixOp* possibleSuffix ;
 prefixOp: '++' | '--' | '+' | '-' | '~' | '!' | '&' | '@' | '*' ;
+limitedSuffixOperator
+    : '.' Identifier
+    | '->' Identifier
+    | '[' expr ']' ;
 possibleSuffix
     : callExpression limitedSuffixOperator*
     | term (limitedSuffixOperator | '++' | '--')* ;
