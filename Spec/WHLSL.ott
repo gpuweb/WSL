@@ -77,8 +77,11 @@ e :: expr_ ::= {{com expression}}
     | & e :: :: address_taking
     | @ e :: :: array_reference_making
     | e [ e' stride ] :: :: array_index {{tex [[e]] [ [[e']] ]_{[[stride]]} }}
+    | e ++ :: :: postfix_incr
+    | e1 += e2 :: :: plus_equal
     | x ( e0 , .. , en ) :: :: call
     | fid ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
+    | integerLiteral :: :: int_literal
     | val :: :: val {{com only during exec, except literals}}
     | Call s :: :: call_construct {{com only during exec}}
     | JoinExpr ( e ) :: :: join_expr_construct {{com only during exec}}
@@ -194,6 +197,7 @@ formula :: formula_ ::=
     | x not in G :: :: env_mapping_missing {{tex [[x]] \not\in [[G]]}}
     | G |- isIntegerOrEnum ( tval ) :: :: is_integer
     | G |- sc0 .. scn fully covers tval :: :: full_switch_coverage % TODO: make it explicit
+    | x = operator+ :: :: operator_plus_name
     | s != s' :: :: stmt_not_eq {{tex [[s]] \neq [[s']]}}
     | tval != tval' :: :: tval_not_eq {{tex [[tval]] \neq [[tval']]}}
     | as != as' :: :: address_space_not_eq {{tex [[as]] \neq [[as']]}}
@@ -511,6 +515,20 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- e' : uint32
     --------------------------- :: array_ref_index
     G |- e[e'] : LVal(tval, as)
+
+    G |- e : ALVal(tval)
+    x = operator+
+    G |- x(e, integerLiteral) : tval
+    -------------------------------- :: postfix_incr
+    G |- e ++ : tval
+
+    G |- e1 : ALVal(tval1)
+    G |- e2: tval2
+    x = operator+
+    G |- x(e1, e2) : tval1
+    ------------------------------ :: operator_plus_equal
+    G |- e1 += e2 : tval1
+
 
     % G |- e0 : tval0 /\../\ G |- en : tvaln
     % x -> Func{sig0, .., sigk} in G

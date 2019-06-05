@@ -878,11 +878,11 @@ To check a do-while or for statement:
 
 #. Check that the condition is well-typed, of type ``bool``
 #. If it is a for statement, check that the expression that is executed at the end of each iteration is well-typed
-#. Check that the body of the loop is a well-typed statement whose behaviours we will call B
-#. Check that B does not contain a return of a pointer type, or of an array reference type
-#. If Continue is in B, remove it
-#. If Break is in B, remove it and add Nothing to B
-#. Then the do-while statement is well-typed, and its behaviours is B
+#. Check that the body of the loop is a well-typed statement whose behaviours we will call ``B``
+#. Check that ``B`` does not contain a return of a pointer type, or of an array reference type
+#. If Continue is in ``B``, remove it
+#. If Break is in ``B``, remove it and add Nothing to ``B``
+#. Then the do-while statement is well-typed, and its behaviours is ``B``
 
 .. math::
     :nowrap:
@@ -1126,7 +1126,7 @@ To check that an array dereference ``e1[e2]`` is well-typed:
 To check that an expression ``e++``, or ``e--`` is well-typed:
 
 #. Check that ``e`` is well-typed, with an abstract left-value type
-#. Check that a call to ``operator+(e, e)`` (respectively ``operator-(e, e)``) would be well-typed, with a right-value type that matches ``e``
+#. Check that a call to ``operator+(e, 1)`` (respectively ``operator-(e, 1)``) would be well-typed, with a right-value type that matches ``e``
 #. Then the expression is well-typed, and of the right-value type of ``e``
 
 .. todo::
@@ -1139,8 +1139,16 @@ To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2
 
 #. Check that ``e1`` is well-typed, with an abstract left-value type
 #. Check that ``e2`` is well-typed
-#. Check that a call to ``operator+(e1, e2)`` (respectively with the corresponding operators) would be well-typed, with a right-value type that matches ``e``
-#. Then the expression is well-typed, and of the right-value type of ``e``
+#. Check that a call to ``operator+(e1, e2)`` (respectively with the corresponding operators) would be well-typed, with a right-value type that matches ``e1``
+#. Then the expression is well-typed, and of the right-value type of ``e1``
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulepostfixXXincr{}\\
+        \ottdruleoperatorXXplusXXequal{}
+    \end{align*}
 
 To check that a function call is well-typed:
 
