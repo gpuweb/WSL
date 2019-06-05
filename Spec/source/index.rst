@@ -1264,7 +1264,7 @@ Here is how to reduce a block by one step:
 
 #. If the block is not annotated, annotate it with the environment
 #. If the first statement of the block is an empty block, remove it
-#. Else if the first statement of the block is a terminator (break, continue, fallthrough, return or trap), replace the entire block by it.
+#. Else if the first statement of the block is a terminator (break, continue, fallthrough, or return), replace the entire block by it.
 #. Else if the first statement of the block is a variable declaration:
 
    #. Make a new environment from the one that annotates the block, mapping the variable name to its store identifier.
@@ -1566,6 +1566,14 @@ To reduce a ``JoinExpr`` by one step:
    #. ASSERT(the divergence stack is not empty)
    #. Pop the last element from the divergence stack
    #. Replace the whole expression by its operand
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulejoinXXexprXXelim{}\\
+        \ottdrulejoinXXexprXXreduce{}
+    \end{align*}
 
 Pointers and references
 """""""""""""""""""""""
