@@ -381,7 +381,7 @@ The following strings are reserved keywords of the language:
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Top level                     | struct typedef enum operator vertex fragment compute numthreads                         |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Control flow                  | if else switch case default while do for break continue fallthrough return trap         |
+| Control flow                  | if else switch case default while do for break continue fallthrough return              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Literals                      | null true false                                                                         |
 +-------------------------------+-----------------------------------------------------------------------------------------+
@@ -398,7 +398,7 @@ The following strings are reserved keywords of the language:
 
 .. todo::
     Decide whether we support the trap statement or not, and harmonize the different sections of the spec in that regard.
-    https://github.com/gpuweb/WHLSL/issues/301 
+    https://github.com/gpuweb/WHLSL/issues/301
 
 ``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
 
@@ -500,7 +500,7 @@ Statements
         : | `terminatorStmt` ";" 
         : | `maybeEffectfulExpr` ";"
     compoundStmt: `ifStmt` | `ifElseStmt` | `whileStmt` | `doWhileStmt` | `forStmt` | `switchStmt`
-    terminatorStmt: "break" | "continue" | "fallthrough" | "return" `expr`? | "trap"
+    terminatorStmt: "break" | "continue" | "fallthrough" | "return" `expr`?
 
 .. productionlist::
     ifStmt: "if" "(" `expr` ")" `stmt`
@@ -928,8 +928,6 @@ The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are a
 
 The statement ``return e;`` is well-typed if ``e`` is a well-typed expression with a right-value type T and its behaviours is then {Return T}.
 
-.. The statement ``trap;`` is always well-typed. Its set of behaviours is {Return T} for whichever T makes the validation of the program pass (if one such T exists).
-
 .. math::
     :nowrap:
 
@@ -1319,13 +1317,21 @@ Here is how to reduce a branch (if-then-else construct, remember that if-then is
 
 Here is how to reduce a ``Join(s)`` statement:
 
-#. If the argument of the ``Join`` is a terminator (``break;``, ``continue;``, ``fallthrough;``, ``return e?;`` or ``trap;``) or an empty block
+#. If the argument of the ``Join`` is a terminator (``break;``, ``continue;``, ``fallthrough;``, or ``return e?;``) or an empty block
 
    #. ASSERT(the divergence stack is not empty)
    #. Pop the last element from the divergence stack
    #. Replace the ``Join`` statement by its argument
 
 #. Else reduce its argument
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulejoinXXelim{}\\
+        \ottdrulejoinXXreduce{}
+    \end{align*}
 
 .. note:: Popping the last element from the divergence stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.
 
@@ -1373,7 +1379,7 @@ Here is how to reduce a ``Cases`` construct by one step:
    #. Pop the last element from the divergence stack
    #. Replace the entire construct by an empty block
 
-#. Else if the first argument is another terminator statement, that cannot be reduced (i.e. ``continue;``, ``trap;``, ``return value;`` or ``return;``)
+#. Else if the first argument is another terminator statement, that cannot be reduced (i.e. ``continue;``, ``return value;`` or ``return;``)
 
    #. ASSERT(the divergence stack is not empty)
    #. Pop the last element from the divergence stack
@@ -1420,7 +1426,7 @@ Here is how to reduce a ``Loop(s, s')`` statement by one step:
     #. If the second argument ``s'`` is the empty statement, replace the whole construct by its third argument ``s''``
     #. Else reduce ``s'`` by a step
 
-#. Else if ``s`` is another terminator (``fallthrough;``, ``return;``, ``return rval;`` or ``trap;``), replace the whole construct by it
+#. Else if ``s`` is another terminator (``fallthrough;``, ``return;`` or ``return rval;``), replace the whole construct by it
 #. Else reduce ``s`` by one step
 
 .. math::

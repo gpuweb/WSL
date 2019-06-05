@@ -866,6 +866,6 @@ R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on stateme
     -------------------------------- :: join_reduce
     R |- Join(s) -> Join(s') ; E ; S
 
-    s = break; \/ s = continue; \/ s = fallthrough; \/ s = return; \/ s = return e;
-    ------------------------------------------------------------------------------- :: join_elim
+    s = break; \/ s = continue; \/ s = fallthrough; \/ s = return; \/ s = return e; \/ s = {R }
+    ------------------------------------------------------------------------------------------- :: join_elim
     R |- Join(s) -> s ;; pop()
