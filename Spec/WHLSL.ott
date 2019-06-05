@@ -27,7 +27,6 @@ s :: stmt_ ::= {{com statement}}
     | fallthrough ; :: :: fallthrough
     | return e ; :: :: return
     | return ; :: :: return_void
-    | trap ; :: :: trap
     | { blockAnnot s0 .. sn } :: :: block
     | e ; :: :: effectful_expr
     | tval x : sid ; :: :: resolved_vdecl {{com post-monomorphisation variable declaration}}
@@ -769,8 +768,8 @@ R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on stateme
     --------------------------------------- :: block_next_stmt
     Rout |- {R {R'} s1..sn} -> {R s1..sn};;
 
-    s = break; \/ s = continue; \/ s = fallthrough; \/ s = return rval; \/ s = return; \/ s = trap;
-    ----------------------------------------------------------------------------------------------- :: block_terminator
+    s = break; \/ s = continue; \/ s = fallthrough; \/ s = return rval; \/ s = return;
+    ---------------------------------------------------------------------------------- :: block_terminator
     Rout |- {R s s1..sn} -> s;;
 
     R' = R[x -> LVal(sid)]
@@ -829,8 +828,8 @@ R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on stateme
     -------------------------------------------------- :: loop_increment
     R |- Loop(s1, s2, s3) -> Loop(s1, s2', s3) ; E ; S
     
-    s1 = fallthrough; \/ s1 = return; \/ s1 = return rval; \/ s1 = trap;
-    -------------------------------------------------------------------- :: loop_other_terminator
+    s1 = fallthrough; \/ s1 = return; \/ s1 = return rval;
+    ------------------------------------------------------ :: loop_other_terminator
     R |- Loop(s1, s2, s3) -> s1;;
 
     R |- e -> e' ; E ; S
@@ -858,8 +857,8 @@ R |- s -> s' ; E ; S :: :: exec_stmt :: '' {{com Small-step reduction on stateme
     --------------------------------------------- :: cases_break
     R |- Cases(break;, s0, .., sn) -> {} ;; pop()
 
-    s = continue; \/ s = return; \/ s = return rval; \/ s = trap;
-    ------------------------------------------------------------- :: cases_other_terminator
+    s = continue; \/ s = return; \/ s = return rval;
+    ------------------------------------------------ :: cases_other_terminator
     R |- Cases(s, s0, .., sn) -> s ;; pop()
 
     R |- s -> s' ; E ; S
