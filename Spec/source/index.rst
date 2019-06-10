@@ -1692,7 +1692,8 @@ To reduce an invalid left-value, any of the following is acceptable:
     I just have to figure out what exactly these vector reads map to in WHLSL.
     https://github.com/gpuweb/WHLSL/issues/316
 
-We now define a notion of "reducing ``e`` to an abstract left-value" as follows:
+We now define a notion of "reducing ``e`` one step to an abstract left-value". This will be used to define how much to reduce things on the left-side of assignments.
+For example, in "x = y", we do not want to reduce "x" all the way to a load, although we do want to reduce "y" to a load. Here is the definition:
 
 #. If ``e`` is a (valid or not) lValue, fail
 #. Else if ``e`` is of the form ``e1.foo``
