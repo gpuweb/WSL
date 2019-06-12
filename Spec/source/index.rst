@@ -1695,8 +1695,7 @@ To reduce an invalid left-value, any of the following is acceptable:
 We now define a notion of "reducing ``e`` one step to an abstract left-value". This will be used to define how much to reduce things on the left-side of assignments.
 For example, in "x = y", we do not want to reduce "x" all the way to a load, although we do want to reduce "y" to a load. Here is the definition:
 
-#. If ``e`` is a (valid or not) lValue, fail
-#. Else if ``e`` is of the form ``e1.foo``
+#. If ``e`` is of the form ``e1.foo``
 
     #. If ``e1`` can be reduced one step to an abstract left-value, do it
     #. Else fail
@@ -1707,7 +1706,7 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
     #. Else if ``e2`` can be reduced one step (normally), do it
     #. Else fail
 
-#. Else
+#. Else if ``e`` is not a lValue (valid or not)
 
     #. ASSERT(``e`` can be reduced)
     #. Reduce ``e``
@@ -1812,6 +1811,15 @@ Other
 Parentheses have no effect at runtime (beyond their effect during parsing).
 
 The comma operator simply reduces its first operand as long as it can, then drops it and is replaced by its second operand.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulecommaXXreduce{}\\
+        \ottdrulecommaXXnext{}\\
+        \ottdruleparensXXexec{}
+    \end{align*}
 
 .. I don't mention the ! operator here, because it has no weirdness/interest: it is just a special syntax for a standard library function.
 
