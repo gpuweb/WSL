@@ -1715,16 +1715,13 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
 To reduce an assignment ``e1 = e2``:
 
 #. If ``e1`` can be reduced to an abstract left-value, do it
+#. Else if ``e2`` can be reduced, reduce it.
 #. Else if ``e1`` is a lvalue
 
     #. Emit a store to the address of the lvalue, of the value on the right of the equal, of a size appropriate for the type of that value
     #. Replace the entire expression by the value on the right of the equal.
 
-#. Else if ``e1`` is an invalid lvalue
-
-    #. If ``e2`` can be reduced, reduce it
-    #. Else, either replace the whole expression by ``e2`` or trap
-
+#. Else if ``e1`` is an invalid lvalue, either replace the whole expression by ``e2`` or trap
 #. Else if ``e1`` had a left-value type during typing, reduce it
 #. Else if ``e1`` is of the form ``e3.foo``, replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator.foo=`` with the arguments ``e3`` and ``e2``
 #. Else
@@ -1739,7 +1736,7 @@ Operators
 
 To reduce an expression ``e++`` or ``e--``:
 
-#. If ``e1`` had a left-value type during typing, and is not a lValue (valid or not), then reduce it
+#. If ``e`` had a left-value type during typing, and is not a lValue (valid or not), then reduce it
 #. Else if it can be reduced to an abstract left-value, do it
 #. Else
 

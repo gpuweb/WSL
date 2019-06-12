@@ -226,7 +226,8 @@ formula :: formula_ ::=
     | s is a terminator :: :: stmt_is_terminator
     | rval a valid value for this type :: :: valid_value
     | rval not a valid value for this type :: :: invalid_value
-
+    | e has a left value type :: :: has_left_value_type
+    | e has not a left value type :: :: has_not_left_value_type
 
 defns
 desugaring :: '' ::=
