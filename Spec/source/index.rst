@@ -1711,6 +1711,17 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
     #. ASSERT(``e`` can be reduced)
     #. Reduce ``e``
 
+.. note:: in the rules we say "e is an abstract left-value" as a short hand for "e cannot be reduced further to an abstract left value"
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulealvalXXarrayXXreduceXXleft{}\\
+        \ottdrulealvalXXarrayXXreduceXXright{}\\
+        \ottdrulealvalXXgenericXXreduce{}
+    \end{align*}
+
 To reduce an assignment ``e1 = e2``:
 
 #. If ``e1`` can be reduced to an abstract left-value, do it
@@ -1735,19 +1746,34 @@ Operators
 
 To reduce an expression ``e++`` or ``e--``:
 
-#. If ``e`` had a left-value type during typing, and is not a lValue (valid or not), then reduce it
-#. Else if it can be reduced to an abstract left-value, do it
-#. Else
+#. If ``e`` can be reduced to an abstract left value, do it
+#. Else:
 
-    #. Let ``addr`` be the address associated to this operation
-    #. Replace the whole expression by ``LVal(addr, thread) = e, e = LVal(addr, thread) + 1, LVal(addr, thread)`` (replacing the ``+`` by ``-`` for ``e--``)
+    #. Let ``addr`` be a fresh address
+    #. Replace the whole expression by ``LVal(addr) = e, e = LVal(addr) + 1, LVal(addr)`` (replacing the ``+`` by ``-`` for ``e--``)
+
+.. note:: depending on ``e``, this can lead to calls to getters/setters or address takers.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulepostfixXXincrXXreduce{}\\
+        \ottdrulepostfixXXincrXXelim{}
+    \end{align*}
 
 To reduce an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
 
-#. If ``e1`` had a left-value type during typing, and is not a lValue (valid or not), then reduce it
-#. Else if it can be reduced to an abstract left-value, do it
-#. Else if ``e2`` can be reduced, do it
+#. If ``e1`` can be reduced to an abstract left-value, do it
 #. Else replace the whole expression by an assignment to ``e1`` of the result of the corresponding operator, called on ``e1`` and ``e2``
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleplusXXequalXXreduce{}\\
+        \ottdruleplusXXequalXXelim{}
+    \end{align*}
 
 Calls
 """""

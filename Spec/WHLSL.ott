@@ -78,6 +78,7 @@ e :: expr_ ::= {{com expression}}
     | e [ e' stride ] :: :: array_index {{tex [[e]] [ [[e']] ]_{[[stride]]} }}
     | e ++ :: :: postfix_incr
     | e1 += e2 :: :: plus_equal
+    | operator+ ( e1 , e2 ) :: :: operator_plus {{com call where the function is an operator}}
     | x ( e0 , .. , en ) :: :: call
     | fid ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
     | integerLiteral :: :: int_literal
@@ -155,6 +156,7 @@ rval, rv :: rval_ ::=
     | true :: :: lit_true
     | false :: :: lit_false
     | uint :: :: lit_uint {{com unsigned integer literal}}
+    | 1 :: :: lit_one {{com the integer one}}
     | TrapValue :: :: trap {{com Special, represents a caught error (e.g. out-of-bounds access)}}
     | Void :: :: void {{com Special, the return value of a void function call}}
 
@@ -196,7 +198,6 @@ formula :: formula_ ::=
     | x not in G :: :: env_mapping_missing {{tex [[x]] \not\in [[G]]}}
     | G |- isIntegerOrEnum ( tval ) :: :: is_integer
     | G |- sc0 .. scn fully covers tval :: :: full_switch_coverage % TODO: make it explicit
-    | x = operator+ :: :: operator_plus_name
     | s != s' :: :: stmt_not_eq {{tex [[s]] \neq [[s']]}}
     | tval != tval' :: :: tval_not_eq {{tex [[tval]] \neq [[tval']]}}
     | as != as' :: :: address_space_not_eq {{tex [[as]] \neq [[as']]}}
@@ -209,7 +210,6 @@ formula :: formula_ ::=
     | e = e' :: :: expr_eq
     | e != e' :: :: expr_neq {{tex [[e]] \neq [[e']]}}
     | exists i . formula :: :: exists_int
-    | tid = makeFresh()  :: :: make_fresh_tid
     | i = uint :: :: uint_to_indexvar
     | i <= n :: :: indexvar_leq
     | i >= n :: :: indexvar_geq
@@ -228,6 +228,8 @@ formula :: formula_ ::=
     | rval not a valid value for this type :: :: invalid_value
     | e has a left value type :: :: has_left_value_type
     | e has not a left value type :: :: has_not_left_value_type
+    | e is an abstract left value :: :: cannot_reduce_abstract_left_value
+    | addr = freshAddress() :: :: make_fresh_address
 
 defns
 desugaring :: '' ::=
@@ -517,15 +519,13 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- e[e'] : LVal(tval, as)
 
     G |- e : ALVal(tval)
-    x = operator+
-    G |- x(e, integerLiteral) : tval
+    G |- operator+(e, integerLiteral) : tval
     -------------------------------- :: postfix_incr
     G |- e ++ : tval
 
     G |- e1 : ALVal(tval1)
     G |- e2: tval2
-    x = operator+
-    G |- x(e1, e2) : tval1
+    G |- operator+(e1, e2) : tval1
     ------------------------------ :: operator_plus_equal
     G |- e1 += e2 : tval1
 
@@ -539,6 +539,25 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
 defns
 exec :: '' ::=
+defn
+R |- e => e' ; E ; S :: :: exec_expr_alval :: '' {{com Small-step reduction to an abstract left value}} {{tex [[R]] \Vdash [[e]] \xrightarrow[ [[S]] ]{[[E]]} [[e']]}} by
+
+    R |- e1 => e1' ; E ; S
+    ------------------------------ :: alval_array_reduce_left
+    R |- e1[e2] => e1'[e2] ; E ; S
+
+    R |- e2 -> e2' ; E ; S
+    e1 is an abstract left value
+    ------------------------------ :: alval_array_reduce_right
+    R |- e1[e2] => e1[e2'] ; E ; S
+
+    R |- e -> e' ; E ; S
+    e != LVal(addr)
+    e != Invalid_LVal
+    e != e1[e2]
+    -------------------- :: alval_generic_reduce
+    R |- e => e' ; E ; S
+
 defn
 R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on expressions}} {{tex [[R]] \vdash [[e]] \xrightarrow[ [[S]] ]{[[E]]} [[e']]}} by
 
@@ -747,6 +766,23 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     ------------------------- :: call_end_function
     R |- Call {R'} -> Void ;;
+
+    R |- e => e' ; E ; S
+    ---------------------------------- :: postfix_incr_reduce
+    R |- e++ -> e' ++ ; E ; S
+
+    e is an abstract left value
+    addr = freshAddress()
+    ----------------------------------------------------------------------- :: postfix_incr_elim
+    R |- e++ -> LVal(addr) = e, e = operator+(LVal(addr), 1), LVal(addr) ;;
+
+    R |- e1 => e1' ; E ; S
+    ---------------------------------- :: plus_equal_reduce
+    R |- e1 += e2 -> e1' += e2 ; E ; S
+
+    e1 is an abstract left value
+    ------------------------------------------ :: plus_equal_elim
+    R |- e1 += e2 -> e1 = operator+(e1, e2) ;;
 
     e != val
     R |- e -> e' ; E ; S
