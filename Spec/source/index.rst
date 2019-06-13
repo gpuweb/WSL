@@ -1732,12 +1732,23 @@ To reduce an assignment ``e1 = e2``:
     #. Replace the entire expression by the value on the right of the equal.
 
 #. Else if ``e1`` is an invalid lvalue, either replace the whole expression by ``e2`` or trap
-#. Else if ``e1`` had a left-value type during typing, reduce it
 #. Else if ``e1`` is of the form ``e3.foo``, replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator.foo=`` with the arguments ``e3`` and ``e2``
 #. Else
 
     #. ASSERT(``e1`` is of the form ``e3[e4]``)
     #. Replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator[]=`` with the arguments ``e3``, ``e4``, and ``e2``
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruleassignXXleftXXreduce{}\\
+        \ottdruleassignXXrightXXreduce{}\\
+        \ottdruleassignXXexecute{}\\
+        \ottdruleassignXXinvalidXXignore{}\\
+        \ottdruleassignXXinvalidXXtrap{}\\
+        \ottdruleassignXXindexedXXsetter{}
+    \end{align*}
 
 .. Should we make the sizes of loads/stores more explicit?
 

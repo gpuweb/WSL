@@ -78,7 +78,10 @@ e :: expr_ ::= {{com expression}}
     | e [ e' stride ] :: :: array_index {{tex [[e]] [ [[e']] ]_{[[stride]]} }}
     | e ++ :: :: postfix_incr
     | e1 += e2 :: :: plus_equal
-    | operator+ ( e1 , e2 ) :: :: operator_plus {{com call where the function is an operator}}
+    | operator+ ( e1 , e2 ) :: :: operator_plus
+    | operator[]= ( e1 , e2 , e3 ) :: :: operator_indexed_setter
+    | operator[] ( e1 , e2 ) :: :: operator_indexed_getter
+    | operator&[] ( e1 , e2 ) :: :: operator_indexed_ander
     | x ( e0 , .. , en ) :: :: call
     | fid ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
     | integerLiteral :: :: int_literal
@@ -724,13 +727,12 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ------------------------------------------ :: load_invalid
     R |- LVal(addr) -> rval2 ; addr -> rval1 ;
 
-    e0 != LVal(addr)
-    e0 != Invalid_LVal
-    R |- e0 -> e0' ; E ; S
+    R |- e0 => e0' ; E ; S
     -------------------------------- :: assign_left_reduce
     R |- e0 = e1 -> e0' = e1 ; E ; S
 
     R |- e1 -> e1' ; E ; S
+    e0 is an abstract left value
     -------------------------------- :: assign_right_reduce
     R |- e0 = e1 -> e0 = e1' ; E ; S
 
@@ -742,6 +744,10 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     ---------------------------------------- :: assign_invalid_trap
     R |- Invalid_LVal = rval -> TrapValue ;;
+
+    e3[e4] is an abstract left value
+    -------------------------------------------------- :: assign_indexed_setter
+    R |- e3[e4] = rval -> e3 = operator[]=(e3, e4, rval);;
 
     R |- e -> e' ; E ; S
     -------------------------------------------------------------------------------------- :: call_reduce
