@@ -1480,7 +1480,6 @@ We define the following kinds of values:
 - A special Invalid left-value, used to represent the dereferencing of out-of-bounds accesses and the dereferencing of ``null`` 
 - Array references. These have a base address, an address space and a size
 - Struct values. These are a sequence of bytes of the right size, and can be interpreted as a tuple of their elements (plus padding bits)
-- Array values. These are also a sequence of bytes of the right size, and can also be interpreted as a sequence of their elements (plus padding bits).
 
 .. note::
     Abstract left-value types were used in the typing section to represent things that can be assigned to.
@@ -1588,7 +1587,7 @@ To reduce ``& e``:
 #. Else if ``e`` is an invalid lvalue, either replace the whole expression with null, or trap
 #. Else if ``e`` is of the form ``e1.foo`` for some identifier ``foo``:
 
-    #. If ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&.foo``, with an argument which is a pointer to the same address and address-space as ``e1``
+    #. If ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&.foo``, with an argument which is a pointer to the same address as ``e1``
     #. Else if ``e1`` is an invalid lvalue, replace the whole expression by null or trap
     #. Else reduce ``e1``
 
@@ -1597,7 +1596,7 @@ To reduce ``& e``:
     #. If ``e1`` can be reduced and is not (valid or not) lvalue, reduce it
     #. Else if ``e2`` can be reduced, reduce it
     #. ASSERT(``e2`` is a non-negative integer)
-    #. Else if ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&[]``, with a first argument which is a pointer to the same address and address-space as ``e1``, and with a second argument which is ``e2``
+    #. Else if ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&[]``, with a first argument which is a pointer to the same address as ``e1``, and with a second argument which is ``e2``
     #. Else if ``e1`` is an invalid lvalue, either replace the whole expression by null or trap
     #. Else
 
@@ -1878,6 +1877,7 @@ Each of them return a pointer to an address that is the sum of the address of th
     We describe these functions in this way, because they are not writable directly in the language.
 
 For each type of the form ``T[n]`` which is used in the program, the following declarations are generated:
+
 .. code-block::
 
     thread T* operator&[](thread T[n]* a, uint32 i) { return &((@a)[i]); }
@@ -1886,6 +1886,7 @@ For each type of the form ``T[n]`` which is used in the program, the following d
     constant T* operator&[](constant T[n]* a, uint32 i) { return &((@a)[i]); }
 
 For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)`` for some ``address-space``, the following declarations are generated:
+
 .. code-block::
 
     T operator.foo(Bar b) { return b.foo; }
@@ -1895,6 +1896,7 @@ For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)
     The ``b.foo`` part in both of the above uses the address-taker, as ``b`` is a function parameter and thus a left value
 
 For each declaration of the form ``address-space T2* operator&[](thread T1* a, uint32 i)`` for some ``address-space``, the following declarations are generated:
+
 .. code-block::
 
     T2 operator[](T1 a, uint32 i) { return a[i]; }

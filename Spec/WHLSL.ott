@@ -75,7 +75,7 @@ e :: expr_ ::= {{com expression}}
     | * e :: :: ptr_deref
     | & e :: :: address_taking
     | @ e :: :: array_reference_making
-    | e [ e' stride ] :: :: array_index {{tex [[e]] [ [[e']] ]_{[[stride]]} }}
+    | e [ e' ] :: :: array_deref
     | e ++ :: :: postfix_incr
     | e1 += e2 :: :: plus_equal
     | operator+ ( e1 , e2 ) :: :: operator_plus
@@ -94,13 +94,10 @@ val :: val_ ::=
     | LVal ( addr ) :: :: lval
     | Invalid_LVal :: :: invalid_lval {{com corresponds to null and out-of-bounds accesses}}
 
-stride :: stride_ ::=
-    | k :: :: stride {{com stride annotation added during monomorphisation}}
-    | :: :: nothing {{com no stride annotation}}
-
 addr :: addr_ ::=
-    | addr + i * k :: :: add_multiple_stride
+    | addr + i * stride :: :: add_multiple_stride
     | sid :: :: sid
+    | freshAddress() :: :: fresh_addr
 
 targ :: type_argument_ ::= {{com type argument}}
     | x :: :: ident {{com either a type or a constexpr}}
@@ -151,14 +148,13 @@ addressSpace, as :: address_space_ ::=
 tid :: type_identifier_ ::=
 
 rval, rv :: rval_ ::=
-    | { x0 : rval0 ; .. ; xn : rvaln } :: :: struct
-    | [ rval0 , .. , rvaln ] :: :: array
     | Ptr ( addr ) :: :: ptr 
     | Ref ( addr , j ) :: :: ref {{com Reference to array of size j}}
     | null :: :: lit_null
     | true :: :: lit_true
     | false :: :: lit_false
     | uint :: :: lit_uint {{com unsigned integer literal}}
+    | i :: :: int_exec {{com integer at execution time}}
     | 1 :: :: lit_one {{com the integer one}}
     | TrapValue :: :: trap {{com Special, represents a caught error (e.g. out-of-bounds access)}}
     | Void :: :: void {{com Special, the return value of a void function call}}
@@ -213,7 +209,6 @@ formula :: formula_ ::=
     | e = e' :: :: expr_eq
     | e != e' :: :: expr_neq {{tex [[e]] \neq [[e']]}}
     | exists i . formula :: :: exists_int
-    | i = uint :: :: uint_to_indexvar
     | i <= n :: :: indexvar_leq
     | i >= n :: :: indexvar_geq
     | i < n :: :: indexvar_lesser
@@ -223,6 +218,7 @@ formula :: formula_ ::=
     | E = E' :: :: event_eq
     | R = R' :: :: exec_env_eq
     | s = s' :: :: stmt_eq
+    | addr = addr' :: :: address_eq
     | rv not in sc0 .. scn :: :: rval_not_in_cases % TODO: fix typesetting
     | s = { sblock } :: :: block_from_switch_block
     | rv = Default ( tval ) :: :: default_value
@@ -233,6 +229,8 @@ formula :: formula_ ::=
     | e has not a left value type :: :: has_not_left_value_type
     | e is an abstract left value :: :: cannot_reduce_abstract_left_value
     | addr = freshAddress() :: :: make_fresh_address
+    | i is in bounds (that are known statically) :: :: index_in_static_bounds
+    | i is out of bounds (that are known statically) :: :: index_out_of_static_bounds
 
 defns
 desugaring :: '' ::=
@@ -620,7 +618,8 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ------------------------ :: deref_reduce
     R |- * e -> * e' ; E ; S
 
-    e != val
+    e != LVal(addr)
+    e != Invalid_LVal
     R |- e -> e' ; E ; S
     ------------------------ :: take_ptr_reduce
     R |- & e -> & e' ; E ; S
@@ -628,10 +627,59 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     -------------------------------- :: take_ptr_lval
     R |- & LVal(addr) -> Ptr(addr);;
 
-    ----------------------------- :: take_ptr_invalid
+    ----------------------------- :: take_ptr_invalid_null
     R |- & Invalid_LVal -> null;;
 
-    e != val
+    --------------------------------- :: take_ptr_invalid_trap
+    R |- & Invalid_LVal -> TrapValue;;
+
+    e1 != LVal(addr)
+    e1 != Invalid_LVal
+    R |- e1 -> e1' ; E ; S
+    ---------------------------------- :: array_left_reduce
+    R |- e1[e2] -> e1'[e2] ; E ; S
+
+    e1 = LVal(addr) \/ e1 = Invalid_LVal \/ e1 = Ref (addr, j)
+    R |- e2 -> e2' ; E ; S
+    ----------------------------------------------------------- :: array_right_reduce
+    R |- e1[e2] -> e1[e2'] ; E ; S
+
+    addr' = addr + i * stride
+    i is in bounds (that are known statically)
+    ---------------------------------------------- :: array_lval_valid
+    R |- LVal(addr) [i] -> LVal(addr') ;;
+
+    i is out of bounds (that are known statically)
+    j is in bounds (that are known statically)
+    ------------------------------------------------- :: array_lval_clamped
+    R |- LVal(addr) [i] -> LVal(addr) [j] ;;
+
+    i is out of bounds (that are known statically)
+    -------------------------------------------------- :: array_lval_invalid
+    R |- LVal(addr) [i] -> Invalid_LVal ;;
+
+    ------------------------------------- :: array_invalid_lval
+    R |- Invalid_LVal [uint] -> Invalid_LVal ;;
+
+    addr' = addr + i * stride
+    i < j
+    ---------------------------------------------- :: array_ref_valid
+    R |- Ref(addr, j) [i] -> LVal(addr') ;;
+
+    i >= k
+    j < k
+    ----------------------------------------------------- :: array_ref_clamped
+    R |- Ref(addr, k) [i] -> Ref(addr, k) [j] ;;
+
+    i >= j
+    ----------------------------------------- :: array_ref_invalid
+    R |- Ref(addr, j) [i] -> Invalid_LVal ;;
+
+    --------------------------------- :: array_null_access
+    R |- null [i] -> Invalid_LVal ;;
+
+    e != LVal(addr)
+    e != Invalid_LVal
     R |- e -> e' ; E ; S
     ------------------------ :: make_ref_reduce
     R |- @ e -> @ e' ; E ; S
@@ -640,72 +688,11 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     R |- @ LVal(addr) -> Ref(addr, i);;
     % TODO: find a way to express the fact that i is decided at compile time.. it should probably be made part of the @ expression
 
-    ----------------------------- :: make_ref_invalid
+    ----------------------------- :: make_ref_invalid_null
     R |- @ Invalid_LVal -> null;;
 
-    % Note: we might want to eliminate the next few rules, and instead put them into the definition of operator[] on the default types?
-    % it would allow for nicer interaction with protocols.
-    e0 != val
-    R |- e0 -> e0' ; E ; S
-    -------------------------------- :: array_left_reduce
-    R |- e0 [e1] -> e0' [e1] ; E ; S
-
-    e0 = LVal(addr) \/ e0 = [rval0, .., rvaln] \/ e0 = Ref(addr, j)
-    R |- e1 -> e1' ; E ; S
-    --------------------------------------------------------------- :: array_right_reduce
-    R |- e0 [e1] -> e0 [e1'] ; E ; S
-    
-    i = uint
-    i <= n
-    ------------------------------------------ :: array_lit_access_valid
-    R |- [rval0, .., rvaln] [uint] -> rvali ;;
-
-    i = uint
-    i > n
-    ---------------------------------------------- :: array_lit_access_trap
-    R |- [rval0, .., rvaln] [uint] -> TrapValue ;;
-
-    i = uint
-    i > n
-    j <= n
-    ------------------------------------------ :: array_lit_access_clamped
-    R |- [rval0, .., rvaln] [uint] -> rvalj ;;
-
-    i = uint
-    i <= n
-    ----------------------------------------------- :: array_lval_access_valid
-    R |- LVal(addr) [uint k] -> LVal(addr + i*k) ;;
-    % TODO: express better the size check, making it clear that the size information comes from the typing phase.
-
-    i = uint
-    i > n
-    ------------------------------------------- :: array_lval_access_invalid
-    R |- LVal(addr) [uint k] -> Invalid_LVal ;;
-
-    i = uint
-    i > n
-    j <= n
-    ----------------------------------------------- :: array_lval_access_clamped
-    R |- LVal(addr) [uint k] -> LVal(addr + j*k) ;;
-
-    i = uint
-    i < j
-    ------------------------------------------------- :: array_ref_access_valid
-    R |- Ref(addr, j) [uint k] -> LVal(addr + i*k) ;;
-
-    i = uint
-    i >= j
-    --------------------------------------------- :: array_ref_access_invalid
-    R |- Ref(addr, j) [uint k] -> Invalid_LVal ;;
-
-    i = uint
-    i >= j
-    n < j
-    ------------------------------------------------- :: array_ref_access_clamped
-    R |- Ref(addr, j) [uint k] -> LVal(addr + n*k) ;;
-
-    ------------------------------------- :: array_null_access
-    R |- null [uint k] -> Invalid_LVal ;;
+    ---------------------------------- :: make_ref_invalid_trap
+    R |- @ Invalid_LVal -> TrapValue;;
 
     x -> val in R
     ---------------- :: environment_access
