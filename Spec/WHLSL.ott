@@ -644,20 +644,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ----------------------------------------------------------- :: array_right_reduce
     R |- e1[e2] -> e1[e2'] ; E ; S
 
-    addr' = addr + i * stride
-    i is in bounds (that are known statically)
-    ---------------------------------------------- :: array_lval_valid
-    R |- LVal(addr) [i] -> LVal(addr') ;;
-
-    i is out of bounds (that are known statically)
-    j is in bounds (that are known statically)
-    ------------------------------------------------- :: array_lval_clamped
-    R |- LVal(addr) [i] -> LVal(addr) [j] ;;
-
-    i is out of bounds (that are known statically)
-    -------------------------------------------------- :: array_lval_invalid
-    R |- LVal(addr) [i] -> Invalid_LVal ;;
-
     ------------------------------------- :: array_invalid_lval
     R |- Invalid_LVal [uint] -> Invalid_LVal ;;
 
