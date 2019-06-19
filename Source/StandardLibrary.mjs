@@ -605,8 +605,10 @@ export let standardLibrary = (function() {
             print(`        case 1:`);
             print(`            return v.y;`);
             print(`        default:`);
-            print(`            trap;`);
+            print(`            break;`);
             print(`    }`);
+            print(`    ${type} result;`);
+            print(`    return result;`);
             print(`}`);
             print(`${type} operator[](${type}3 v, uint index) {`);
             print(`    switch (index) {`);
@@ -617,8 +619,10 @@ export let standardLibrary = (function() {
             print(`        case 2:`);
             print(`            return v.z;`);
             print(`        default:`);
-            print(`            trap;`);
+            print(`            break;`);
             print(`    }`);
+            print(`    ${type} result;`);
+            print(`    return result;`);
             print(`}`);
             print(`${type} operator[](${type}4 v, uint index) {`);
             print(`    switch (index) {`);
@@ -631,8 +635,10 @@ export let standardLibrary = (function() {
             print(`        case 3:`);
             print(`            return v.w;`);
             print(`        default:`);
-            print(`            trap;`);
+            print(`            break;`);
             print(`    }`);
+            print(`    ${type} result;`);
+            print(`    return result;`);
             print(`}`);
             print(`${type}2 operator[]=(${type}2 v, uint index, ${type} a) {`);
             print(`    switch (index) {`);
@@ -643,7 +649,7 @@ export let standardLibrary = (function() {
             print(`            v.y = a;`);
             print(`            break;`);
             print(`        default:`);
-            print(`            trap;`);
+            print(`            break;`);
             print(`    }`);
             print(`    return v;`);
             print(`}`);
@@ -659,7 +665,7 @@ export let standardLibrary = (function() {
             print(`            v.z = a;`);
             print(`            break;`);
             print(`        default:`);
-            print(`            trap;`);
+            print(`            break;`);
             print(`    }`);
             print(`    return v;`);
             print(`}`);
@@ -678,7 +684,7 @@ export let standardLibrary = (function() {
             print(`            v.w = a;`);
             print(`            break;`);
             print(`        default:`);
-            print(`            trap;`);
+            print(`            break;`);
             print(`    }`);
             print(`    return v;`);
             print(`}`);
