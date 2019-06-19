@@ -1515,7 +1515,7 @@ To reduce a boolean and by one step:
         \ottdruleandXXtrue{}
     \end{align*}
 
-Very similarily, to reduce a boolean or by one step:
+Very similarly, to reduce a boolean or by one step:
 
 #. If its first operand can be reduced, reduce it
 #. Else if its first operand is ``true``, replace the whole operation by ``true``.
@@ -1574,99 +1574,8 @@ To reduce a ``JoinExpr`` by one step:
         \ottdrulejoinXXexprXXreduce{}
     \end{align*}
 
-Pointers and references
-"""""""""""""""""""""""
-
-WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
-Array references are actually bounds-checked fat-pointers.
-
-The ``&`` and ``*`` operators simply convert between left-values and pointers. ``&`` is a bit more tricky, because it must correctly deal with overloads of the address-taking operator, as well as with array references.
-To reduce ``& e``:
-
-#. If ``e`` is a valid lvalue, replace the whole expression by a pointer to the same address
-#. Else if ``e`` is an invalid lvalue, either replace the whole expression with null, or trap
-#. Else if ``e`` is of the form ``e1.foo`` for some identifier ``foo``:
-
-    #. If ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&.foo``, with an argument which is a pointer to the same address as ``e1``
-    #. Else if ``e1`` is an invalid lvalue, replace the whole expression by null or trap
-    #. Else reduce ``e1``
-
-#. Else if ``e`` is of the form ``e1[e2]``:
-
-    #. If ``e1`` can be reduced and is not (valid or not) lvalue, reduce it
-    #. Else if ``e2`` can be reduced, reduce it
-    #. ASSERT(``e2`` is a non-negative integer)
-    #. Else if ``e1`` is a valid lvalue, replace the whole expression by a call to ``operator&[]``, with a first argument which is a pointer to the same address as ``e1``, and with a second argument which is ``e2``
-    #. Else if ``e1`` is an invalid lvalue, either replace the whole expression by null or trap
-    #. Else
-
-        #. ASSERT(``e1`` is an array reference)
-        #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a pointer in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
-        #. Else, either trap or replace the whole expression by null or replace ``e2`` by an integer that is within the bounds of ``e1``
-
-#. Else reduce ``e``
-
-To reduce ``* e``:
-
-#. If ``e`` is null, either trap or replace the whole expression by an invalid left-value
-#. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address in the same address-space
-#. Else reduce ``e``
-
-.. math::
-    :nowrap:
-
-    \begin{align*}
-        \ottdruletakeXXptrXXlval{}\\
-        \ottdruletakeXXptrXXinvalid{}\\
-        \ottdruletakeXXptrXXreduce{}\\
-        \ottdrulederefXXptr{}\\
-        \ottdrulederefXXreduce{}\\
-    \end{align*}
-
-The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
-More precisely, to reduce ``@ e``:
-
-#. If ``e`` is an LValue and was of type LValue of an array of size ``n`` during typing, replace it by an array reference to the same address, same address space, and with a bound of ``n``
-#. Else if it is an LValue and was of type LValue of a non-array type during typing, replace it by an array reference to the same address, same address space, and with a bound of ``1``
-#. Else if it is an invalid lvalue, either replace the whole expression by null, or trap
-#. Else reduce it
-
-There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
-The ``[]`` dereferencing operator is polymorphic: its first operand can be either an array reference, or an array, or a left value pointing
-to an array.
-To reduce ``e1[e2]`` by one step:
-
-#. If ``e1`` can be reduced and is not a (valid or not) lvalue, reduce it
-#. Else if ``e2`` can be reduced, reduce it
-#. ASSERT(``e2`` is a non-negative integer)
-#. Else if ``e1`` is either null or an invalid lvalue, either trap or replace the whole expression by an invalid left-value
-#. Else if ``e1`` is an array reference:
-
-    #. If ``e2`` is within the bounds of ``e1``, replace the whole expression by a left-value in the same address space as ``e1``, with an address which is the sum of the address of ``e1`` and the product of ``e2`` and the stride of ``e1``
-    #. Else, either
-
-        - Trap
-        - Or replace the whole expression by an invalid lvalue
-        - Or replace the whole expression by an LValue in the same address space as ``e1``, with an address which is greater or equal than the address of ``e1``, and such that the sum of this address and the stride of ``e1`` is less than the bound of ``e1`` times the stride of ``e1``
-          (or more understandably, an address that lets a subsequent well-typed access fall within the bounds)
-
-#. Else if ``e1`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&[]``, with a first argument which is a pointer to the same address and address-space as ``e1``, and with a second argument which is ``e2``
-#. Else, replace the whole expression by a call to ``operator[]`` with a first argument which is ``e1`` and a second argument which is ``e2``
-
-The dot operator is used for two purposes: accessing the fields of structs, and getting an element of an enum.
-Additionally, it can be overloaded (through ``operator&.foo``, ``operator.foo=`` and ``operator.foo``).
-To reduce ``e.foo`` for some identifier `foo``:
-
-#. If ``e`` can be reduced and is not a (valid or not) lvalue, reduce it
-#. Else if ``e`` is an invalid lvalue, either replace the whole expression by an invalid lvalue or trap
-#. Else if ``e`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&.foo``, with an argument that is ``e``
-#. Else, replace the whole expression by a call to ``operator.foo`` with an argument that is ``e``
-
-.. todo::
-    Basically all of the ott rules for this section and the next must be redone now that I added the dot operator and overloading of the various getters/setters/anders.
-
-Variables and assignment
-""""""""""""""""""""""""
+Variables
+""""""""""
 
 A variable name can be reduced in one step into whatever that name binds in the current environment.
 This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.
@@ -1691,18 +1600,33 @@ To reduce an invalid left-value, any of the following is acceptable:
     I just have to figure out what exactly these vector reads map to in WHLSL.
     https://github.com/gpuweb/WHLSL/issues/316
 
+Reduction to an abstract left-value
+"""""""""""""""""""""""""""""""""""
+
+.. todo:: my naming here is utterly terrible, I really should find better names for these things.
+
 We now define a notion of "reducing ``e`` one step to an abstract left-value". This will be used to define how much to reduce things on the left-side of assignments.
 For example, in "x = y", we do not want to reduce "x" all the way to a load, although we do want to reduce "y" to a load. Here is the definition:
 
 #. If ``e`` is of the form ``e1.foo``
 
     #. If ``e1`` can be reduced one step to an abstract left-value, do it
+    #. Else if ``e`` had a left-value type and ``e1`` is a left value (valid or not), replace the whole expression by ``* operator&.foo(&e1)``, using the instance of ``operator&.foo`` that was used to give a left-value type to ``e``.
     #. Else fail
 
 #. Else if ``e`` is of the form ``e1[e2]``
 
     #. If ``e1`` can be reduced one step to an abstract left-value, do it
+    #. Else if ``e1`` had an array reference type and can be reduced one step (normally), do it
     #. Else if ``e2`` can be reduced one step (normally), do it
+    #. Else if ``e1`` is ``null``, replace the whole expression by an invalid left-value.
+    #. Else if ``e1`` is an array reference:
+ 
+        #. ASSERT(``e2`` is an integer)
+        #. If ``e2`` is out of the bounds of ``e1``, either replace the whole expression by an invalid left-value, or replace ``e2`` by an unspecified in-bounds value.
+        #. Else replace the whole expression by a left-value, to an address computed by adding the address in ``e1`` to the product of ``e2`` and the stride computed from the type of ``e1``'s elements.
+
+    #. Else if ``e`` had a left-value type and ``e1`` is a left value (valid or not), replace the whole expression by ``* operator&[](&e1, e2)`` using the instance of ``operator&[]`` that was used to give a left-value type to ``e``.
     #. Else fail
 
 #. Else if ``e`` is not a lValue (valid or not)
@@ -1717,25 +1641,39 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
 
     \begin{align*}
         \ottdrulealvalXXarrayXXreduceXXleft{}\\
+        \ottdrulealvalXXarrayXXrefXXreduce{}\\
         \ottdrulealvalXXarrayXXreduceXXright{}\\
+        \ottdrulearrayXXnullXXaccess{}\\
+        \ottdrulearrayXXrefXXinvalid{}\\
+        \ottdrulearrayXXrefXXclamped{}\\
+        \ottdrulearrayXXrefXXvalid{}\\
+        \ottdrulealvalXXarrayXXander{}\\
         \ottdrulealvalXXgenericXXreduce{}
     \end{align*}
+
+Assignment
+""""""""""
 
 To reduce an assignment ``e1 = e2``:
 
 #. If ``e1`` can be reduced to an abstract left-value, do it
 #. Else if ``e2`` can be reduced, reduce it.
-#. Else if ``e1`` is a lvalue
+#. Else if ``e1`` is a valid lvalue
 
     #. Emit a store to the address of the lvalue, of the value on the right of the equal, of a size appropriate for the type of that value
     #. Replace the entire expression by the value on the right of the equal.
 
 #. Else if ``e1`` is an invalid lvalue, either replace the whole expression by ``e2`` or trap
-#. Else if ``e1`` is of the form ``e3.foo``, replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator.foo=`` with the arguments ``e3`` and ``e2``
+#. Else if ``e1`` is of the form ``e3.foo``
+
+    #. ASSERT(``e1`` had an abstract left-value type)
+    #. Replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator.foo=`` with the arguments ``e3`` and ``e2``, using the instance of ``operator.foo=`` that was used to give an abstract left-value type to ``e1``.
+
 #. Else
 
     #. ASSERT(``e1`` is of the form ``e3[e4]``)
-    #. Replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator[]=`` with the arguments ``e3``, ``e4``, and ``e2``
+    #. ASSERT(``e1`` had an abstract left-value type)
+    #. Replace the whole expression by an assignment to ``e3`` of the result of a call to ``operator[]=`` with the arguments ``e3``, ``e4``, and ``e2``, using the instance of ``operator[]=`` that was used to give an abstract left-value type to ``e1``.
 
 .. math::
     :nowrap:
@@ -1751,8 +1689,97 @@ To reduce an assignment ``e1 = e2``:
 
 .. Should we make the sizes of loads/stores more explicit?
 
-Operators
-"""""""""
+Pointers and references
+"""""""""""""""""""""""
+
+WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
+Array references are actually bounds-checked fat-pointers.
+
+The ``&`` and ``*`` operators simply convert between left-values and pointers.
+To reduce ``& e``:
+
+#. If ``e`` can be reduced to an abstract left-value, do it
+#. Else if ``e`` is an invalid lvalue, either replace the whole expression with null, or trap
+#. Else ASSERT(``e`` is a valid lvalue), and replace the whole expression by a pointer to the same address
+
+To reduce ``* e``:
+
+#. If ``e`` is null, either trap or replace the whole expression by an invalid left-value
+#. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address in the same address-space
+#. Else reduce ``e``
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruletakeXXptrXXreduce{}\\
+        \ottdruletakeXXptrXXinvalidXXnull{}\\
+        \ottdruletakeXXptrXXinvalidXXtrap{}\\
+        \ottdruletakeXXptrXXlval{}\\
+        \ottdrulederefXXnullXXtrap{}\\
+        \ottdrulederefXXnullXXinvalid{}\\
+        \ottdrulederefXXptr{}\\
+        \ottdrulederefXXreduce{}
+    \end{align*}
+
+Arrays
+""""""
+
+The ``@`` operator is used to turn a lvalue into an array reference, using the size information computed during typing to set the bounds.
+More precisely, to reduce ``@ e``:
+
+#. If ``e`` is an LValue and was of type LValue of an array of size ``n`` during typing, replace it by an array reference to the same address, same address space, and with a bound of ``n``
+#. Else if it is an LValue and was of type LValue of a non-array type during typing, replace it by an array reference to the same address, same address space, and with a bound of ``1``
+#. Else if it is an invalid lvalue, either replace the whole expression by null, or trap
+#. Else reduce it
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulemakeXXrefXXlval{}\\
+        \ottdrulemakeXXrefXXinvalidXXnull{}\\
+        \ottdrulemakeXXrefXXinvalidXXtrap{}\\
+        \ottdrulemakeXXrefXXreduce{}
+    \end{align*}
+
+.. The rule for make_ref_lval is not clear, it should be two rules, and refer more explicitly to the typing information
+
+.. Should the reduction rule just reduce to an abstract left-value? It is almost certainly equivalent.
+
+There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
+The ``[]`` dereferencing operator is polymorphic: its first operand can be either an array reference, or a value for which the relevant operators (``operator&[]``, ``operator[]=``, or ``operator[]``) are defined.
+To reduce ``e1[e2]`` by one step:
+
+#. If the whole expression can be reduced to an abstract left-value, do it
+#. Else replace the whole expression by ``operator[](e1, e2)``, using the instance of ``operator[]`` that was used during the typing of this array dereference.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdrulearrayXXderefXXreduce{}\\
+        \ottdrulearrayXXderefXXgetter{}
+    \end{align*}
+
+Dot operator
+""""""""""""
+
+The dot operator is used for two purposes: accessing the fields of structs, and getting an element of an enum.
+Additionally, it can be overloaded (through ``operator&.foo``, ``operator.foo=`` and ``operator.foo``).
+To reduce ``e.foo`` for some identifier `foo``:
+
+#. If ``e`` can be reduced and is not a (valid or not) lvalue, reduce it
+#. Else if ``e`` is an invalid lvalue, either replace the whole expression by an invalid lvalue or trap
+#. Else if ``e`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&.foo``, with an argument that is ``e``
+#. Else, replace the whole expression by a call to ``operator.foo`` with an argument that is ``e``
+
+.. todo::
+    Basically all of the ott rules for this section and the next must be redone now that I added the dot operator and overloading of the various getters/setters/anders.
+
+
+Read-modify-write expressions
+"""""""""""""""""""""""""""""
 
 To reduce an expression ``e++`` or ``e--``:
 
@@ -1878,7 +1905,7 @@ Each of them return a pointer to an address that is the sum of the address of th
 
 For each type of the form ``T[n]`` which is used in the program, the following declarations are generated:
 
-.. code-block::
+.. code-block:: none
 
     thread T* operator&[](thread T[n]* a, uint32 i) { return &((@a)[i]); }
     threadgroup T* operator&[](threadgroup T[n]* a, uint32 i) { return &((@a)[i]); }
@@ -1887,7 +1914,7 @@ For each type of the form ``T[n]`` which is used in the program, the following d
 
 For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)`` for some ``address-space``, the following declarations are generated:
 
-.. code-block::
+.. code-block:: none
 
     T operator.foo(Bar b) { return b.foo; }
     Bar operator.foo=(Bar b, T newval) { b.foo = newval; return b; }
@@ -1897,7 +1924,7 @@ For each declaration of the form ``address-space T* operator&.foo(thread Bar* b)
 
 For each declaration of the form ``address-space T2* operator&[](thread T1* a, uint32 i)`` for some ``address-space``, the following declarations are generated:
 
-.. code-block::
+.. code-block:: none
 
     T2 operator[](T1 a, uint32 i) { return a[i]; }
     T1 operator[]=(T1 a, uint32 i, T2 newval) { a[i] = newval; return a; }

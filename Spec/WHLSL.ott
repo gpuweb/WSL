@@ -228,9 +228,9 @@ formula :: formula_ ::=
     | e has a left value type :: :: has_left_value_type
     | e has not a left value type :: :: has_not_left_value_type
     | e is an abstract left value :: :: cannot_reduce_abstract_left_value
+    | e has an array reference type :: :: has_array_reference_type
+    | e does not have an array reference type :: :: has_not_array_reference_type
     | addr = freshAddress() :: :: make_fresh_address
-    | i is in bounds (that are known statically) :: :: index_in_static_bounds
-    | i is out of bounds (that are known statically) :: :: index_out_of_static_bounds
 
 defns
 desugaring :: '' ::=
@@ -530,7 +530,6 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     ------------------------------ :: operator_plus_equal
     G |- e1 += e2 : tval1
 
-
     % G |- e0 : tval0 /\../\ G |- en : tvaln
     % x -> Func{sig0, .., sigk} in G
     % exists i . sigi = (tval0, .., tvaln) -> tval
@@ -547,10 +546,39 @@ R |- e => e' ; E ; S :: :: exec_expr_alval :: '' {{com Small-step reduction to a
     ------------------------------ :: alval_array_reduce_left
     R |- e1[e2] => e1'[e2] ; E ; S
 
+    e1 is an abstract left value
+    e1 has an array reference type
+    R |- e1 -> e1' ; E ; S
+    ------------------------------ :: alval_array_ref_reduce
+    R |- e1[e2] => e1'[e2] ; E ; S
+
     R |- e2 -> e2' ; E ; S
     e1 is an abstract left value
-    ------------------------------ :: alval_array_reduce_right
+    e1 does not have an array reference type \/ e1 = rval
+    ----------------------------------------------- :: alval_array_reduce_right
     R |- e1[e2] => e1[e2'] ; E ; S
+
+    --------------------------------- :: array_null_access
+    R |- null [i] => Invalid_LVal ;;
+
+    i >= k
+    j < k
+    ----------------------------------------------------- :: array_ref_clamped
+    R |- Ref(addr, k) [i] => Ref(addr, k) [j] ;;
+
+    i >= j
+    ----------------------------------------- :: array_ref_invalid
+    R |- Ref(addr, j) [i] => Invalid_LVal ;;
+
+    addr' = addr + i * stride
+    i < j
+    ---------------------------------------------- :: array_ref_valid
+    R |- Ref(addr, j) [i] => LVal(addr') ;;
+
+    e1[rval] has a left value type
+    e1 = LVal(addr) \/ e1 = Invalid_LVal
+    -------------------------------------------- :: alval_array_ander
+    R |- e1[rval] => * operator&[](&e1, rval) ;;
 
     R |- e -> e' ; E ; S
     e != LVal(addr)
@@ -611,16 +639,17 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     --------------------------------- :: deref_ptr
     R |- * Ptr(addr) -> LVal(addr) ;;
 
-    ------------------------------ :: deref_null
+    ------------------------------ :: deref_null_invalid
     R |- * null -> Invalid_LVal ;;
+
+    --------------------------- :: deref_null_trap
+    R |- * null -> TrapValue ;;
 
     R |- e -> e' ; E ; S
     ------------------------ :: deref_reduce
     R |- * e -> * e' ; E ; S
 
-    e != LVal(addr)
-    e != Invalid_LVal
-    R |- e -> e' ; E ; S
+    R |- e => e' ; E ; S
     ------------------------ :: take_ptr_reduce
     R |- & e -> & e' ; E ; S
 
@@ -632,37 +661,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     --------------------------------- :: take_ptr_invalid_trap
     R |- & Invalid_LVal -> TrapValue;;
-
-    e1 != LVal(addr)
-    e1 != Invalid_LVal
-    R |- e1 -> e1' ; E ; S
-    ---------------------------------- :: array_left_reduce
-    R |- e1[e2] -> e1'[e2] ; E ; S
-
-    e1 = LVal(addr) \/ e1 = Invalid_LVal \/ e1 = Ref (addr, j)
-    R |- e2 -> e2' ; E ; S
-    ----------------------------------------------------------- :: array_right_reduce
-    R |- e1[e2] -> e1[e2'] ; E ; S
-
-    ------------------------------------- :: array_invalid_lval
-    R |- Invalid_LVal [uint] -> Invalid_LVal ;;
-
-    addr' = addr + i * stride
-    i < j
-    ---------------------------------------------- :: array_ref_valid
-    R |- Ref(addr, j) [i] -> LVal(addr') ;;
-
-    i >= k
-    j < k
-    ----------------------------------------------------- :: array_ref_clamped
-    R |- Ref(addr, k) [i] -> Ref(addr, k) [j] ;;
-
-    i >= j
-    ----------------------------------------- :: array_ref_invalid
-    R |- Ref(addr, j) [i] -> Invalid_LVal ;;
-
-    --------------------------------- :: array_null_access
-    R |- null [i] -> Invalid_LVal ;;
 
     e != LVal(addr)
     e != Invalid_LVal
@@ -679,6 +677,14 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     ---------------------------------- :: make_ref_invalid_trap
     R |- @ Invalid_LVal -> TrapValue;;
+
+    R |- e1[e2] => e3 ; E ; S
+    ------------------------- :: array_deref_reduce
+    R |- e1[e2] -> e3 ; E ; S
+
+    e1[e2] is an abstract left value
+    ------------------------------------ :: array_deref_getter
+    R |- e1[e2] -> operator[](e1, e2) ;;
 
     x -> val in R
     ---------------- :: environment_access
@@ -719,7 +725,7 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     R |- Invalid_LVal = rval -> TrapValue ;;
 
     e3[e4] is an abstract left value
-    -------------------------------------------------- :: assign_indexed_setter
+    ------------------------------------------------------ :: assign_indexed_setter
     R |- e3[e4] = rval -> e3 = operator[]=(e3, e4, rval);;
 
     R |- e -> e' ; E ; S
