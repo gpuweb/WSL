@@ -1600,6 +1600,8 @@ To reduce an invalid left-value, any of the following is acceptable:
     I just have to figure out what exactly these vector reads map to in WHLSL.
     https://github.com/gpuweb/WHLSL/issues/316
 
+.. _reduction_abstract_left_value_label:
+
 Reduction to an abstract left-value
 """""""""""""""""""""""""""""""""""
 
@@ -1650,6 +1652,8 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
         \ottdrulealvalXXarrayXXander{}\\
         \ottdrulealvalXXgenericXXreduce{}
     \end{align*}
+
+.. _assignment_exec_label:
 
 Assignment
 """"""""""
@@ -1753,6 +1757,8 @@ To reduce ``e1[e2]`` by one step:
 
 #. If the whole expression can be reduced to an abstract left-value, do it
 #. Else replace the whole expression by ``operator[](e1, e2)``, using the instance of ``operator[]`` that was used during the typing of this array dereference.
+
+.. note:: In the case where ``operator&[]`` can be used, it will be used through the rules for reduction to an abstract left-value (see :ref:`reduction_abstract_left_value_label`). For ``operator[]=``, see the section on assignment (:ref:`assignment_exec_label`).
 
 .. math::
     :nowrap:
