@@ -717,13 +717,13 @@ For each top-level declaration:
    #. Else if the name of the function is ``operator[]``
 
         #. It must have exactly two argument
-        #. Its first argument must not be a pointer, array reference or array.
+        #. Its first argument must not be a pointer, array reference, or array.
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
  
    #. Else if the name of the function is ``operator[]=``
 
         #. It must have exactly three arguments
-        #. Its first argument must not be a pointer, array reference or array
+        #. Its first argument must not be a pointer, array reference, or array
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
 
    #. Else if the name of the function is ``operator&[]``
@@ -731,6 +731,7 @@ For each top-level declaration:
         #. It must have exactly two arguments
         #. Its return type must be a pointer type
         #. Its first argument must be a pointer type
+        #. The type pointed at by this pointer cannot be a pointer, array reference, or array.
         #. Both its return type and its first argument type must be in the same address space
         #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
 
