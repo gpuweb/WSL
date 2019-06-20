@@ -28,7 +28,7 @@ for (let type of [`Texture1D`, `RWTexture1D`, `Texture1DArray`, `RWTexture1DArra
         }
     }
 }
-for (let type of [`TextureDepth2D`, `RWTextureDepth2D`, `TextureDepth2DArray`, `RWTextureDepth2DArray`, `TextureDepthCube`]) {
+for (let type of [`TextureDepth2D`, `TextureDepth2DArray`, `TextureDepthCube`]) {
     for (let typeArgument of [`float`]) {
         print(`native typedef ${type}<${typeArgument}>;`);
     }
@@ -1902,7 +1902,7 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location, int offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
-                print(`native void GetDimensions(Texture1D<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* NumberOfLevels);`);
+                print(`native void GetDimensions(Texture1D<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* NumberOfLevels);`);
         }
         print();
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location);`);
@@ -1912,7 +1912,7 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
                 for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
-                    print(`native void GetDimensions(Texture1DArray<${type}${length}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Elements, ${addressSpace3} uint* NumberOfLevels);`);
+                    print(`native void GetDimensions(Texture1DArray<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Elements, ${addressSpace3} uint* NumberOfLevels);`);
             }
         }
         print();
@@ -2145,26 +2145,6 @@ for (let type of [`float`]) {
                 print(`native void GetDimensions(TextureDepthCube<${type}>, uint MipLevel, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* NumberOfLevels);`);
         }
     }
-    print();
-    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
-        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
-            print(`native void GetDimensions(RWTextureDepth2D<${type}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height);`);
-            print(`native void GetDimensions(RWTextureDepth2D<${type}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height);`);
-        }
-    }
-    print(`native ${type} Load(RWTextureDepth2D<${type}>, int2 location);`);
-    print(`native void Store(RWTextureDepth2D<${type}>, ${type}, uint2 location);`);
-    print();
-    for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
-        for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
-            for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
-                print(`native void GetDimensions(RWTextureDepth2DArray<${type}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Height, ${addressSpace3} uint* Elements);`);
-                print(`native void GetDimensions(RWTextureDepth2DArray<${type}>, ${addressSpace1} float* Width, ${addressSpace2} float* Height, ${addressSpace3} float* Elements);`);
-            }
-        }
-    }
-    print(`native ${type} Load(RWTextureDepth2DArray<${type}>, int3 location);`);
-    print(`native void Store(RWTextureDepth2DArray<${type}>, ${type}, uint3 location);`);
     print();
 }
 
