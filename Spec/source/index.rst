@@ -1151,7 +1151,7 @@ To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2
 To check that a function call is well-typed:
 
 #. Check that each argument is well-typed
-#. Make a set of all the functions in the global environment that share the same name and number of parameters
+#. Make a set of all the functions in the global environment that share the same name and number of parameters, and that is not an entry point
 #. For each function in that set:
 
     #. Check that each argument can be given a type that match the type of the parameter
@@ -1162,6 +1162,9 @@ To check that a function call is well-typed:
 
 .. note::
     Our overloading resolution is only this simple because this version of the language does not have generics.
+
+.. note::
+    Entry points cannot be called from within a shader. A function is an entry point if and only if it is marked with one of ``vertex``, ``fragment`` or ``compute``.
 
 .. note::
     A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function ``foo``
