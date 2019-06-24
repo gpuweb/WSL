@@ -1902,7 +1902,7 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location, int offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
-                print(`native void GetDimensions(Texture1D<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* NumberOfLevels);`);
+                print(`native void GetDimensions(Texture1D<${type}${length}>, ${addressSpace1} uint* Width);`);
         }
         print();
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location);`);
@@ -1912,7 +1912,7 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
                 for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
-                    print(`native void GetDimensions(Texture1DArray<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Elements, ${addressSpace3} uint* NumberOfLevels);`);
+                    print(`native void GetDimensions(Texture1DArray<${type}${length}>, ${addressSpace1} uint* Width, ${addressSpace2} uint* Elements);`);
             }
         }
         print();
