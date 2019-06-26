@@ -51,8 +51,13 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
 }
 print();
 
-print(`native operator int(atomic_int);`);
-print(`native operator uint(atomic_uint);`);
+for (let addressSpace of [`device`, `threadgroup`]) {
+    print(`native int load(${addressSpace} atomic_int*);`);
+    print(`native uint load(${addressSpace} atomic_uint*);`);
+    print(`native void store(${addressSpace} atomic_int*, int);`);
+    print(`native void store(${addressSpace} atomic_uint*, uint);`);
+    // FIXME: Store?
+}
 print();
 
 print(`native bool operator==(bool, bool);`);
@@ -1751,26 +1756,6 @@ for (let resultType of [`int`, `uint`, `float`]) {
 }
 print();
 
-print(`native float f16tof32(uint);`);
-print(`native uint f32tof16(float);`);
-for (let size of [2, 3, 4]) {
-    print(`float${size} f16tof32(uint${size} x) {`);
-    print(`    float${size} result;`);
-    for (let i = 0; i < size; ++i) {
-        print(`    result[${i}] = f16tof32(x[${i}]);`);
-    }
-    print(`    return result;`);
-    print(`}`);
-    print(`uint${size} f32tof16(float${size} x) {`);
-    print(`    uint${size} result;`);
-    for (let i = 0; i < size; ++i) {
-        print(`    result[${i}] = f32tof16(x[${i}]);`);
-    }
-    print(`    return result;`);
-    print(`}`);
-}
-print();
-
 print(`native void AllMemoryBarrierWithGroupSync();`);
 print(`native void DeviceMemoryBarrierWithGroupSync();`);
 print(`native void GroupMemoryBarrierWithGroupSync();`);
@@ -1883,7 +1868,7 @@ for (let type of [`half`, `float`]) {
 }
 print();
 
-for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
+for (let addressSpace1 of [`device`, `threadgroup`]) {
     for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
         for (let type of [`uint`, `int`]) {
             for (let functionName of [`Add`, `And`, `Exchange`, `Max`, `Min`, `Or`, `Xor`])
