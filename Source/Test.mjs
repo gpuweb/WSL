@@ -271,6 +271,30 @@ function checkUchar(program, result, expected)
         throw new Error("Wrong result: " + result.value + " (expected " + expected + ")");
 }
 
+function checkChar(program, result, expected)
+{
+    if (!result.type.equals(program.intrinsics.char))
+        throw new Error("Wrong result type: " + result.type);
+    if (result.value != expected)
+        throw new Error("Wrong result: " + result.value + " (expected " + expected + ")");
+}
+
+function checkShort(program, result, expected)
+{
+    if (!result.type.equals(program.intrinsics.short))
+        throw new Error("Wrong result type: " + result.type);
+    if (result.value != expected)
+        throw new Error("Wrong result: " + result.value + " (expected " + expected + ")");
+}
+
+function checkUshort(program, result, expected)
+{
+    if (!result.type.equals(program.intrinsics.ushort))
+        throw new Error("Wrong result type: " + result.type);
+    if (result.value != expected)
+        throw new Error("Wrong result: " + result.value + " (expected " + expected + ")");
+}
+
 function checkBool(program, result, expected)
 {
     if (!result.type.equals(program.intrinsics.bool))
@@ -2605,6 +2629,7 @@ tests.operatorBool = function()
 
         test bool boolFromFloatFalse() { return bool(float(0)); }
         test bool boolFromFloatTrue() { return bool(float(1)); }
+        test bool boolFromFloatNaN(float arg) { return bool(arg); }
     `);
 
     checkBool(program, callFunction(program, "boolFromUcharFalse", []), false);
@@ -2618,6 +2643,7 @@ tests.operatorBool = function()
 
     checkBool(program, callFunction(program, "boolFromFloatFalse", []), false);
     checkBool(program, callFunction(program, "boolFromFloatTrue", []), true);
+    checkBool(program, callFunction(program, "boolFromFloatNaN", [makeFloat(program, NaN)]), true);
 
     checkFail(
         () => doPrep(`
@@ -4098,7 +4124,7 @@ tests.trap = function()
     checkTrap(program, () => callFunction(program, "foo", []), checkInt);
     checkInt(program, callFunction(program, "foo2", [makeInt(program, 1)]), 4);
     checkTrap(program, () => callFunction(program, "foo2", [makeInt(program, 3)]), checkInt);
-    checkTrap(program, () => callFunction(program, "foo3", []), (progam, result, expected) => {
+    checkTrap(program, () => callFunction(program, "foo3", []), (program, result, expected) => {
         for (let i = 0; i < 4; i++) {
             if (result.ePtr.get(i) != expected)
                 throw new Error(`Non-zero return value at offset ${i}`);
@@ -10154,6 +10180,30 @@ tests.setterType = function() {
             return result;
         }
     `), e => e instanceof WTypeError);
+};
+
+tests.booleanToNumber = function() {
+    const types = [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]
+    let program = "";
+
+    for (let type of types) {
+        program += `
+            test ${type} to${type}(bool x) {
+                return ${type}(x);
+            }
+        `;
+    }
+
+    program = doPrep(program);
+    for (let type of types) {
+        let upperType = type[0].toUpperCase() + type.slice(1);
+        let string = `
+            check${upperType}(program, callFunction(program, "to${type}", [makeBool(program,  true)]), 1);
+            check${upperType}(program, callFunction(program, "to${type}", [makeBool(program,  false)]), 0);
+        `;
+        eval(string);
+    }
+
 };
 
 okToTest = true;
