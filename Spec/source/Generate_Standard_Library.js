@@ -1882,7 +1882,6 @@ print();
 for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
     for (let length of [``, `2`, `3`, `4`]) {
         print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location);`);
-        print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location, int offset);`);
         print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
@@ -1890,7 +1889,6 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         }
         print();
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location);`);
-        print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location, int offset);`);
         print(`native ${type}${length} Load(Texture1DArray<${type}${length}>, int3 location);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
