@@ -1884,7 +1884,6 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location);`);
         print(`native ${type}${length} Sample(Texture1D<${type}${length}>, sampler, float location, int offset);`);
         print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location);`);
-        print(`native ${type}${length} Load(Texture1D<${type}${length}>, int2 location, int offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
                 print(`native void GetDimensions(Texture1D<${type}${length}>, ${addressSpace1} uint* Width);`);
@@ -1893,7 +1892,6 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location);`);
         print(`native ${type}${length} Sample(Texture1DArray<${type}${length}>, sampler, float2 location, int offset);`);
         print(`native ${type}${length} Load(Texture1DArray<${type}${length}>, int3 location);`);
-        print(`native ${type}${length} Load(Texture1DArray<${type}${length}>, int3 location, int offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
                 for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
@@ -1926,7 +1924,6 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
             }
         }
         print(`native ${type}${length} Load(Texture2D<${type}${length}>, int3 location);`);
-        print(`native ${type}${length} Load(Texture2D<${type}${length}>, int3 location, int2 offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`])
                 for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
@@ -1959,7 +1956,6 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
             }
         }
         print(`native ${type}${length} Load(Texture2DArray<${type}${length}>, int4 location);`);
-        print(`native ${type}${length} Load(Texture2DArray<${type}${length}>, int4 location, int2 offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
                 for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
@@ -1972,7 +1968,6 @@ for (let type of [`ushort`, `uint`, `short`, `int`, `half`, `float`]) {
         print(`native ${type}${length} Sample(Texture3D<${type}${length}>, sampler, float3 location);`);
         print(`native ${type}${length} Sample(Texture3D<${type}${length}>, sampler, float3 location, int3 offset);`);
         print(`native ${type}${length} Load(Texture3D<${type}${length}>, int4 location);`);
-        print(`native ${type}${length} Load(Texture3D<${type}${length}>, int4 location, int3 offset);`);
         for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
                 for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
@@ -2075,7 +2070,6 @@ for (let type of [`float`]) {
     print(`native ${type}4 GatherCmpRed(TextureDepth2D<${type}>, sampler, float2 location, float compare_value);`);
     print(`native ${type}4 GatherCmpRed(TextureDepth2D<${type}>, sampler, float2 location, float compare_value, int2 offset);`);
     print(`native ${type} Load(TextureDepth2D<${type}>, int3 location);`);
-    print(`native ${type} Load(TextureDepth2D<${type}>, int3 location, int2 offset);`);
     for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
         for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace3 of [`thread`, `device`, `threadgroup`])
@@ -2104,7 +2098,6 @@ for (let type of [`float`]) {
     print(`native ${type}4 GatherCmpRed(TextureDepth2DArray<${type}>, sampler, float3 location, float compare_value);`);
     print(`native ${type}4 GatherCmpRed(TextureDepth2DArray<${type}>, sampler, float3 location, float compare_value, int2 offset);`);
     print(`native ${type} Load(TextureDepth2DArray<${type}>, int4 location);`);
-    print(`native ${type} Load(TextureDepth2DArray<${type}>, int4 location, int2 offset);`);
     for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
         for (let addressSpace2 of [`thread`, `device`, `threadgroup`]) {
             for (let addressSpace3 of [`thread`, `device`, `threadgroup`]) {
