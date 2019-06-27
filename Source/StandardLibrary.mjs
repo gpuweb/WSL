@@ -89,6 +89,13 @@ export let standardLibrary = (function() {
         }
         print();
 
+        for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]) {
+            print(`operator ${type}(bool x) {`);
+            print(`    return x ? 1 : 0;`);
+            print(`}`);
+        }
+        print();
+
         print(`native operator int(atomic_int);`);
         print(`native operator uint(atomic_uint);`);
         print();

@@ -51,6 +51,13 @@ for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `fl
 }
 print();
 
+for (let type of [`uchar`, `ushort`, `uint`, `char`, `short`, `int`, `half`, `float`]) {
+    print(`operator ${type}(bool x) {`);
+    print(`    return x ? 1 : 0;`);
+    print(`}`);
+}
+print();
+
 for (let addressSpace of [`device`, `threadgroup`]) {
     print(`native int load(${addressSpace} atomic_int*);`);
     print(`native uint load(${addressSpace} atomic_uint*);`);
