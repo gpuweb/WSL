@@ -759,10 +759,9 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     fid -> (y0:addr0, .., ym:addrm) {s0 .. sk}
     E = Sequence(addr0 <- rv'0, .., addrm <- rv'm)
-    R' = R[x0 -> rv0, .., xn -> rvn]
-    R'' = R'[y0 -> LVal(addr0), .., ym -> LVal(addrm)]
-    ----------------------------------------------------- :: call_resolve
-    R |- fid(rv'0, .., rv'm) -> Call {R'' s0 .. sk} ; E ;
+    R' = R[y0 -> LVal(addr0), .., ym -> LVal(addrm)]
+    ---------------------------------------------------- :: call_resolve
+    R |- fid(rv'0, .., rv'm) -> Call {R' s0 .. sk} ; E ;
 
     R |- s -> s' ; E ; S
     ------------------------------ :: call_construct_reduce
