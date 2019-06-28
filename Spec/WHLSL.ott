@@ -76,12 +76,16 @@ e :: expr_ ::= {{com expression}}
     | & e :: :: address_taking
     | @ e :: :: array_reference_making
     | e [ e' ] :: :: array_deref
+    | e .foo :: :: field_access
     | e ++ :: :: postfix_incr
     | e1 += e2 :: :: plus_equal
     | operator+ ( e1 , e2 ) :: :: operator_plus
     | operator[]= ( e1 , e2 , e3 ) :: :: operator_indexed_setter
     | operator[] ( e1 , e2 ) :: :: operator_indexed_getter
     | operator&[] ( e1 , e2 ) :: :: operator_indexed_ander
+    | operator.foo= ( e1 , e2 ) :: :: operator_setter
+    | operator.foo ( e1 ) :: :: operator_getter
+    | operator&.foo ( e1 ) :: :: operator_ander
     | x ( e0 , .. , en ) :: :: call
     | fid ( e0 , .. , em ) :: :: resolved_call {{com post-monomorphisation, calls are resolved, and pure type arguments are gone}}
     | integerLiteral :: :: int_literal
@@ -542,6 +546,15 @@ exec :: '' ::=
 defn
 R |- e => e' ; E ; S :: :: exec_expr_alval :: '' {{com Small-step reduction to an abstract left value}} {{tex [[R]] \Vdash [[e]] \xrightarrow[ [[S]] ]{[[E]]} [[e']]}} by
 
+    R |- e => e' ; E ; S
+    ---------------------------- :: alval_dot_reduce
+    R |- e.foo => e'.foo ; E ; S
+
+    e.foo has a left value type
+    e = LVal(addr) \/ e = Invalid_LVal
+    ------------------------------------ :: alval_dot_ander
+    R |- e.foo => * operator&.foo(&e) ;;
+
     R |- e1 => e1' ; E ; S
     ------------------------------ :: alval_array_reduce_left
     R |- e1[e2] => e1'[e2] ; E ; S
@@ -686,6 +699,14 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ------------------------------------ :: array_deref_getter
     R |- e1[e2] -> operator[](e1, e2) ;;
 
+    R |- e1.foo => e2 ; E ; S
+    ------------------------- :: dot_reduce
+    R |- e1.foo -> e2 ; E ; S
+
+    e1.foo is an abstract left value
+    ---------------------------------- :: dot_getter
+    R |- e1.foo -> operator.foo(e1) ;;
+
     x -> val in R
     ---------------- :: environment_access
     R |- x -> val ;;
@@ -723,6 +744,10 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     ---------------------------------------- :: assign_invalid_trap
     R |- Invalid_LVal = rval -> TrapValue ;;
+
+    e3.foo is an abstract left value
+    ---------------------------------------------------- :: assign_setter
+    R |- e3.foo = rval -> e3 = operator.foo=(e3, rval);;
 
     e3[e4] is an abstract left value
     ------------------------------------------------------ :: assign_indexed_setter

@@ -1090,17 +1090,22 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
         then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.
     #. Else if there is a function called ``operator.foo`` with a parameter whose type matches the type of ``e``,
         then the whole expression is well-typed and has the return type of that function.
+    #. Else the expression is ill-typed.
 
 #. Else if ``e`` is an identifier
 
     #. Check that there is an enum with that name in the global environment
     #. Check that this enum has an element named ``foo``
     #. Then ``e.foo`` is well-typed, with the type of that enum
+    #. And replace it by the corresponding value
 
 .. todo::
     This ordering of first checking for getters/setters/address-takers and only looking at enums if e is not a well-typed expression matches the reference implementation,
     but I have no idea whether it was a deliberate decision or something we should revisit.
     https://github.com/gpuweb/WHLSL/issues/312
+
+.. note::
+    Replacing e.foo by its value in the case of an enum is a bit weird of a thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.
 
 To check that an array dereference ``e1[e2]`` is well-typed:
 
@@ -1646,6 +1651,8 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
     :nowrap:
 
     \begin{align*}
+        \ottdrulealvalXXdotXXreduce{}\\
+        \ottdrulealvalXXdotXXander{}\\
         \ottdrulealvalXXarrayXXreduceXXleft{}\\
         \ottdrulealvalXXarrayXXrefXXreduce{}\\
         \ottdrulealvalXXarrayXXreduceXXright{}\\
@@ -1692,6 +1699,7 @@ To reduce an assignment ``e1 = e2``:
         \ottdruleassignXXexecute{}\\
         \ottdruleassignXXinvalidXXignore{}\\
         \ottdruleassignXXinvalidXXtrap{}\\
+        \ottdruleassignXXsetter{}\\
         \ottdruleassignXXindexedXXsetter{}
     \end{align*}
 
@@ -1775,17 +1783,23 @@ To reduce ``e1[e2]`` by one step:
 Dot operator
 """"""""""""
 
-The dot operator is used for two purposes: accessing the fields of structs, and getting an element of an enum.
+The dot operator is used for two purposes: accessing the fields of structs (or custom ``operator&.foo``, ``operator.foo=``, ``operator.foo``), and getting an element of an enum.
+Since we already eliminated the case where it is used to get an element of an enum (see :ref:`typing_expressions_label`), we only have to deal with the getters/setters/address-takers.
 Additionally, it can be overloaded (through ``operator&.foo``, ``operator.foo=`` and ``operator.foo``).
-To reduce ``e.foo`` for some identifier `foo``:
+To reduce ``e.foo`` for some identifier ``foo``:
 
-#. If ``e`` can be reduced and is not a (valid or not) lvalue, reduce it
-#. Else if ``e`` is an invalid lvalue, either replace the whole expression by an invalid lvalue or trap
-#. Else if ``e`` is a lvalue, replace the whole expression by a dereference operator ``*`` applied to a call to ``operator&.foo``, with an argument that is ``e``
-#. Else, replace the whole expression by a call to ``operator.foo`` with an argument that is ``e``
+#. If the whole expression can be reduced to an abstract left-value, do it
+#. Else replace the whole expression by ``operator.foo(e1)``, using the instance of ``operator.foo`` that was used during the typing of this dot operator.
 
-.. todo::
-    Basically all of the ott rules for this section and the next must be redone now that I added the dot operator and overloading of the various getters/setters/anders.
+.. note:: In the case where ``operator&.foo`` can be used, it will be used through the rules for reduction to an abstract left-value (see :ref:`reduction_abstract_left_value_label`). For ``operator.foo=``, see the section on assignment (:ref:`assignment_exec_label`).
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ottdruledotXXreduce{}\\
+        \ottdruledotXXgetter{}
+    \end{align*}
 
 
 Read-modify-write expressions
