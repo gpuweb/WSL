@@ -5,10 +5,10 @@
   },
   "description": "WHLSL Library",
   "devDependencies": {
-    "@babel/cli": "^7.1.2",
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
-    "eslint": "^5.7.0",
+    "@babel/cli": "^7.5.0",
+    "@babel/core": "^7.5.0",
+    "@babel/preset-env": "^7.5.0",
+    "eslint": "^5.16.0",
     "rollup": "^0.67.1"
   },
   "engines": {
