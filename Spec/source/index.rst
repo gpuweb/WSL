@@ -498,6 +498,10 @@ Statements
     compoundStmt: `ifStmt` | `ifElseStmt` | `whileStmt` | `doWhileStmt` | `forStmt` | `switchStmt`
     terminatorStmt: "break" | "continue" | "fallthrough" | "return" `expr`?
 
+.. note::
+    The ``fallthrough`` statement is used at the end of switch cases to fallthrough to the next case.
+    It is not valid to have it anywhere else, or to have a switch case where control-flow reaches the end without a fallthrough (see section :ref:`typing_statements_label`).
+
 .. productionlist::
     ifStmt: "if" "(" `expr` ")" `stmt`
     ifElseStmt: "if" "(" `expr` ")" `stmt` "else" `stmt`
@@ -853,6 +857,8 @@ A behaviour is any of the following:
 - Nothing
 
 We use these "behaviours" to check the effect of statements on the control flow. 
+
+.. _typing_statements_label:
 
 Typing statements
 """""""""""""""""
