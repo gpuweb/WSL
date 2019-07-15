@@ -1095,13 +1095,11 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
     #. Then ``e.foo`` is well-typed, with the type of that enum
     #. And replace it by the corresponding value
 
-.. todo::
-    This ordering of first checking for getters/setters/address-takers and only looking at enums if e is not a well-typed expression matches the reference implementation,
-    but I have no idea whether it was a deliberate decision or something we should revisit.
-    https://github.com/gpuweb/WHLSL/issues/312
-
 .. note::
     Replacing e.foo by its value in the case of an enum is a bit weird of a thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.
+
+.. note::
+    Please note that a local variable declaration can shadow a global enum declaration.
 
 To check that an array dereference ``e1[e2]`` is well-typed:
 
