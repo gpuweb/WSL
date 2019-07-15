@@ -1127,12 +1127,6 @@ To check that an expression ``e++``, or ``e--`` is well-typed:
 #. Check that a call to ``operator+(e, 1)`` (respectively ``operator-(e, 1)``) would be well-typed, with a right-value type that matches ``e``
 #. Then the expression is well-typed, and of the right-value type of ``e``
 
-.. todo::
-    Decide whether we want the result to be a right-value type (like now), or the exact same type as ``e``.
-    The later would allow things like x++ ++; (which sounds reasonable to me), but also x++ = 4; (which is a lot weirder).
-    The same question applies to x += 3, x = 3, etc..
-    https://github.com/gpuweb/WHLSL/issues/315
-
 To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
 
 #. Check that ``e1`` is well-typed, with an abstract left-value type
