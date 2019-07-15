@@ -396,10 +396,6 @@ The following strings are reserved keywords of the language:
 | Reserved for future extension | protocol auto const static restricted native space uniform                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
-.. todo::
-    Decide whether we support the trap statement or not, and harmonize the different sections of the spec in that regard.
-    https://github.com/gpuweb/WHLSL/issues/301
-
 ``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
 
 Similarily, the following elements of punctuation are valid tokens:
