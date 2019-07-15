@@ -491,7 +491,7 @@ Statements
 """"""""""
 
 .. productionlist::
-    stmt: "{" (`stmt` | `variableDecls` ';')* "}"
+    stmt: "{" (`stmt` | `variableDecls` ";")* "}"
         : | `compoundStmt` 
         : | `terminatorStmt` ";" 
         : | `maybeEffectfulExpr` ";"
