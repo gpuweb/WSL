@@ -1165,7 +1165,7 @@ To check that a function call is well-typed:
     that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
     The programmer can easily make their intent clear with something like ``int x = 42; foo(x);``.
 
-.. todo:
+.. todo::
     This rule for overloading resolution is very different from the implementation, the two should be brought back in sync one way or another.
     https://github.com/gpuweb/WHLSL/issues/313
 
