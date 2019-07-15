@@ -172,7 +172,7 @@ typeSuffixNonAbbreviated: '*' addressSpace | '[]' addressSpace | '[' IntLiteral 
 // Note: in this formulation of typeSuffix*, we don't allow whitespace between the '[' and the ']' in '[]'. We easily could at the cost of a tiny more bit of lookahead. to bikeshed
 
 typeArguments
-    | '<' typeArgument (',' typeArgument)* '>'
+    : '<' typeArgument (',' typeArgument)* '>'
     | ('<' '>')? ;
 typeArgument: constexpression | Identifier ;
 
