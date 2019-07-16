@@ -681,7 +681,7 @@ For each top-level declaration:
 #. If it is an enum
 
    #. If there is already a type of the same name in the environment, the program is invalid
-   #. If the enum has an explicit base type, and it is not one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short``, ``int``; the program is invalid
+   #. If the enum has an explicit base type, and it is not one of ``uint`` or ``int`` then the program is invalid
    #. If the enum does not have an explicit base type, its base type is ``int``
    #. A value is associated to each element of the enum, by iterating over them in source order:
 
@@ -718,13 +718,13 @@ For each top-level declaration:
 
         #. It must have exactly two argument
         #. Its first argument must not be a pointer, array reference, or array.
-        #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+        #. Its second argument must be one of ``uint`` or ``int``
  
    #. Else if the name of the function is ``operator[]=``
 
         #. It must have exactly three arguments
         #. Its first argument must not be a pointer, array reference, or array
-        #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+        #. Its second argument must be one of ``uint`` or ``int``
 
    #. Else if the name of the function is ``operator&[]``
 
@@ -733,7 +733,7 @@ For each top-level declaration:
         #. Its first argument must be a pointer type
         #. The type pointed at by this pointer cannot be a pointer, array reference, or array.
         #. Both its return type and its first argument type must be in the same address space
-        #. Its second argument must be one of ``uchar``, ``ushort``, ``uint``, ``char``, ``short`` or ``int``
+        #. Its second argument must be one of ``uint`` or ``int``
 
    #. Else if the name of the function is ``operator++`` or ``operator--``
 
@@ -2025,19 +2025,9 @@ Built-in Scalars
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | bool      | A conditional type.                                                            | true or false                                                                     |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| uchar     | An unsigned 8-bit integer.                                                     | 0, 1, 2, ... 255                                                                  |
-+-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| ushort    | An unsigned 16-bit integer.                                                    | 0, 1, 2, ... 65535                                                                |
-+-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | uint      | An unsigned 32-bit integer.                                                    | 0, 1, 2, ... 4294967295                                                           |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| char      | A signed 8-bit integer.                                                        | -128, -127, ... -1, 0, 1, ... 127                                                 |
-+-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| short     | A signed 16-bit integer.                                                       | -32768, -32767, ... -1, 0, 1, ... 32767                                           |
-+-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | int       | A signed 32-bit integer.                                                       | -2147483648, -2147483647, ... -1, 0, 1, ... 2147483647                            |
-+-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
-| half      | An IEEE 16-bit floating-point number.                                          | All values of a IEEE 754 half-precision binary floating-point number              |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | float     | An IEEE 32-bit floating-point number.                                          | All values of a IEEE 754 single-precision binary floating-point number            |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
@@ -2059,27 +2049,12 @@ vector. Each item below includes two types, which are synonyms for each other.
 * bool2, or vector<bool, 2>
 * bool3, or vector<bool, 3>
 * bool4, or vector<bool, 4>
-* uchar2, or vector<uchar, 2>
-* uchar3, or vector<uchar, 3>
-* uchar4, or vector<uchar, 4>
-* ushort2, or vector<ushort, 2>
-* ushort3, or vector<ushort, 3>
-* ushort4, or vector<ushort, 4>
 * uint2, or vector<uint, 2>
 * uint3, or vector<uint, 3>
 * uint4, or vector<uint, 4>
-* char2, or vector<char, 2>
-* char3, or vector<char, 3>
-* char4, or vector<char, 4>
-* short2, or vector<short, 2>
-* short3, or vector<short, 3>
-* short4, or vector<short, 4>
 * int2, or vector<int, 2>
 * int3, or vector<int, 3>
 * int4, or vector<int, 4>
-* half2, or vector<half, 2>
-* half3, or vector<half, 3>
-* half4, or vector<half, 4>
 * float2, or vector<float, 2>
 * float3, or vector<float, 3>
 * float4, or vector<float, 4>
@@ -2087,15 +2062,6 @@ vector. Each item below includes two types, which are synonyms for each other.
 The following are matrix types, which list the name of a scalar type, the number of columns, and the number
 of rows, in that order. Each item below includes two types, which are synonyms for each other.
 
-* half2x2, or matrix<half, 2, 2>
-* half2x3, or matrix<half, 2, 3>
-* half2x4, or matrix<half, 2, 4>
-* half3x2, or matrix<half, 3, 2>
-* half3x3, or matrix<half, 3, 3>
-* half3x4, or matrix<half, 3, 4>
-* half4x2, or matrix<half, 4, 2>
-* half4x3, or matrix<half, 4, 3>
-* half4x4, or matrix<half, 4, 4>
 * float2x2, or matrix<float, 2, 2>
 * float2x3, or matrix<float, 2, 3>
 * float2x4, or matrix<float, 2, 4>
