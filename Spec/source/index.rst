@@ -356,12 +356,12 @@ Literals
 
 An integer literal can either be decimal or hexadecimal, and either signed or unsigned, giving 4 possibilities.
 
-- A signed decimal integer literal starts with an optional ``-``, then a number without leading 0.
-- An unsigned decimal integer literal starts with a number without leading 0, then ``u``.
+- A signed decimal integer literal starts with an optional ``-``, then a number without leading 0 or just the number 0.
+- An unsigned decimal integer literal starts with a number without leading 0, or just the number 0, then ``u``.
 - A signed hexadecimal integer literal starts with an optional ``-``, then the string ``0x``, then a non-empty sequence of elements of [0-9a-fA-F] (non-case sensitive, leading 0s are allowed).
 - An unsigned hexadecimal inter literal starts with the string ``0x``, then a non-empty sequence of elements of [0-9a-fA-F] (non-case sensitive, leading 0s are allowed), and finally the character ``u``.
 
-.. note:: Leading 0s are allowed in hexadecimal integer literals, but not in decimal integer literals
+.. note:: Leading 0s are allowed in hexadecimal integer literals, but not in decimal integer literals except for the 0, -0 and 0u.
 
 A float literal is made of the following elements in sequence:
 
