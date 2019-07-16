@@ -20,11 +20,9 @@ IntLiteral: DecimalIntLiteral | DecimalUIntLiteral | HexadecimalIntLiteral | Hex
 // Do we want to allow underscores in the middle of numbers for readability?
 
 fragment CoreFloatLiteral: [0-9]+'.'[0-9]* | [0-9]*'.'[0-9]+ ;
-FloatLiteral: '-'? CoreFloatLiteral [fd]? ;
+FloatLiteral: '-'? CoreFloatLiteral [f]? ;
 // TODO: what to do about floats that are too big or too small to represent?
-// TODO: what is the default precision? double?
 // IDEA: add Nan, +infinity, -infinity
-// IDEA: add half-precision literals
 
 // One rule per keyword, to prevent them from being recognized as identifiers
 STRUCT: 'struct';
