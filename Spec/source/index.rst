@@ -2214,6 +2214,72 @@ Some of these functions only appear in specific shader stages.
 
 We should figure out if atomic handling goes here.
 
+
+Integer arithmetic
+""""""""""""""""""
+
+.. note::
+    Many of the functions described in this section have other overloads for floating point arguments, or for vector/matrix arguments.
+    These overloads will be described in the corresponding sections.
+
+``operator+``, ``operator-`` and ``operator*`` are defined as binary functions on integers, both signed and unsigned.
+Their return type is the same as the type of their arguments, and they respectively implement integer addition, substraction and multiplication.
+They follow 2-complement semantics in the case of overflow or underflow.
+In other terms, they behave as if they computed the result as integers with a large enough width for avoiding both overflow and underflow, then truncated to the 32 low-bits of the result.
+``mul`` is defined on integers both signed and unsigned as a synonym of operator*.
+
+``operator++`` and ``operator--`` are defined as unary functions on integers, both signed and unsigned.
+Their return type is the same as the type of their argument.
+They return the addition or substraction (respectively) of ``1`` to their argument, behaving like ``operator+`` and ``operator-`` in the case of overflow/underflow.
+
+.. todo::
+    Decide whether we want to have operator++ at all, or whether it should just be sugar for +1.
+    We are currently not consistent, not only between spec and implementation, but between sections of this spec.
+    https://github.com/gpuweb/WHLSL/issues/336
+
+``operator/`` and ``operator%`` are defined as binary functions on integers, both signed and unsigned.
+Their return type is the same as the type of their arguments.
+They respectively return the algebraic quotient truncated towards zero (fractional part discarded), and the remainder of the division such that ``(a/b)*b + a%b == a``.
+If the second operand is ``0``, both return an unspecified value.
+If there is an underflow (e.g. from ``INT_MIN / (-1)``), they follow 2-complement semantics. 
+In other terms, they behave as if they computed the result as integers with a large enough width for avoiding both overflow and underflow, then truncated to the 32 low-bits of the result.
+
+``abs`` is defined as an unary function on integers, both signed and unsigned.
+Its return type is the same as its argument type.
+It returns its argument if it is non-negative, and the opposite of its argument otherwise.
+In case of an underflow/overflow it follows 2-complement semantics, so abs(INT_MIN) is INT_MIN.
+
+``sign`` is defined as an unary function on integers, both signed and unsigned.
+Its return type is int.
+If its argument is positive, it returns ``1``.
+If its argument is negative, it returns ``-1``.
+If its argument is ``0``, it returns ``0``.
+
+``min`` and ``max`` are defined as binary functions on integers, both signed and unsigned.
+Their return type is the same as the type of their arguments.
+They return respectively the minimum and the maximum of their arguments.
+
+``clamp`` is defined as a ternary function on integers, both signed and unsigned.
+Its return type is the same as the type of its arguments.
+If its second argument is no larger than its third argument, then it is the same as ``max(min(first, third), second)``.
+
+.. todo::
+    Decide on a behavior if the second argument is larger than the third argument.
+
+.. note::
+    In the HLSL documentation, ``abs``, ``sign``, ``min``, ``max`` and ``clamp`` are not defined on unsigned integers.
+    But we found them defined on unsigned integers in the actual implementation, so they are supported in WHLSL on unsigned integers for portability.
+
+Bit manipulation
+""""""""""""""""
+
+Not just &&, ||, >>, <<; but also things like any, all, reversebits, firstbithigh, firstbitlow, 
+
+Floating point arithmetic
+"""""""""""""""""""""""""
+
+Also includes a bunch of special functions like cos, isNaN, ...
+
 Numerical Compliance
 """"""""""""""""""""
 
@@ -2223,6 +2289,27 @@ Numerical Compliance
     I did not find the equivalent table for SPIR-V, but it has the nice property of tagging each operation with the different components of fast-math.
     We should probably measure how costly forbidding fast-math would be, since NotNaN and NotInf introduce undefined behavior.
     https://github.com/gpuweb/WHLSL/issues/335
+
+Fences and atomic operations
+""""""""""""""""""""""""""""
+
+Cast operators
+""""""""""""""
+
+Also include the ``as`` function.
+
+Comparison operators
+""""""""""""""""""""
+
+Vector and matrix operations
+""""""""""""""""""""""""""""
+
+Includes arithmetic operators (per-element), various swizzles, length, getDimensions, operator[] and operator[]=, determinant 
+
+Sampler and texture operations
+""""""""""""""""""""""""""""""
+
+Sample, Load, Gather, etc..
 
 Interface with JavaScript
 =========================
