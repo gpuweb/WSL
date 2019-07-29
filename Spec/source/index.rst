@@ -2217,6 +2217,13 @@ We should figure out if atomic handling goes here.
 Numerical Compliance
 """"""""""""""""""""
 
+.. todo::
+    Decide on what precision guarantees we can make.
+    MSL got two different tables, depending on whether it is running in fast-math mode or not.
+    I did not find the equivalent table for SPIR-V, but it has the nice property of tagging each operation with the different components of fast-math.
+    We should probably measure how costly forbidding fast-math would be, since NotNaN and NotInf introduce undefined behavior.
+    https://github.com/gpuweb/WHLSL/issues/335
+
 Interface with JavaScript
 =========================
 
