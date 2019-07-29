@@ -2135,27 +2135,6 @@ point. Ternary expressions must not return references.
     They are not copyable, ie they are references.
     https://github.com/gpuweb/WHLSL/issues/334
 
-Pointers
-""""""""
-
-Pointers may be passed into an entry point inside an argument or created inside a function using the "&"
-operator. No data arrived at via a ``constant`` pointer may be modified. ``device``, ``constant``, and
-``threadgroup`` pointers must not point to data that may have pointers in it. Arrays must not contain pointers
-anywhere inside them. Functions that return pointers must only have one return point. Ternary expressions must
-not return pointers. Every construction of a pointer must be initialized upon declaration and never reassigned.
-
-.. todo::
-    "No data arrived at via a ``constant`` pointer may be modified": this phrasing sounds a bit unclear to me.
-    In particular (from my understanding), it is not the pointer itself that is constant, it is just a pointer to the constant address space.
-    What I am trying to say is that data pointed to by a ``constant`` pointer cannot be modified at all, even if accessed in some other way, because all ways of accessing it will find it is in the ``constant`` address space.
-    (at least that is the way I've understood it so far).
-
-Array References
-""""""""""""""""
-
-Numerical Compliance
-""""""""""""""""""""
-
 Built-in Variables
 ------------------
 
@@ -2234,6 +2213,9 @@ Built-in Functions
 Some of these functions only appear in specific shader stages.
 
 We should figure out if atomic handling goes here.
+
+Numerical Compliance
+""""""""""""""""""""
 
 Interface with JavaScript
 =========================
