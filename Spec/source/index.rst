@@ -2085,9 +2085,11 @@ have one return point. Ternary expressions must not return references.
 
 .. todo::
     The last sentence does not seem related to samplers. Or should we s/references/samplers/g in it?
+    https://github.com/gpuweb/WHLSL/issues/332
 
 .. todo::
     Robin: I have not put the ``native typedef`` syntax in the grammar or the semantics so far, should I?
+    https://github.com/gpuweb/WHLSL/issues/332
 
 Textures
 """"""""
@@ -2111,7 +2113,9 @@ The following types represent textures:
 * RWTextureDepth2DArray<float>
 * TextureDepthCube<float>
 
-.. todo:: Texture2DMS<T>, TextureDepth2DMS<float>
+.. todo::
+    Texture2DMS<T>, TextureDepth2DMS<float>
+    https://github.com/gpuweb/WHLSL/issues/333
 
 Each of the above types accepts a "type argument". The "T" types above may be any scalar or vector integral or floating point type.
 
@@ -2129,6 +2133,7 @@ point. Ternary expressions must not return references.
     Similarily, most of these constraints should probably be either duplicated in or moved to the validation section, I will take care of it.
 
     They are not copyable, ie they are references.
+    https://github.com/gpuweb/WHLSL/issues/334
 
 Pointers
 """"""""
