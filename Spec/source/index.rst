@@ -2255,16 +2255,21 @@ If its argument is positive, it returns ``1``.
 If its argument is negative, it returns ``-1``.
 If its argument is ``0``, it returns ``0``.
 
+.. todo::
+    In the current implementation, its return type is always the same as its argument type.
+    https://bugs.webkit.org/show_bug.cgi?id=200252
+
 ``min`` and ``max`` are defined as binary functions on integers, both signed and unsigned.
 Their return type is the same as the type of their arguments.
 They return respectively the minimum and the maximum of their arguments.
 
 ``clamp`` is defined as a ternary function on integers, both signed and unsigned.
 Its return type is the same as the type of its arguments.
-If its second argument is no larger than its third argument, then it is the same as ``max(min(first, third), second)``.
+It returns ``min(max(first, second), third)``.
+In particular, if its third argument is less than its second argument it will always return its third argument.
 
-.. todo::
-    Decide on a behavior if the second argument is larger than the third argument.
+.. note::
+    This behavior for ``clamp`` matches that of HLSL (where it is undocumented).
 
 .. note::
     In the HLSL documentation, ``abs``, ``sign``, ``min``, ``max`` and ``clamp`` are not defined on unsigned integers.
@@ -2273,7 +2278,32 @@ If its second argument is no larger than its third argument, then it is the same
 Bit manipulation
 """"""""""""""""
 
-Not just &&, ||, >>, <<; but also things like any, all, reversebits, firstbithigh, firstbitlow, 
+``operator&``, ``operator|`` and ``operator^`` are defined as binary functions on booleans, signed integers, and unsigned integers.
+Their return type is the same type as their arguments.
+They respectively implement bitwise and, or and exclusive or; treating booleans as if they were integers of size 1, with ``true`` being ``1`` and ``false`` being ``0``.
+
+``operator~`` is defined as an unary function on booleans, signed integers, and unsigned integers.
+Its return type is the same type as its argument.
+It implements bitwise negation on integers, and negation on booleans.
+
+``operator<<`` and ``operator>>`` are defined as binary functions, whose first argument can be integers either signed or unsigned, and whose second argument is an unsigned integer.
+Their return types are the same type as their first argument.
+They respectively shift their first argument left/right by their second argument modulo the bit-width of their first argument.
+So for example ``x << 33`` is the same as ``x << 1`` if x is a 32-bit integer.
+In the case of a right shift on an unsigned integer or any left shift, the vacated bits are replaced by 0.
+In the case of a right shift on a signed integer, the vacated bits are replaced by the sign bit of the first argument (i.e. it is an arithmetic right-shift, not a logical one).
+
+``all`` and ``any`` are defined as unary functions on booleans and integers both signed and unsigned.
+Their return type is always ``bool``.
+They return false on zero and true on any non-zero integer.
+They are simply the identity function on booleans.
+
+``countbits``, ``reversebits``, ``firstbithigh`` and ``firstbitlow`` are all unary functions on unsigned integers.
+Their return type is also ``unsigned int``.
+``countbits`` returns the number of bits set to 1 in the binary representation of its argument.
+``reversebits`` reverses the order of the bits in the binary representation of its argument.
+``firsbithigh`` and ``firstbitlow`` return ``32`` if their argument is ``0``.
+Otherwise they return the index of respectively the lowest and the highest bit that is set in the binary representation of their argument.
 
 Floating point arithmetic
 """""""""""""""""""""""""
