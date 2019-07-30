@@ -2228,6 +2228,9 @@ They follow 2-complement semantics in the case of overflow or underflow.
 In other terms, they behave as if they computed the result as integers with a large enough width for avoiding both overflow and underflow, then truncated to the 32 low-bits of the result.
 ``mul`` is defined on integers both signed and unsigned as a synonym of operator*.
 
+``operator-`` is also defined as an unary function on signed integers.
+Its return type is also ``int``, and it simply returns the negation of its argument.
+
 ``operator++`` and ``operator--`` are defined as unary functions on integers, both signed and unsigned.
 Their return type is the same as the type of their argument.
 They return the addition or substraction (respectively) of ``1`` to their argument, behaving like ``operator+`` and ``operator-`` in the case of overflow/underflow.
@@ -2316,6 +2319,21 @@ Their return type is also ``unsigned int``.
 
 Floating point arithmetic
 """""""""""""""""""""""""
+
+``operator+``, ``operator-``, ``operator*``, and ``operator/`` are defined as binary functions on floats.
+Their return type is the same as the type of their arguments, and they respectively implement floating-point addition, substraction, multiplication and division
+The result of ``operator/`` is an undefined value if its second argument is either ``+0.0`` or ``-0.0``
+
+.. note::
+    Our treatment of division by 0 here is based on the SPIR-V specification for OpFDiv.
+    MSL instead mandates either NaN or +/-Infinity, following the IEEE-754 standard.
+
+.. todo::
+    Decide on what to do about NaN, Inf, Denormals, etc..
+    See https://github.com/gpuweb/WHLSL/issues/335
+
+``operator-`` is also defined as an unary function on floats.
+Its return type is also ``float``, and it simply returns the negation of its argument.
 
 Also includes a bunch of special functions like cos, isNaN, ...
 
