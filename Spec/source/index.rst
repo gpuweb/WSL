@@ -2302,8 +2302,17 @@ They are simply the identity function on booleans.
 Their return type is also ``unsigned int``.
 ``countbits`` returns the number of bits set to 1 in the binary representation of its argument.
 ``reversebits`` reverses the order of the bits in the binary representation of its argument.
-``firsbithigh`` and ``firstbitlow`` return ``32`` if their argument is ``0``.
-Otherwise they return the index of respectively the lowest and the highest bit that is set in the binary representation of their argument.
+``firstbitlow`` returns -1 if its argument is 0, and otherwise returns the index (from the lowest bit being 0 to the highest bit being 31) of the lowest bit set.
+``firstbithigh`` has four cases:
+
+- If its argument is 0, it returns -1 (like ``firstbitlow``)
+- If its argument is -1, it also returns -1
+- If its argument is positive, it returns the index (from the lowest bit being 0 to the highest bit being 31) of the highest bit set.
+- If its argument is negative and not -1, it returns the index of the highest bit that is not set.
+
+.. todo::
+    That semantic for firstbithigh is insane, I'd like to get rid of it:
+    https://github.com/gpuweb/WHLSL/issues/337
 
 Floating point arithmetic
 """""""""""""""""""""""""
