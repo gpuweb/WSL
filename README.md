@@ -3,6 +3,8 @@
 The *Web High-level Shading Language* provides a human-writable, safe programming language
 for the WebGPU API.
 
+Link to spec: [https://gpuweb.github.io/WHLSL/index.html](https://gpuweb.github.io/WHLSL/index.html)
+
 ## Goals
 
 - Formally proven as safe for Web use e.g. the language forbids reading or writing to memory that shouldn't be accessible.
