@@ -2207,14 +2207,6 @@ shaders:
 Built-in Functions
 ------------------
 
-.. todo::
-    Fill in this section, including all of the basic arithmetic operators, explaining what behaviors are allowed on overflow.
-
-Some of these functions only appear in specific shader stages.
-
-We should figure out if atomic handling goes here.
-
-
 Integer arithmetic
 """"""""""""""""""
 
@@ -2268,11 +2260,12 @@ They return respectively the minimum and the maximum of their arguments.
 
 ``clamp`` is defined as a ternary function on integers, both signed and unsigned.
 Its return type is the same as the type of its arguments.
-It returns ``min(max(first, second), third)``.
-In particular, if its third argument is less than its second argument it will always return its third argument.
+If its third argument is less than its second, it returns an unspecified value.
+Otherwise it returns ``min(max(first, second), third)``.
 
 .. note::
-    This behavior for ``clamp`` matches that of HLSL (where it is undocumented).
+    We must return an unspecified value in the case where second > third, because it is what SPIR-V (GLSL.std.450 extended instruction set) does.
+    HLSL does not document that case, but in practice it seems to always return the third.
 
 .. note::
     In the HLSL documentation, ``abs``, ``sign``, ``min``, ``max`` and ``clamp`` are not defined on unsigned integers.
@@ -2335,7 +2328,116 @@ The result of ``operator/`` is an undefined value if its second argument is eith
 ``operator-`` is also defined as an unary function on floats.
 Its return type is also ``float``, and it simply returns the negation of its argument.
 
-Also includes a bunch of special functions like cos, isNaN, ...
+The following functions are all unary functions on floats, and their return type is also float:
+
+cos
+    Returns the cosine of its argument interpreted as radians.
+sin
+    Returns the sine of its argument interpreted as radians.
+tan
+    Returns the tangent of its argument interpreted as radians.
+acos
+    Returns the arccosine of its argument in radians.
+    In other words, its result is a number in radians whose cosine is its argument.
+    The range of results is [0 ; Pi], it returns an undefined value if its argument is greater than 1 or smaller than -1.
+    TODO: verify the range in HLSL + MSL
+asin
+    Returns the arcsine of its argument in radians.
+    In other words its result is a number in radians whose sine is its argument.
+    The range of results is [-Pi/2 ; Pi/2], it returns an undefined value if its argument is greater than 1 or smaller than -1.
+    TODO: verify the range in HLSL + MSL
+atan
+    Returns the arctangent of its argument in radians.
+    In other words its result is a number in radians whose tangent is its argument.
+    The range of results is [-Pi ; Pi].
+    TODO: verify the range in HLSL + MSL
+    In C++ it is always in [-Pi/2 ; Pi/2] for example. This makes a lot more sense, because there are two pre-images of any number by tangent in [-Pi/Pi], and we need more information (from atan2) to get the right one.
+cosh
+    Returns the hyperbolic cosine of its argument interpreted as radians.
+sinh
+    Returns the hyperbolic sine of its argument interpreted as radians.
+tanh
+    Returns the hyperbolic tangent of its argument interpreted as radians.
+ceil
+    Returns the smallest integer value (as a floating point number) that is greater or equal to its argument.
+    It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.
+floor
+    Returns the largest integer value (as a floating point number) that is smaller or equal to its argument.
+    It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.
+round
+    Returns the nearest integer value (as a floating point number).
+    If there are two equally distant possible integer values (e.g. for 0.5), which one is picked is undefined.
+    It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.
+trunc
+    Returns its argument truncated to the integer component.
+    In other words, it behaves like ``ceil`` for negative arguments and like ``floor`` for positive ones.
+    It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.
+frac
+    Returns ``x - floor(x)`` where ``x`` is its argument.
+    For example ``frac(-3.7) == 0.3`` and ``frac(3.7) == 0.7``.
+    It returns +0.0 for both -0.0 and +0.0.
+    It returns NaN for NaN, +Infinity and -Infinity.
+exp
+    Returns the natural exponentiation of its argument.
+exp2
+    Returns 2 raised to the power of its argument.
+log
+    Returns the natural logarithm of its argument.
+    Returns an unspecified value if its argument is smaller or equal to 0.
+log2
+    Returns the base-2 logarithm of its argument.
+    Returns an unspecified value if its argument is smaller or equal to 0.
+log10
+    Returns the base-10 logarithm of its argument.
+    Returns an unspecified value if its argument is smaller or equal to 0.
+sqrt
+    Returns the square root of its argument.
+    Returns an unspecified value if its argument is negative.
+rsqrt
+    Returns the reciprocal of the square root of its argument.
+    Returns an unspecified value if its argument is non-positive.
+degrees
+    Converts radians to degrees.
+    In other words it returns its argument multiplied by 180 and divided by Pi.
+radians
+    Converts degrees to radians.
+    In other words it returns its argument multiplied by Pi and divided by 180.
+saturate
+    Clamps its argument between 0.0 and 1.0, as per the ``clamp`` function.
+
+.. todo::
+    Decide whether we want to support acosh/asinh/atanh.
+    They are not in HLSL, but are in GLSL, MSL and Vulkan.
+    https://github.com/gpuweb/WHLSL/issues/338
+
+.. todo::
+    ddx, ddy, ddx_fine, ddx_coarse, ddy_fine, ddy_coarse, fwidth
+
+The following functions are all binary functions on floats, and their return type is also float:
+
+- min
+- max
+- pow
+- step
+- ldexp
+- fmod
+- atan2
+
+The following functions are all ternary functions on floats, and their return type is also float:
+
+- clamp
+- smoothstep
+- lerp
+- fmod
+- mad
+
+.. I removed fma following https://bugs.webkit.org/show_bug.cgi?id=199531
+
+The following functions are all unary functions on floats, and their return type is bool:
+
+- isfinite
+- isinf
+- isnan
 
 Numerical Compliance
 """"""""""""""""""""
