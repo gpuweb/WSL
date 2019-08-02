@@ -7,12 +7,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>WHLSL documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="stylesheet" href="static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="static/documentation_options.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -513,7 +513,7 @@ It is not valid to have it anywhere else, or to have a switch case where control
 </pre>
 <p>The first of these two productions is merely syntactic sugar for the second:</p>
 <div class="math">
-<p><img src="_images/math/4abb304b7917a87efa63560c8c47c9e05d7abc09.png" alt="\textbf{if}(e) \,s \leadsto \textbf{if}(e) \,s\, \textbf{else} \,\{\}"/></p>
+<p><img src="images/math/4abb304b7917a87efa63560c8c47c9e05d7abc09.png" alt="\textbf{if}(e) \,s \leadsto \textbf{if}(e) \,s\, \textbf{else} \,\{\}"/></p>
 </div><pre>
 <strong id="grammar-token-whileStmt">whileStmt  </strong> ::=  &quot;while&quot; &quot;(&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> &quot;)&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>
 <strong id="grammar-token-forStmt">forStmt    </strong> ::=  &quot;for&quot; &quot;(&quot; (<a class="reference internal" href="#grammar-token-maybeEffectfulExpr"><code class="xref docutils literal notranslate"><span class="pre">maybeEffectfulExpr</span></code></a> | <a class="reference internal" href="#grammar-token-variableDecls"><code class="xref docutils literal notranslate"><span class="pre">variableDecls</span></code></a>) &quot;;&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a>? &quot;;&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a>? &quot;)&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>
@@ -521,7 +521,7 @@ It is not valid to have it anywhere else, or to have a switch case where control
 </pre>
 <p>Similarily, we desugar all while loops into do while loops.</p>
 <div class="math">
-<p><img src="_images/math/a4c3abac4fbfc55be66416558e7312c810fdd439.png" alt="\textbf{while} (e)\, s \leadsto \textbf{if} (e) \textbf{do}\, s\, \textbf{while}(e)"/></p>
+<p><img src="images/math/a4c3abac4fbfc55be66416558e7312c810fdd439.png" alt="\textbf{while} (e)\, s \leadsto \textbf{if} (e) \textbf{do}\, s\, \textbf{while}(e)"/></p>
 </div><p>We also partly desugar for loops:</p>
 <ol class="arabic simple">
 <li>If the second element of the for is empty we replace it by “true”.</li>
@@ -529,7 +529,7 @@ It is not valid to have it anywhere else, or to have a switch case where control
 <li>If the first element of the for is not empty, we hoist it out of the loop, into a newly created block that includes the loop:</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/27be790d1a5fd0774f6b666c0d1eaf345526fea7.png" alt="\textbf{for} (X_{pre} ; e_{cond} ; e_{iter}) \, s \leadsto \{ X_{pre} ; \textbf{for} ( ; e_{cond} ; e_{iter}) \, s \}"/></p>
+<p><img src="images/math/27be790d1a5fd0774f6b666c0d1eaf345526fea7.png" alt="\textbf{for} (X_{pre} ; e_{cond} ; e_{iter}) \, s \leadsto \{ X_{pre} ; \textbf{for} ( ; e_{cond} ; e_{iter}) \, s \}"/></p>
 </div><pre>
 <strong id="grammar-token-switchStmt">switchStmt</strong> ::=  &quot;switch&quot; &quot;(&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> &quot;)&quot; &quot;{&quot; <a class="reference internal" href="#grammar-token-switchCase"><code class="xref docutils literal notranslate"><span class="pre">switchCase</span></code></a>* &quot;}&quot;
 <strong id="grammar-token-switchCase">switchCase</strong> ::=  (&quot;case&quot; <a class="reference internal" href="#grammar-token-constexpr"><code class="xref docutils literal notranslate"><span class="pre">constexpr</span></code></a> | &quot;default&quot;) &quot;:&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>*
@@ -899,7 +899,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the if-then-else statement is well-typed, and its behaviours is the union of <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">B'</span></code></li>
 </ol>
 <div class="math">
-<p><img src="_images/math/84e46a5ffb3a6085f700f5582674ba48fc793873.png" alt="\begin{align*}
+<p><img src="images/math/84e46a5ffb3a6085f700f5582674ba48fc793873.png" alt="\begin{align*}
    \ottdruleif{}
 \end{align*}"/></p>
 </div><p>To check a do-while or for statement:</p>
@@ -913,7 +913,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the do-while statement is well-typed, and its behaviours is <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
 </ol>
 <div class="math">
-<p><img src="_images/math/4ae5487700815e8319aa9e0b01575b8c3978e6f7.png" alt="\begin{align*}
+<p><img src="images/math/4ae5487700815e8319aa9e0b01575b8c3978e6f7.png" alt="\begin{align*}
     \ottdruledoXXwhileXXbreak{}\\
     \ottdruledoXXwhileXXnoXXbreak{}\\
     \ottdruleforXXbreak{}\\
@@ -940,7 +940,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the switch statement is well-typed, and its behaviours is this last set</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/2aaf5503ee53af97a782e614c93f74af19519915.png" alt="\begin{align*}
+<p><img src="images/math/2aaf5503ee53af97a782e614c93f74af19519915.png" alt="\begin{align*}
    \ottdruleswitchXXbreak{}\\
    \ottdruleswitchXXnoXXbreak{}\\
    \ottdrulecase{}\\
@@ -950,7 +950,7 @@ Any value with a left-value type of non-constant address space can be given an a
 </div><p>The <code class="docutils literal notranslate"><span class="pre">break;</span></code>, <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code>, <code class="docutils literal notranslate"><span class="pre">continue;</span></code> and <code class="docutils literal notranslate"><span class="pre">return;</span></code> statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.</p>
 <p>The statement <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">e;</span></code> is well-typed if <code class="docutils literal notranslate"><span class="pre">e</span></code> is a well-typed expression with a right-value type T and its behaviours is then {Return T}.</p>
 <div class="math">
-<p><img src="_images/math/59461786bfbe364225cb1f8db711df3fd804622d.png" alt="\begin{align*}
+<p><img src="images/math/59461786bfbe364225cb1f8db711df3fd804622d.png" alt="\begin{align*}
    \ottdrulebreak{}\\
    \ottdrulecontinue{}\\
    \ottdrulefallthrough{}\\
@@ -990,7 +990,7 @@ Any value with a left-value type of non-constant address space can be given an a
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/50aa85ba1b0e4b18f56db8df91930cf1533c6315.png" alt="\begin{align*}
+<p><img src="images/math/50aa85ba1b0e4b18f56db8df91930cf1533c6315.png" alt="\begin{align*}
     \ottdruleemptyXXblock{}\\
     \ottdrulevariableXXdecl{}\\
     \ottdrulevariableXXdeclXXinit{}\\
@@ -1004,7 +1004,7 @@ Any value with a left-value type of non-constant address space can be given an a
 </div>
 <p>Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and its set of behaviours is then {Nothing}.</p>
 <div class="math">
-<p><img src="_images/math/669ac3cc59d18d7ff05c4fed0f934373c34873a1.png" alt="\begin{align*}
+<p><img src="images/math/669ac3cc59d18d7ff05c4fed0f934373c34873a1.png" alt="\begin{align*}
     \ottdruleexpr{}
 \end{align*}"/></p>
 </div></div>
@@ -1021,7 +1021,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <p>The type of an expression in parentheses, is the type of the expression in the parentheses</p>
 <p>A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.</p>
 <div class="math">
-<p><img src="_images/math/3a4bcacc3e539023efb0727bdd596fa05ed95b85.png" alt="\begin{align*}
+<p><img src="images/math/3a4bcacc3e539023efb0727bdd596fa05ed95b85.png" alt="\begin{align*}
     \ottdruleliteralXXtrue{}\\
     \ottdruleliteralXXfalse{}\\
     \ottdrulenullXXlitXXarrayXXref{}\\
@@ -1039,7 +1039,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the whole expression is well-typed, and of that type</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/fc7839ceec094a924ff60cde9a0c117c4ba46cca.png" alt="\begin{align*}
+<p><img src="images/math/fc7839ceec094a924ff60cde9a0c117c4ba46cca.png" alt="\begin{align*}
     \ottdruleor{}\\
     \ottdruleand{}\\
     \ottdruleternary{}
@@ -1053,7 +1053,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the assignment is well-typed, and its type is “tval”</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/5b2d4d25688d8fbe233281aba951eda37d3c7d24.png" alt="\begin{align*}
+<p><img src="images/math/5b2d4d25688d8fbe233281aba951eda37d3c7d24.png" alt="\begin{align*}
     \ottdruleassignment{}
 \end{align*}"/></p>
 </div><p>If an expression is well-typed and its type is an abstract left-value type, it can also be treated as if it were of the associated right-value type.
@@ -1070,7 +1070,7 @@ The associated right-value types and address spaces are left unchanged by this o
 <code class="docutils literal notranslate"><span class="pre">&#64;x</span></code> for a variable <code class="docutils literal notranslate"><span class="pre">x</span></code> with a non-array type is valid, it will merely produce an array reference for which only the index 0 can be used.</p>
 </div>
 <div class="math">
-<p><img src="_images/math/20f5e61dc9694b471c2b474f129ab96cf232856f.png" alt="\begin{align*}
+<p><img src="images/math/20f5e61dc9694b471c2b474f129ab96cf232856f.png" alt="\begin{align*}
     \ottdrulealvalXXtoXXrval{}\\
     \ottdrulelvalXXtoXXalval{}\\
     \ottdrulelvalXXtoXXrval{}\\
@@ -1142,7 +1142,7 @@ then the whole expression is well-typed, and has a left-value type corresponding
 <li>Else the expression is ill-typed</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/73868bd7124037446cc433c1df796bf20ef8d42e.png" alt="\begin{align*}
+<p><img src="images/math/73868bd7124037446cc433c1df796bf20ef8d42e.png" alt="\begin{align*}
     \ottdrulearrayXXrefXXindex{}
 \end{align*}"/></p>
 </div><p>To check that an expression <code class="docutils literal notranslate"><span class="pre">e++</span></code>, or <code class="docutils literal notranslate"><span class="pre">e--</span></code> is well-typed:</p>
@@ -1159,7 +1159,7 @@ then the whole expression is well-typed, and has a left-value type corresponding
 <li>Then the expression is well-typed, and of the right-value type of <code class="docutils literal notranslate"><span class="pre">e1</span></code></li>
 </ol>
 <div class="math">
-<p><img src="_images/math/58a41211481f8980151d13b31a512709b0d556f1.png" alt="\begin{align*}
+<p><img src="images/math/58a41211481f8980151d13b31a512709b0d556f1.png" alt="\begin{align*}
     \ottdrulepostfixXXincr{}\\
     \ottdruleoperatorXXplusXXequal{}
 \end{align*}"/></p>
@@ -1264,7 +1264,7 @@ The per-thread state is made of a few element:</p>
 <li>A divergence stack. This is a stack of pairs of divergence point identifiers and values, which tracks whether we are in a branch, and is used by the rules for barriers and derivatives to check that control-flow is uniform.</li>
 <li>An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function.</li>
 </ul>
-<p>Each transition is a statement of the form “With environment <img class="math" src="_images/math/e13213b284578cff04a56a0bc6a3827dd8fe74d1.png" alt="\rho"/>, if some conditions are respected, the program may be transformed into the following, emitting the following memory events, and modifying the divergence stack in these ways.”</p>
+<p>Each transition is a statement of the form “With environment <img class="math" src="images/math/e13213b284578cff04a56a0bc6a3827dd8fe74d1.png" alt="\rho"/>, if some conditions are respected, the program may be transformed into the following, emitting the following memory events, and modifying the divergence stack in these ways.”</p>
 <p>In some of these rules we use <code class="docutils literal notranslate"><span class="pre">ASSERT</span></code> to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
 Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.</p>
 </div>
@@ -1293,7 +1293,7 @@ Such assertions are not tests that must be done by any implementation, they are 
 <li>Else reduce the first statement of the block, using the environment that the block was annotated with (not the top-level environment)</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/68f476d3aca624174394f4ba0260f50c382b989a.png" alt="\begin{align*}
+<p><img src="images/math/68f476d3aca624174394f4ba0260f50c382b989a.png" alt="\begin{align*}
     \ottdruleblockXXannotate{}\\
     \ottdruleblockXXnextXXstmt{}\\
     \ottdruleblockXXterminator{}\\
@@ -1316,7 +1316,7 @@ Such assertions are not tests that must be done by any implementation, they are 
 <li>Else reduce that expression</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/021d3be669ef84684a63f57fe783fd5ebe56728a.png" alt="\begin{align*}
+<p><img src="images/math/021d3be669ef84684a63f57fe783fd5ebe56728a.png" alt="\begin{align*}
     \ottdruleifXXtrue{}\\
     \ottdruleifXXfalse{}\\
     \ottdruleifXXreduce{}
@@ -1332,7 +1332,7 @@ Such assertions are not tests that must be done by any implementation, they are 
 <li>Else reduce its argument</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/2a164651baca5cfd104d1941967f0841a77b4829.png" alt="\begin{align*}
+<p><img src="images/math/2a164651baca5cfd104d1941967f0841a77b4829.png" alt="\begin{align*}
     \ottdrulejoinXXelim{}\\
     \ottdrulejoinXXreduce{}
 \end{align*}"/></p>
@@ -1373,7 +1373,7 @@ Informally it represents the different cases of a switch, and deals with the <co
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/09e0c71061c7e20dae69a99a4172237248383d27.png" alt="\begin{align*}
+<p><img src="images/math/09e0c71061c7e20dae69a99a4172237248383d27.png" alt="\begin{align*}
     \ottdruleswitchXXreduce{}\\
     \ottdruleswitchXXcaseXXfound{}\\
     \ottdruleswitchXXdefault{}
@@ -1397,7 +1397,7 @@ Informally it represents the different cases of a switch, and deals with the <co
 <li>Else reduce the first argument by one step</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/b443d8e15a9a69bb2825e4600733a3784294049a.png" alt="\begin{align*}
+<p><img src="images/math/b443d8e15a9a69bb2825e4600733a3784294049a.png" alt="\begin{align*}
     \ottdrulecasesXXfallthrough{}\\
     \ottdrulecasesXXbreak{}\\
     \ottdrulecasesXXotherXXterminator{}\\
@@ -1411,7 +1411,7 @@ Informally, its first argument represents the current iteration of a loop, its s
 <p>Any <code class="docutils literal notranslate"><span class="pre">do</span> <span class="pre">s</span> <span class="pre">while(e);</span></code> statement is reduced to the following in one step: <code class="docutils literal notranslate"><span class="pre">Loop(s,</span> <span class="pre">{},</span> <span class="pre">if(e)</span> <span class="pre">do</span> <span class="pre">s</span> <span class="pre">while(e);</span> <span class="pre">else</span> <span class="pre">{})</span></code>, keeping the same divergence point identifier.
 Any <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">(;e;e')</span> <span class="pre">s</span></code> statement is reduced to the following in one step <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(e)</span> <span class="pre">Loop(s,</span> <span class="pre">e';,</span> <span class="pre">for(;e;e')</span> <span class="pre">s)</span> <span class="pre">else</span> <span class="pre">{}</span></code>, keeping the same divergence point identifier.</p>
 <div class="math">
-<p><img src="_images/math/29573dc1b9638fcf2fc22572395b4edebe7da97e.png" alt="\begin{align*}
+<p><img src="images/math/29573dc1b9638fcf2fc22572395b4edebe7da97e.png" alt="\begin{align*}
     \ottdruledoXXwhileXXloop{}\\
     \ottdruleforXXloop{}
 \end{align*}"/></p>
@@ -1441,7 +1441,7 @@ Any <code class="docutils literal notranslate"><span class="pre">for</span> <spa
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/3997f39dd8c9d2f56f6b209a0d018ebf65f33cb7.png" alt="\begin{align*}
+<p><img src="images/math/3997f39dd8c9d2f56f6b209a0d018ebf65f33cb7.png" alt="\begin{align*}
     \ottdruleloopXXbreak{}\\
     \ottdruleloopXXnextXXiteration{}\\
     \ottdruleloopXXincrement{}\\
@@ -1463,7 +1463,7 @@ Instead, there is a rule in the global semantics, saying that if all threads are
 <p>If a statement is just an expression (<code class="docutils literal notranslate"><span class="pre">effectfulExpr</span></code> in the grammar), it is either discarded (if it is a value) or reduced by one step (otherwise).</p>
 <p>If a statement is a return followed by an expression, and the expression can be reduced, then the statement can as well by reducing the expression.</p>
 <div class="math">
-<p><img src="_images/math/096ea45df57395c87c8d32cecff3225023b72076.png" alt="\begin{align*}
+<p><img src="images/math/096ea45df57395c87c8d32cecff3225023b72076.png" alt="\begin{align*}
     \ottdruleeffectfulXXexprXXreduce{}\\
     \ottdruleeffectfulXXexprXXelim{}\\
     \ottdrulereturnXXreduce{}\\
@@ -1512,7 +1512,7 @@ Left values are the only kind of values that can be further reduced.</p>
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/e50817491ef91ac6bda0efc17b04e161d4fda27b.png" alt="\begin{align*}
+<p><img src="images/math/e50817491ef91ac6bda0efc17b04e161d4fda27b.png" alt="\begin{align*}
     \ottdruleandXXreduce{}\\
     \ottdruleandXXfalse{}\\
     \ottdruleandXXtrue{}
@@ -1534,7 +1534,7 @@ Left values are the only kind of values that can be further reduced.</p>
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/5794d77fc5438cc216ff878bcd27d266b3495f33.png" alt="\begin{align*}
+<p><img src="images/math/5794d77fc5438cc216ff878bcd27d266b3495f33.png" alt="\begin{align*}
     \ottdruleorXXreduce{}\\
     \ottdruleorXXtrue{}\\
     \ottdruleorXXfalse{}
@@ -1562,7 +1562,7 @@ Left values are the only kind of values that can be further reduced.</p>
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/9eed636bcf178d97d1deef6ac8635c89f5b70c79.png" alt="\begin{align*}
+<p><img src="images/math/9eed636bcf178d97d1deef6ac8635c89f5b70c79.png" alt="\begin{align*}
     \ottdruleternaryXXreduce{}\\
     \ottdruleternaryXXtrue{}\\
     \ottdruleternaryXXfalse{}
@@ -1578,7 +1578,7 @@ Left values are the only kind of values that can be further reduced.</p>
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/8165a62e2f4e98de35fa134a9e7bf624ade3f4d3.png" alt="\begin{align*}
+<p><img src="images/math/8165a62e2f4e98de35fa134a9e7bf624ade3f4d3.png" alt="\begin{align*}
     \ottdrulejoinXXexprXXelim{}\\
     \ottdrulejoinXXexprXXreduce{}
 \end{align*}"/></p>
@@ -1669,7 +1669,7 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 <p class="last">in the rules we say “e is an abstract left-value” as a short hand for “e cannot be reduced further to an abstract left value”</p>
 </div>
 <div class="math">
-<p><img src="_images/math/bc50368984d799eea039fa96f0064796a9c32894.png" alt="\begin{align*}
+<p><img src="images/math/bc50368984d799eea039fa96f0064796a9c32894.png" alt="\begin{align*}
     \ottdrulealvalXXdotXXreduce{}\\
     \ottdrulealvalXXdotXXander{}\\
     \ottdrulealvalXXarrayXXreduceXXleft{}\\
@@ -1720,7 +1720,7 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 </li>
 </ol>
 <div class="math">
-<p><img src="_images/math/e6466bbd4a7f5ab916d9416c189143cf99dba7ae.png" alt="\begin{align*}
+<p><img src="images/math/e6466bbd4a7f5ab916d9416c189143cf99dba7ae.png" alt="\begin{align*}
     \ottdruleassignXXleftXXreduce{}\\
     \ottdruleassignXXrightXXreduce{}\\
     \ottdruleassignXXexecute{}\\
@@ -1748,7 +1748,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">&amp;</sp
 <li>Else reduce <code class="docutils literal notranslate"><span class="pre">e</span></code></li>
 </ol>
 <div class="math">
-<p><img src="_images/math/5752416c1dbf24a46efdae1262a31c41f3bed780.png" alt="\begin{align*}
+<p><img src="images/math/5752416c1dbf24a46efdae1262a31c41f3bed780.png" alt="\begin{align*}
     \ottdruletakeXXptrXXreduce{}\\
     \ottdruletakeXXptrXXinvalidXXnull{}\\
     \ottdruletakeXXptrXXinvalidXXtrap{}\\
@@ -1770,7 +1770,7 @@ More precisely, to reduce <code class="docutils literal notranslate"><span class
 <li>Else reduce it</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/34e69f19205a8bacda598d196f1189884e37d7f7.png" alt="\begin{align*}
+<p><img src="images/math/34e69f19205a8bacda598d196f1189884e37d7f7.png" alt="\begin{align*}
     \ottdrulemakeXXrefXXlval{}\\
     \ottdrulemakeXXrefXXinvalidXXnull{}\\
     \ottdrulemakeXXrefXXinvalidXXtrap{}\\
@@ -1788,7 +1788,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e1[e2]</s
 <p class="last">In the case where <code class="docutils literal notranslate"><span class="pre">operator&amp;[]</span></code> can be used, it will be used through the rules for reduction to an abstract left-value (see <a class="reference internal" href="#reduction-abstract-left-value-label"><span class="std std-ref">Reduction to an abstract left-value</span></a>). For <code class="docutils literal notranslate"><span class="pre">operator[]=</span></code>, see the section on assignment (<a class="reference internal" href="#assignment-exec-label"><span class="std std-ref">Assignment</span></a>).</p>
 </div>
 <div class="math">
-<p><img src="_images/math/d87e910dbef668fe638e391447655075d9cb7cb8.png" alt="\begin{align*}
+<p><img src="images/math/d87e910dbef668fe638e391447655075d9cb7cb8.png" alt="\begin{align*}
     \ottdrulearrayXXderefXXreduce{}\\
     \ottdrulearrayXXderefXXgetter{}
 \end{align*}"/></p>
@@ -1808,7 +1808,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e.foo</sp
 <p class="last">In the case where <code class="docutils literal notranslate"><span class="pre">operator&amp;.foo</span></code> can be used, it will be used through the rules for reduction to an abstract left-value (see <a class="reference internal" href="#reduction-abstract-left-value-label"><span class="std std-ref">Reduction to an abstract left-value</span></a>). For <code class="docutils literal notranslate"><span class="pre">operator.foo=</span></code>, see the section on assignment (<a class="reference internal" href="#assignment-exec-label"><span class="std std-ref">Assignment</span></a>).</p>
 </div>
 <div class="math">
-<p><img src="_images/math/94019cdb99cb91cad97539b69abb32b743ddc46b.png" alt="\begin{align*}
+<p><img src="images/math/94019cdb99cb91cad97539b69abb32b743ddc46b.png" alt="\begin{align*}
     \ottdruledotXXreduce{}\\
     \ottdruledotXXgetter{}
 \end{align*}"/></p>
@@ -1833,7 +1833,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e.foo</sp
 <p class="last">depending on <code class="docutils literal notranslate"><span class="pre">e</span></code>, this can lead to calls to getters/setters or address takers.</p>
 </div>
 <div class="math">
-<p><img src="_images/math/4e70021f01e337f14f22f30a27ab76b219ad74df.png" alt="\begin{align*}
+<p><img src="images/math/4e70021f01e337f14f22f30a27ab76b219ad74df.png" alt="\begin{align*}
     \ottdrulepostfixXXincrXXreduce{}\\
     \ottdrulepostfixXXincrXXelim{}
 \end{align*}"/></p>
@@ -1843,7 +1843,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e.foo</sp
 <li>Else replace the whole expression by an assignment to <code class="docutils literal notranslate"><span class="pre">e1</span></code> of the result of the corresponding operator, called on <code class="docutils literal notranslate"><span class="pre">e1</span></code> and <code class="docutils literal notranslate"><span class="pre">e2</span></code></li>
 </ol>
 <div class="math">
-<p><img src="_images/math/859063942575f639744349f4b8fb3f0ad6ce9301.png" alt="\begin{align*}
+<p><img src="images/math/859063942575f639744349f4b8fb3f0ad6ce9301.png" alt="\begin{align*}
     \ottdruleplusXXequalXXreduce{}\\
     \ottdruleplusXXequalXXelim{}
 \end{align*}"/></p>
@@ -1893,7 +1893,7 @@ Informally, it is a way to transform a return statement into the corresponding v
 This allows shadowing global variables.</p>
 </div>
 <div class="math">
-<p><img src="_images/math/ddffb878bba26429f744720f8a81effcc96942fb.png" alt="\begin{align*}
+<p><img src="images/math/ddffb878bba26429f744720f8a81effcc96942fb.png" alt="\begin{align*}
     \ottdrulecallXXreduce{}\\
     \ottdrulecallXXresolve{}
 \end{align*}"/></p>
@@ -1904,7 +1904,7 @@ This allows shadowing global variables.</p>
 <li>Else if its argument is <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">val;</span></code> for some value <code class="docutils literal notranslate"><span class="pre">val</span></code>, then replace it by this value.</li>
 </ol>
 <div class="math">
-<p><img src="_images/math/864fa9b4023cd0c68d30883773329aed79ef3e4a.png" alt="\begin{align*}
+<p><img src="images/math/864fa9b4023cd0c68d30883773329aed79ef3e4a.png" alt="\begin{align*}
     \ottdrulecallXXconstructXXreduce{}\\
     \ottdrulecallXXreturnXXvoid{}\\
     \ottdrulecallXXendXXfunction{}\\
@@ -1916,7 +1916,7 @@ This allows shadowing global variables.</p>
 <p>Parentheses have no effect at runtime (beyond their effect during parsing).</p>
 <p>The comma operator simply reduces its first operand as long as it can, then drops it and is replaced by its second operand.</p>
 <div class="math">
-<p><img src="_images/math/0d09544bfe5e907b8294a53b8875b48cd712c82a.png" alt="\begin{align*}
+<p><img src="images/math/0d09544bfe5e907b8294a53b8875b48cd712c82a.png" alt="\begin{align*}
     \ottdrulecommaXXreduce{}\\
     \ottdrulecommaXXnext{}\\
     \ottdruleparensXXexec{}
