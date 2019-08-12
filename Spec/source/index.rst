@@ -2261,7 +2261,7 @@ They return respectively the minimum and the maximum of their arguments.
 ``clamp`` is defined as a ternary function on integers, both signed and unsigned.
 Its return type is the same as the type of its arguments.
 If its third argument is less than its second, it returns an unspecified value.
-Otherwise it returns ``min(max(first, second), third)``.
+Otherwise ``clamp(x, min, max)`` is equivalent to ``min(max(x, min), max)``.
 
 .. note::
     We must return an unspecified value in the case where second > third, because it is what SPIR-V (GLSL.std.450 extended instruction set) does.
@@ -2317,6 +2317,10 @@ Floating point arithmetic
 Their return type is the same as the type of their arguments, and they respectively implement floating-point addition, substraction, multiplication and division
 The result of ``operator/`` is an undefined value if its second argument is either ``+0.0`` or ``-0.0``
 
+.. todo::
+    HLSL has an operator% on floats, which is equivalent to fmod, except for emitting different bit patterns for NaN..
+    I should probably specify them as dupes of each other.
+
 .. note::
     Our treatment of division by 0 here is based on the SPIR-V specification for OpFDiv.
     MSL instead mandates either NaN or +/-Infinity, following the IEEE-754 standard.
@@ -2349,9 +2353,7 @@ asin
 atan
     Returns the arctangent of its argument in radians.
     In other words its result is a number in radians whose tangent is its argument.
-    The range of results is [-Pi ; Pi].
-    TODO: verify the range in HLSL + MSL
-    In C++ it is always in [-Pi/2 ; Pi/2] for example. This makes a lot more sense, because there are two pre-images of any number by tangent in [-Pi/Pi], and we need more information (from atan2) to get the right one.
+    The range of results is [-Pi/2 ; Pi/2].
 cosh
     Returns the hyperbolic cosine of its argument interpreted as radians.
 sinh
@@ -2406,6 +2408,11 @@ saturate
     Clamps its argument between 0.0 and 1.0, as per the ``clamp`` function.
 
 .. todo::
+    The range of results for atan on every platform but SPIR-V.GLSL.std.450 is [-Pi/2;Pi/2], but on SPIR-V.GLSL.std.450 it is [-Pi;Pi].
+    We should verify that we are not introducing a portability hazard by using the sane/common/restrictive specification.
+    https://github.com/gpuweb/WHLSL/issues/340
+
+.. todo::
     Decide whether we want to support acosh/asinh/atanh.
     They are not in HLSL, but are in GLSL, MSL and Vulkan.
     https://github.com/gpuweb/WHLSL/issues/338
@@ -2415,29 +2422,90 @@ saturate
 
 The following functions are all binary functions on floats, and their return type is also float:
 
-- min
-- max
-- pow
-- step
-- ldexp
-- fmod
-- atan2
+min
+    If one or both of the two arguments is NaN, this function returns one of its arguments, but which one is unspecified.
+    If the two arguments are -0.0 and 0.0 in any order, then this function returns one of the two, but which one is unspecified.
+    Otherwise, it returns the smaller of its arguments.
+max
+    If one or both of the two arguments is NaN, this function returns one of its arguments, but which one is unspecified.
+    If the two arguments are -0.0 and 0.0 in any order, then this function returns one of the two, but which one is unspecified.
+    Otherwise, it returns the greater of its arguments.
+pow
+    Returns its first argument raised to the power of its second argument.
+    If its first argument is less than zero, returns an unspecified value instead.
+    If its first argument is 0.0 or -0.0 and its second argument is equal or less than 0, returns an unspecified value. 
+step
+    ``step(x, y)`` is equivalent to ``(x >= y) ? 1 : 0``
+ldexp
+    ``ldexp(x, y)`` is equivalent to ``x * pow(2.0, y)`` 
+fmod
+    ``fmod(x, y)`` is equivalent to ``x - y * trunc(x / y)``.
+    In particular, if the second argument is 0.0 or -0.0 then it returns an unspecified value.
+atan2
+    ``atan2(y, x)`` returns a number whose tangent is ``x/y`` (note that ``y`` is the first argument and ``x`` the second!).
+    Its result falls in an interval that depends on the sign of ``x`` and ``y``:
+
+    - If x > 0 and y > 0, [0 ; Pi/2]
+    - If x > 0 and y < 0, [-Pi/2 ; 0]
+    - If x < 0 and y > 0, [Pi/2 ; Pi]
+    - If x < 0 and y < 0, [-Pi ; -Pi/2]
+
+.. note::
+    About min(-0.0, 0.0) and min(0.0, -0.0), here is what other languages do/say:
+    C++/SPIR-V say that they should return the first argument, while HLSL and MSL don't specify the result but always return -0.0.
+    So I declared the result here unspecified between the two arguments because I was not sure how to make a specification that is efficiently implementable everywhere.
+    We can easily revisit this in the future if needed.
+
+.. note::
+    HLSL got documentation for what is returned by pow(x, y) in corner cases amounting to the following:
+
+    - If the first argument is less than 0, the result is NaN
+    - If the first argument is -0.0 or +0.0, and the second argument is less than 0, the result is +Infinity
+    - If both arguments are 0 (either +0.0 or -0.0), the result is unspecified
+    - If the first argument is -0.0 or +0.0, and the second argument is greater than 0, the result is +0.0
+
+    I gave implementations more flexibility to match what SPIR-V.GLSL.std.450 specifies, we can easily revisit this choice.
+
+.. note::
+    step(x, y) in HLSL appears to be the same as step(y, x) in both Metal and SPIR-V.GLSL.std.450 !
+    I followed the HLSL documentation here; but we can easily revisit.
+
+.. todo::
+    In Metal, SPIR-V and GLSL, the second argument of ldexp must be an integer.
+    We currently follow HLSL documentation in allowing it to be a float.
+    We should double-check whether it is useful, and whether ldexp is even actually sane on floats in HLSL.
+    https://github.com/gpuweb/WHLSL/issues/339
 
 The following functions are all ternary functions on floats, and their return type is also float:
 
-- clamp
-- smoothstep
-- lerp
-- fmod
-- mad
+clamp
+    If its third argument is less than its second, or if any of its arguments is NaN, then it returns an unspecified value.
+    Otherwise ``clamp(x, min, max)`` is equivalent to ``min(max(x, min), max)``.
+smoothstep
+    If its second argument is less than its first, or if any of its arguments is NaN, then it returns an unspecified value.
+    Otherwise ``smoothstep(min, max, x)`` returns:
+
+    - If x <= min, then 0
+    - If x >= max, then 1
+    - Else a smooth Hermite interpolation between 0 and 1, equivalent to ``t * t * (3 - 2 * t)`` where ``t = (x - min) / (max - min)``
+lerp
+    ``lerp(x, y, s)`` is equivalent to ``x*(1-s) + y*s``
+mad
+    ``mad(a, b, c)`` computes ``a*b + c``, but with potentially different precision.
+    See the section :ref:`numerical_compliance_label` for details.
 
 .. I removed fma following https://bugs.webkit.org/show_bug.cgi?id=199531
 
 The following functions are all unary functions on floats, and their return type is bool:
 
-- isfinite
-- isinf
-- isnan
+isfinite
+    Returns true if and only if its argument is neither a NaN nor an infinity.
+isinf
+    Returns true if and only if its argument is an infinity.
+isnan
+    Returns true if and only if its argument is a NaN.
+
+.. _numerical_compliance_label:
 
 Numerical Compliance
 """"""""""""""""""""
