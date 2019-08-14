@@ -677,9 +677,7 @@ For each top-level declaration:
    #. If there is already a type of the same name in the environment, the program is invalid
    #. If two or more fields of the struct have the same name, the program is invalid
    #. Add the struct to the environment as a new type.
-   #. For each field of the struct, add to the environment a mapping from the name ``operator&.field=`` (where ``field`` is replaced by the name of the field) to 4 function declarations with one argument,
-        whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each
-        address space, that address space is used both by the pointer argument and by the return type
+   #. For each field of the struct, add to the environment a mapping from the name ``operator&.field=`` (where ``field`` is replaced by the name of the field) to 4 function declarations with one argument, whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each address space, that address space is used both by the pointer argument and by the return type
 
 #. If it is an enum
 
@@ -1128,12 +1126,9 @@ To check that an array dereference ``e1[e2]`` is well-typed:
 #. Check that ``e2`` is well-typed with the type ``uint32``
 #. Check that ``e1`` is well-typed and not the null literal
 #. If the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, and the same address space as the type of ``e1``
-#. Else if ``e1`` has a left-value type, and there is a function called ``operator&[]`` with a first parameter whose type is a pointer to the same right-value type with the same address space,
-   then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
-#. Else if ``e1`` has an abstract left-value type, and there is a function called ``operator[]=`` with a first parameter whose type is the corresponding right-value type,
-    then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the third parameter of that function.
-#. Else if there is a function called ``operator.[]`` with a parameter whose type matches the type of ``e1``,
-    then the whole expression is well-typed and has the return type of that function.
+#. Else if ``e1`` has a left-value type, and there is a function called ``operator&[]`` with a first parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
+#. Else if ``e1`` has an abstract left-value type, and there is a function called ``operator[]=`` with a first parameter whose type is the corresponding right-value type, then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the third parameter of that function.
+#. Else if there is a function called ``operator.[]`` with a parameter whose type matches the type of ``e1``, then the whole expression is well-typed and has the return type of that function.
 #. Else the expression is ill-typed
 
 .. math::
@@ -1262,12 +1257,15 @@ The per-thread state is made of a few element:
 
 - The program being executed. Each transition transforms it.
 - A divergence stack. This is a stack of pairs of divergence point identifiers and values, which tracks whether we are in a branch, and is used by the rules for barriers and derivatives to check that control-flow is uniform.
-- An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function.
+- An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function. It also contains a (separate) mapping from function names to sets of function definitions.
 
 Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, emitting the following memory events, and modifying the divergence stack in these ways."
 
 In some of these rules we use ``ASSERT`` to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
 Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.
+
+We start at the execution by a call to the relevant entry point with the relevant arguments.
+The environment is initialized with all of the function definitions from the shader, as well as all of the functions defined in the standard library (see :ref:`standard_library_label`).
 
 Execution of statements
 -----------------------
@@ -1483,10 +1481,6 @@ If a statement is a return followed by an expression, and the expression can be 
         \ottdrulereturnXXreduce{}\\
     \end{align*}
 
-
-The standard library also offers atomic operations and fences (a.k.a. *memory barriers*, not to be confused with *control barriers*).
-Each of these emit a specific memory event when they are executed, whose semantics is described in the memory model section.
-
 Execution of expressions
 ------------------------
 
@@ -1501,7 +1495,7 @@ We define the following kinds of values:
 
 .. note::
     Abstract left-value types were used in the typing section to represent things that can be assigned to.
-    At runtime they are either left-values, or normal values with a setter applicable to them.
+    At runtime they are either left-values, or become calls to a setter.
 
 In this section we describe how to reduce each kind of expression to another expression or to a value.
 Left values are the only kind of values that can be further reduced.
