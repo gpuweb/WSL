@@ -141,7 +141,8 @@ tval {{tex {\tau^{val} } }} :: type_value_ ::=
     | Ref ( tval , addressSpace ) :: :: array_ref {{com array reference}}
     | [ tval ] :: :: array {{com array}}
     | bool :: :: bool
-    | uint32 :: :: uint32 {{tex \textbf{uint32} }}
+    | uint :: :: uint
+    | int :: :: int
     | void :: :: void
     | TVar tid namedSigs :: :: tvar
 addressSpace, as :: address_space_ ::=
@@ -454,11 +455,16 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- e0 : bool
     G |- e1 : tval
     G |- e2 : tval
+    e1 != null \/ e2 != null
+    e1 != integerLiteral \/ e2 != integerLiteral
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
-    e1 != null \/ e2 != null
-    ------------------------------ :: ternary
+    -------------------------------------------- :: ternary_no_int_literals
     G |- e0 ? dpid e1 : e2 : tval
+
+    G |- e0 : bool
+    ---------------------------------------------------- :: ternary_int_literals
+    G |- e0 ? dpid integerLiteral : integerLiteral : int
 
     G |- e : bool
     -------------- :: not
@@ -509,7 +515,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     % Note: in the execution rules, the behaviour depends on whether that LVal points to an array, but here we don't need to track it.
 
     G |- e : [tval]
-    G |- e' : uint32
+    G |- e' : uint
     ----------------- :: array_index_rval
     G |- e[e'] : tval
     % There is a choice between applying array_index_lval and then lval_access, or lval_access and then array_index_rval.
@@ -518,12 +524,12 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     % I think it should be an allowed behaviour but not required of the implementation.
 
     G |- e : LVal([tval], as)
-    G |- e' : uint32
+    G |- e' : uint
     --------------------------- :: array_index_lval
     G |- e[e'] : LVal(tval, as)
 
     G |- e : Ref(tval, as)
-    G |- e' : uint32
+    G |- e' : uint
     e != null
     --------------------------- :: array_ref_index
     G |- e[e'] : LVal(tval, as)

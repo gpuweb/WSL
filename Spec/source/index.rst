@@ -1034,11 +1034,14 @@ To check that a boolean or, or a boolean and is well-typed, check that both of i
 To check that a ternary conditional is well-typed:
 
 #. Check that its condition is well-typed and of type bool
-#. Check that if one of its branches is the null literal then the other is not
-#. Check that both of its branches are well-typed
-#. Check that the types of its branches are both right-value types and the same
-#. Check that this same type is neither a pointer type nor an array reference type.
-#. Then the whole expression is well-typed, and of that type
+#. If both of its branches are integer literals, then the whole expression is well-typed and has type ``int`` (right-value).
+#. Otherwise:
+
+    #. Check that if one of its branches is the null literal then the other is not
+    #. Check that both of its branches are well-typed
+    #. Check that the types of its branches are both right-value types and the same
+    #. Check that this same type is neither a pointer type nor an array reference type.
+    #. Then the whole expression is well-typed, and of that type
 
 .. math::
     :nowrap:
@@ -1046,7 +1049,8 @@ To check that a ternary conditional is well-typed:
     \begin{align*}
         \ottdruleor{}\\
         \ottdruleand{}\\
-        \ottdruleternary{}
+        \ottdruleternaryXXintXXliterals{}\\
+        \ottdruleternaryXXnoXXintXXliterals{}
     \end{align*}
 
 To check that an assignment is well-typed:
