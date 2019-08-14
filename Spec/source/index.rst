@@ -536,6 +536,9 @@ We also partly desugar for loops:
     switchStmt: "switch" "(" `expr` ")" "{" `switchCase`* "}"
     switchCase: ("case" `constexpr` | "default") ":" `stmt`*
 
+Switches differ from the usual C/C++ kind in a single regard: they require an explicit ``fallthrough`` statement to fall from one case to the next.
+They still require a ``break`` to exit to the end of the switch, so it is an error to have control-flow reach the end of a switch case (see :ref:`typing_statements_label`).
+
 .. productionlist::
     variableDecls: `type` `variableDecl` ("," `variableDecl`)*
     variableDecl: `Identifier` ("=" `ternaryConditional`)?
@@ -947,7 +950,7 @@ To check a block:
 #. If it is empty, it is well-typed and its behaviours is always {Nothing}
 #. Else if it starts by a variable declaration:
 
-    #. Check that there is no other statement in that block is a variable declaration sharing the same name.
+    #. Check that there is no other variable declaration in that block sharing the same name.
     #. Check that the given address space is either ``thread`` or ``threadgroup``
     #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space
     #. If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.
@@ -962,7 +965,7 @@ To check a block:
     #. Check that its set of behaviours B contains Nothing.
     #. Remove Nothing from it.
     #. Check that it does not contain Fallthrough
-    #. Check that the rest of the block, removing the first statement, is well-typed with a set of behaviours B'.
+    #. Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours B'.
     #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
 
 .. math::
@@ -1102,7 +1105,7 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
 
 #. If ``e`` is well-typed
 
-    #. If ``e`` has a left-value type, and there is a function called ``operator&.foo`` with a first parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
+    #. If ``e`` has a left-value type, and there is a function called ``operator&.foo`` with a parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
     #. Else if ``e`` has an abstract left-value type, and there is a function called ``operator.foo=`` with a first parameter whose type is the corresponding right-value type, then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.
     #. Else if there is a function called ``operator.foo`` with a parameter whose type matches the type of ``e``, then the whole expression is well-typed and has the return type of that function.
     #. Else the expression is ill-typed.
@@ -1115,7 +1118,7 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
     #. And replace it by the corresponding value
 
 .. note::
-    Replacing e.foo by its value in the case of an enum is a bit weird of a thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.
+    Replacing e.foo by its value in the case of an enum is a bit of a weird thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.
 
 .. note::
     Please note that a local variable declaration can shadow a global enum declaration.
