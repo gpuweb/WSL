@@ -1086,12 +1086,9 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
 
 #. If ``e`` is well-typed
 
-    #. If ``e`` has a left-value type, and there is a function called ``operator&.foo`` with a first parameter whose type is a pointer to the same right-value type with the same address space,
-        then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
-    #. Else if ``e`` has an abstract left-value type, and there is a function called ``operator.foo=`` with a first parameter whose type is the corresponding right-value type,
-        then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.
-    #. Else if there is a function called ``operator.foo`` with a parameter whose type matches the type of ``e``,
-        then the whole expression is well-typed and has the return type of that function.
+    #. If ``e`` has a left-value type, and there is a function called ``operator&.foo`` with a first parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
+    #. Else if ``e`` has an abstract left-value type, and there is a function called ``operator.foo=`` with a first parameter whose type is the corresponding right-value type, then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.
+    #. Else if there is a function called ``operator.foo`` with a parameter whose type matches the type of ``e``, then the whole expression is well-typed and has the return type of that function.
     #. Else the expression is ill-typed.
 
 #. Else if ``e`` is an identifier
@@ -1953,6 +1950,8 @@ For each declaration of the form ``address-space T2* operator&[](thread T1* a, u
     For example you could have a struct Foo, with a getter for the field bar, returning a struct Bar, with an ander for the field baz.
     When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar is not a left-value. So we instead use the generated getter (that behind the scene copies foo.bar into its parameter, and then uses the ander).
 
+.. _memory_model_label:
+
 Memory model
 ------------
 
@@ -1984,18 +1983,18 @@ Memory events and program order
 
 Some steps in the execution rules provided in the previous section emit memory events.
 There are a few possible such events:
+
 - A store of a value to some set of (contiguous) memory locations, that may be atomic
 - A load of a value from some set of (contiguous) memory locations, that may be atomic
-- A memory barrier (a.k.a. memory fence), that may either ensure synchronization at the threadgroup or whole device scope.
-- A control barrier, with a scope that may be threadgroup or device, that may optionally act as a memory barrier at the threadgroup level, or at the device level
+- A read-modify-write at some set of (contiguous) memory locations, recording both the value read and the value written. They are all considered atomic.
+- A fence (a.k.a. memory barrier), that ensures synchronization either for threadgroup memory or for device memory or for both.
 
 .. The following note was copied verbatim from the source of the Vulkan spec
 
 .. note::
     A write whose value is the same as what was already in those memory locations is still considered to be a write and has all the same effects.
 
-.. todo::
-    Add a note here giving an informal mapping of these to Vulkan/MSL/HLSL.
+.. Maybe add a note here giving an informal mapping of these to Vulkan/MSL/HLSL?
 
 There is furthermore a total order ``po`` (program order) on all such events by any given thread. An event is before another by ``po`` if it is emitted by an
 execution rule that is executed by this thread before the rule that emitted the other event. Additionally the store events emitted by the call execution rule
@@ -2003,6 +2002,8 @@ are ordered by ``po`` in the order of the corresponding parameters (as written i
 
 .. note::
     ``po`` is guaranteed to be a total order for a given thread because the call rule is the only one that emits several memory events.
+
+
 
 .. todo::
     Rewrite the rest of the model here, translating the kinds of atomics provided; and formalizing what we mean about races.
@@ -2441,6 +2442,7 @@ ldexp
 fmod
     ``fmod(x, y)`` is equivalent to ``x - y * trunc(x / y)``.
     In particular, if the second argument is 0.0 or -0.0 then it returns an unspecified value.
+    And otherwise it returns a value with the same sign as its first argument.
 atan2
     ``atan2(y, x)`` returns a number whose tangent is ``x/y`` (note that ``y`` is the first argument and ``x`` the second!).
     Its result falls in an interval that depends on the sign of ``x`` and ``y``:
@@ -2475,6 +2477,11 @@ atan2
     We currently follow HLSL documentation in allowing it to be a float.
     We should double-check whether it is useful, and whether ldexp is even actually sane on floats in HLSL.
     https://github.com/gpuweb/WHLSL/issues/339
+
+.. note::
+    Our definition of fmod follows those of HLSL and Metal.
+    GLSL (and by extension SPIRV) instead use ``x - y * floor(x / y)`` for fmod(x, y).
+    So for negative numbers, they match the sign of their second argument and not their first.
 
 The following functions are all ternary functions on floats, and their return type is also float:
 
@@ -2519,6 +2526,59 @@ Numerical Compliance
 
 Fences and atomic operations
 """"""""""""""""""""""""""""
+
+Each of the following functions take three arguments and have a return type of ``void``:
+
+- InterlockedAdd
+- InterlockedAnd
+- InterlockedOr
+- InterlockedXor
+- InterlockedMin
+- InterlockedMax
+- InterlockedExchange
+
+For all of these the first argument must be a pointer to an atomic type (which can only be in the device or threadgroup address space).
+The second argument is a value of the corresponding base type (int/uint for atomic_int/atomic_uint).
+The third argument is a pointer to that same base type, in a non-constant address space.
+There are overloads for all sets of types that verify these constraints.
+
+``InterlockedAdd(x, y, z)`` has the following semantic:
+
+#. Emit a ReadModifyWrite event at the address ``*x``, that reads a value and stores the sum of that value and ``y``
+#. Emit a Store event at the address ``*z`` of the value that was read in the previous step
+
+Which value can be read by the ReadModifyWrite event is defined by the memory model (see :ref:`memory_model_label`).
+The other functions in that list are the same except that they do the corresponding operation instead of an addition.
+And the ReadModifyWrite of InterlockedExchange just stores ``y``.
+
+InterlockedCompareExchange has a return type of ``void`` and takes four arguments. It has overloads for all sets of types such that:
+Its first parameter must be a pointer to an atomic type (which can only be in the device or threadgroup address space).
+Its second and third parameters must be of the corresponding base type (int/uint for atomic_int/atomic_uint).
+Its fourth argument is a pointer to that same base type, in a non-constant address space.
+InterlockedCompareExchange(x, old, new, previous) has the following semantic:
+
+#. Either emit a ReadModifyWrite event at the address ``*x``, that reads the value ``old`` and stores the value ``new``
+
+   #. Then emit a Store event at the address ``*previous`` of the value ``old``
+
+#. Or emit a Load event at the address ``*x``, that reads a value different from ``old``
+
+   #. Then emit a Store event at the address ``*previous`` of that value.
+
+.. note::
+    This is a so-called strong compare-and-exchange, in that it is not allowed to fail spuriously.
+    If the value that gets stored in ``*previous`` is ``old``, then it must have been replaced by ``new`` in ``*x``.
+
+Finally the following three functions exist:
+
+- DeviceMemoryBarrierWithGroupSync
+- GroupMemoryBarrierWithGroupSync
+- AllMemoryBarrierWithGroupSync
+
+They have the return type ``void`` and no arguments.
+Once a thread reaches a call to one of these, it waits for all other threads in its threadgroup to reach the same point (same function call with the same divergence stack).
+Then all of these threads reduce the function call to ``{}``, emitting the corresponding fence event.
+Please see :ref:`memory_model_label` for the effect of that event.
 
 Cast operators
 """"""""""""""
