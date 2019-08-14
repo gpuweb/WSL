@@ -395,6 +395,7 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- {s s1 .. sn} : (B \ {Nothing}) + B'
 
     G |- e : t
+    e != null
     ------------------- :: expr
     G |- e; : {Nothing}
 
@@ -436,6 +437,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     G |- e : t
     G |- e' : tval'
+    e != null
     ------------------ :: comma
     G |- e, e' : tval'
 
@@ -454,6 +456,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- e2 : tval
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
+    e1 != null \/ e2 != null
     ------------------------------ :: ternary
     G |- e0 ? dpid e1 : e2 : tval
 
@@ -492,6 +495,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     % It seems that no
 
     G |- e : Ptr(tval, as)
+    e != null
     ------------------------ :: ptr_deref
     G |- *e : LVal(tval, as)
     % can the unary operator * be overloaded?
@@ -520,6 +524,7 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     G |- e : Ref(tval, as)
     G |- e' : uint32
+    e != null
     --------------------------- :: array_ref_index
     G |- e[e'] : LVal(tval, as)
 

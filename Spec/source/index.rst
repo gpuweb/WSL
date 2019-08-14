@@ -980,7 +980,10 @@ To check a block:
     Change the variable declaration ott rules to support threadgroup local variables
     https://github.com/gpuweb/WHLSL/issues/63
 
-Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and its set of behaviours is then {Nothing}.
+Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and not the null literal. Its set of behaviours is then {Nothing}.
+
+.. note::
+    We forbid the null literal in all positions where there is no clear type to give it.
 
 .. math::
     :nowrap:
@@ -994,18 +997,25 @@ Finally a statement that consists of a single expression (followed by a semicolo
 Typing expressions
 """"""""""""""""""
 
-Literals are always well-typed and of the following right-value types:
+Literals always have right-value types:
 
-- ``true`` and ``false`` are always boolean.
-- float literals are of any floating-point right-value type
-- unsigned int literals (marked by an ``u`` at the end) are of any unsigned integer type large enough to contain them
-- int literals are of any integer type large enough to contain them
+- ``true`` and ``false`` are always well-typed and of type ``bool``.
+- float literals are always well-typed and of type ``float``.
+- unsigned int literals (marked by an ``u`` at the end) are well-typed if they are representable as a 32-bit unsigned integer, in which case they are of type ``uint``
+- int literals are always well-typed.
+
+    - If they are representable as a 32-bit unsigned integer they can be given the type ``uint``
+    - If they are representable as a 32-bit signed integer they can be give the type ``int``
+    - They can be given the ``float`` type.
 
 ``null`` is always well-typed and its type can be any pointer or array reference type (depending on which is required for validation to succeed).
 
+.. note::
+    integer literals an null literals are the only cases of implicit coercions in the language. See the rule for function calls for details.
+
 The type of an expression in parentheses, is the type of the expression in the parentheses
 
-A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.
+A comma expression is well-typed if both of its operands are well-typed, and its left-operand is not the null literal. In that case, its type is the right-value type of its second operand.
 
 .. math::
     :nowrap:
@@ -1024,6 +1034,7 @@ To check that a boolean or, or a boolean and is well-typed, check that both of i
 To check that a ternary conditional is well-typed:
 
 #. Check that its condition is well-typed and of type bool
+#. Check that if one of its branches is the null literal then the other is not
 #. Check that both of its branches are well-typed
 #. Check that the types of its branches are both right-value types and the same
 #. Check that this same type is neither a pointer type nor an array reference type.
@@ -1059,7 +1070,8 @@ If an expression is well-typed and its type is a left-value type, it can also be
 
 A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
 
-An expression ``&e`` (respectively ``*e``) is well-typed and with a pointer type (respectively with a left-value type) if ``e`` is well-typed with a left-value type (respectively of a pointer type).
+An expression ``&e`` is well-typed and with a pointer type if ``e`` is well-typed with a left-value type.
+An expression ``*e`` is well-typed and with a left-value type if ``e`` is not the null literal and is well-typed with a pointer type.
 The associated right-value types and address spaces are left unchanged by these two operators.
 
 An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed with a left-value type.
@@ -1107,7 +1119,7 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
 To check that an array dereference ``e1[e2]`` is well-typed:
 
 #. Check that ``e2`` is well-typed with the type ``uint32``
-#. Check that ``e1`` is well-typed 
+#. Check that ``e1`` is well-typed and not the null literal
 #. If the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, and the same address space as the type of ``e1``
 #. Else if ``e1`` has a left-value type, and there is a function called ``operator&[]`` with a first parameter whose type is a pointer to the same right-value type with the same address space,
    then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
@@ -1148,29 +1160,28 @@ To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2
 To check that a function call is well-typed:
 
 #. Check that each argument is well-typed
-#. Make a set of all the functions in the global environment that share the same name and number of parameters, and that is not an entry point
-#. For each function in that set:
+#. Make a set of all the functions in the global environment that share the same name and number of parameters, and that are not an entry point. Call them candidate functions.
+#. For each candidate function:
 
-    #. Check that each argument can be given a type that match the type of the parameter
-    #. Otherwise, remove the function from the set
+    #. For each parameter, if the corresponding argument can not be given the parameter type, remove this function from the set of candidate functions
 
-#. Check that the set now contains a single function
-#. Then the function call is well-typed, and its type is the return type of that function
+#. If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function
+#. Else if it contains several functions, for each candidate function:
+
+    #. For each parameter, if the corresponding argument is an integer literal and the parameter type is not ``int``, remove this function from the set of candidate functions
+
+#. If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function.
+#. In all other cases, the function call is ill-typed.
 
 .. note::
-    Our overloading resolution is only this simple because this version of the language does not have generics.
+    The goal of these rules is to allow some limited coercion of literals, but only when it is non-ambiguous.
+    In particular null can be used for any array reference or pointer type, and integer literals can be used either for int, uint or float parameters.
+    If this is ambiguous, all integer literals are limited to the int type and we try again.
+    If it is still ambiguous we give up.
+    This is more restrictive than HLSL which allows a lot of implicit coercions, on purpose, to simplify implementations.
 
 .. note::
     Entry points cannot be called from within a shader. A function is an entry point if and only if it is marked with one of ``vertex``, ``fragment`` or ``compute``.
-
-.. note::
-    A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function ``foo``
-    that take respectively an int and a short, then the program ``foo(42)`` is invalid (as it could refer to either of these implementations).
-    The programmer can easily make their intent clear with something like ``int x = 42; foo(x);``.
-
-.. todo::
-    This rule for overloading resolution is very different from the implementation, the two should be brought back in sync one way or another.
-    https://github.com/gpuweb/WHLSL/issues/313
 
 .. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
 
