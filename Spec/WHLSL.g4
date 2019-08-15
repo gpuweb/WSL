@@ -94,7 +94,7 @@ Identifier: ValidIdentifier ;
 // Note: this currently excludes unicode, but allows digits in the middle of identifiers. We could easily restrict or extend this definition. to bikeshed
 
 OperatorName
-    : 'operator' ('>>' | '<<' | '+' | '-' | '*' | '/' | '%' | '&&' | '||' | '&' | '^' | '|' | '>=' | '<=' | '==' | '!=' | '<' | '>' | '++' | '--' | '!' | '~' | '[]' | '[]=' | '&[]')
+    : 'operator' ('>>' | '<<' | '+' | '-' | '*' | '/' | '%' | '&' | '^' | '|' | '>=' | '<=' | '==' | '!=' | '<' | '>' | '++' | '--' | '!' | '~' | '[]' | '[]=' | '&[]')
     | 'operator&.' ValidIdentifier
     | 'operator.' ValidIdentifier '='
     | 'operator.' ValidIdentifier ;

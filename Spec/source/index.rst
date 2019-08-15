@@ -414,10 +414,20 @@ Similarily, the following elements of punctuation are valid tokens:
 | Other                | ``?`` ``:`` ``;`` ``,`` ``[`` ``]`` ``{`` ``}`` ``(`` ``)``                                   |
 +----------------------+-----------------------------------------------------------------------------------------------+
 
-Identifiers
-"""""""""""
+Identifiers and operator names
+""""""""""""""""""""""""""""""
 
 An identifier is any sequence of characters or underscores, that does not start by a digit, that is not a single underscore (the single underscore is reserved for future extension), and that is not a reserved keyword.
+
+An operator name is the string ``operator`` followed directly by one of the following:
+
+- One of the strings ``<<``, ``>>``, ``+``, ``-``, ``*``, ``/``, ``%``, ``&``, ``^``, ``|``, ``>=``, ``<=``, ``==``, ``!=``, ``<``, ``>``, ``++``, ``--``, ``!``, ``~``, ``[]``, ``[]=``, or ``&[]``
+- The string ``&.`` followed by what would otherwise be a valid identifier
+- The string ``.`` followed by what would otherwise be a valid identifier
+- The string ``.`` followed by what would otherwise be a valid identifier followed by the string ``=``
+
+.. note::
+    We call ``operator.x`` a getter for x, ``operator.x=`` a setter for x, and ``operator&.x`` an address taker for x.
 
 Whitespace and comments
 """""""""""""""""""""""
@@ -467,18 +477,12 @@ A valid compilation unit is made of a sequence of 0 or more top-level declaratio
     funcDecl: (`entryPointDecl` | `normalFuncDecl` | `castOperatorDecl`) (":" `semantic`)?
     entryPointDecl: ("vertex" | "fragment" | "[" `numthreadsSemantic` "]" "compute") `type` `Identifier` `parameters`
     numthreadsSemantic: "numthreads" "(" `IntLiteral` "," `IntLiteral` "," `IntLiteral` ")"
-    normalFuncDecl: `type` (`Identifier` | `operatorName`) `parameters`
+    normalFuncDecl: `type` (`Identifier` | `OperatorName`) `parameters`
     castOperatorDecl: "operator" `type` `parameters`
     parameters: "(" ")" | "(" `parameter` ("," `parameter`)* ")"
     parameter: `type` `Identifier` (":" `semantic`)?
 
 .. note:: the return type is put after the "operator" keyword when declaring a cast operator, mostly because it is also the name of the created function. 
-
-.. productionlist::
-    operatorName: "operator" (">>" | "<<" | "+" | "-" | "*" | "/" | "%" | "&&" | "||" | "&" | "|" | "^" | ">=" | "<=" | "==" | "!=" | ">" | "<" | "++" | "--" | "!" | "~" | "[]" | "[]=" | "&[]" | "." `Identifier` | "." `Identifier` "=" | "&." `Identifier`)
-
-.. note::
-    We call ``operator.x`` a getter for x, ``operator.x=`` a setter for x, and ``operator&.x`` an address taker for x.
 
 .. productionlist::
     semantic: `builtInSemantic` | `stageInOutSemantic` | `resourceSemantic` | `specializationConstantSemantic`
@@ -576,8 +580,8 @@ Expressions
 WHLSL accepts three different kinds of expressions, in different places in the grammar.
 
 - ``expr`` is the most generic, and includes all expressions.
-- ``maybeEffectfulExpr`` is used in places where a variable declaration would also be allowed. It forbids some expressions that are clearly effect-free, such as ``x*y`` or ``x < y``.
-  As the name indicates, it may be empty. In that case it is equivalent to "null" (any other effect-free expression would be fine, as the result of such an expression is always discarded).
+- ``maybeEffectfulExpr`` is used in places where a variable declaration would also be allowed. It forbids some expressions that are normally effect-free, such as ``x * y`` or ``x < y``, to make parsing non-ambiguous.
+  As the name indicates, it may be empty. In that case it is equivalent to ``null`` (any other effect-free expression would be fine, as the result of such an expression is always discarded).
 - ``constexpr`` is limited to literals and the elements of an enum. It is used in switch cases, and in type arguments.
 
 .. productionlist::
