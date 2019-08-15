@@ -1170,16 +1170,22 @@ To check that a function call is well-typed:
 
 #. Check that each argument is well-typed
 #. Make a set of all the functions in the global environment that share the same name and number of parameters, and that are not an entry point. Call them candidate functions.
+#. If function name is ``operator.length`` and there is a single argument:
+
+    #. If the argument is of array type, the whole expression is well-typed, of right-value type ``uint``, and the call resolves to a special function that just returns the (known at compile time) length of the array.
+    #. Else if the argument is of array reference type, the whole expression is well-typed, of right-value type ``uint``, and the call resolves to a special function that just returns the (known at runtime as part of the array reference) length of the array reference.
+    #. Else the function call is ill-typed.
+
 #. For each candidate function:
 
     #. For each parameter, if the corresponding argument can not be given the parameter type, remove this function from the set of candidate functions
 
-#. If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function
+#. If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function, and it resolves to that function.
 #. Else if it contains several functions, for each candidate function:
 
     #. For each parameter, if the corresponding argument is an integer literal and the parameter type is not ``int``, remove this function from the set of candidate functions
 
-#. If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function.
+#. If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function, and it resolves to that function.
 #. In all other cases, the function call is ill-typed.
 
 .. note::
