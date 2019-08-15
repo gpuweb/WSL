@@ -698,7 +698,6 @@ For each top-level declaration:
    #. If two or more element of the enum have the same value, the program is invalid
    #. If one or more element of the enum have a value that is not representable in the base type of the enum, the program is invalid
    #. Add the enum to the environment as a new type, associated with the set of the values of its elements
-   #. For each element of the enum, add a mapping to the variables mapping, from ``EnumName.ElementName`` (with ``EnumName`` and ``ElementName`` replaced) to the enum type
 
 #. If it is a function declaration
 
