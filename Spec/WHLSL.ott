@@ -77,9 +77,11 @@ e :: expr_ ::= {{com expression}}
     | @ e :: :: array_reference_making
     | e [ e' ] :: :: array_deref
     | e .foo :: :: field_access
+    | ++ e :: :: prefix_incr
     | e ++ :: :: postfix_incr
     | e1 += e2 :: :: plus_equal
     | operator+ ( e1 , e2 ) :: :: operator_plus
+    | operator++ ( e ) :: :: operator_incr
     | operator[]= ( e1 , e2 , e3 ) :: :: operator_indexed_setter
     | operator[] ( e1 , e2 ) :: :: operator_indexed_getter
     | operator&[] ( e1 , e2 ) :: :: operator_indexed_ander
@@ -535,9 +537,14 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- e[e'] : LVal(tval, as)
 
     G |- e : ALVal(tval)
-    G |- operator+(e, integerLiteral) : tval
-    -------------------------------- :: postfix_incr
+    G |- operator++(e) : tval
+    ------------------------- :: postfix_incr
     G |- e ++ : tval
+
+    G |- e : ALVal(tval)
+    G |- operator++(e) : tval
+    ------------------------- :: prefix_incr
+    G |- ++ e : tval
 
     G |- e1 : ALVal(tval1)
     G |- e2: tval2
@@ -793,8 +800,17 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     e is an abstract left value
     addr = freshAddress()
-    ----------------------------------------------------------------------- :: postfix_incr_elim
-    R |- e++ -> LVal(addr) = e, e = operator+(LVal(addr), 1), LVal(addr) ;;
+    ------------------------------------------------------------ :: postfix_incr_elim
+    R |- e++ -> LVal(addr) = e, e = operator++(e), LVal(addr) ;;
+
+    R |- e => e' ; E ; S
+    ---------------------------------- :: prefix_incr_reduce
+    R |- ++ e -> ++ e' ; E ; S
+
+    e is an abstract left value
+    addr = freshAddress()
+    --------------------------------- :: prefix_incr_elim
+    R |- ++ e -> e = operator++(e) ;;
 
     R |- e1 => e1' ; E ; S
     ---------------------------------- :: plus_equal_reduce

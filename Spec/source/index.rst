@@ -615,8 +615,6 @@ generics.
 The operators ``|``, ``^``, ``&`` (unary), ``<``, ``>``, ``<=``, ``>=``, ``==``, ``!=``, ``<<``, ``>>``, ``*``, ``/``, ``%``, ``+``, ``-``, ``~``, ``!``, ``*`` are syntactic sugar for calls to the matching operator name.
 So for example ``e1 % e2`` is actually ``operator%(e1, e2)``. 
 
-The prefix form of increment and decrement (``++e`` and ``--e``) are syntactic sugar for ``e += 1`` and ``e -= 1``.
-
 ``x -> y`` is syntactic sugar for ``(*x).y``, so we will ignore the ``->`` operator in the rest of this specification.
 
 .. productionlist::
@@ -1125,7 +1123,7 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
     Replacing e.foo by its value in the case of an enum is a bit of a weird thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.
 
 .. note::
-    Please note that a local variable declaration can shadow a global enum declaration.
+    Please note that a variable declaration can shadow an enum declaration.
 
 To check that an array dereference ``e1[e2]`` is well-typed:
 
@@ -1144,11 +1142,13 @@ To check that an array dereference ``e1[e2]`` is well-typed:
         \ottdrulearrayXXrefXXindex{}
     \end{align*}
 
-To check that an expression ``e++``, or ``e--`` is well-typed:
+To check that an expression ``e++`` or ``e--`` is well-typed:
 
 #. Check that ``e`` is well-typed, with an abstract left-value type
-#. Check that a call to ``operator+(e, 1)`` (respectively ``operator-(e, 1)``) would be well-typed, with a right-value type that matches ``e``
+#. Check that a call to ``operator++(e)`` (respectively ``operator--(e)``) would be well-typed, with a right-value type that matches ``e``
 #. Then the expression is well-typed, and of the right-value type of ``e``
+
+An expression ``++e`` or ``--e`` is well-typed if and only if the postfix version would be well-typed, and has the same type.
 
 To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
 
@@ -1162,6 +1162,7 @@ To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2
 
     \begin{align*}
         \ottdrulepostfixXXincr{}\\
+        \ottdruleprefixXXincr{}\\
         \ottdruleoperatorXXplusXXequal{}
     \end{align*}
 
@@ -1820,16 +1821,26 @@ To reduce an expression ``e++`` or ``e--``:
 #. Else:
 
     #. Let ``addr`` be a fresh address
-    #. Replace the whole expression by ``LVal(addr) = e, e = LVal(addr) + 1, LVal(addr)`` (replacing the ``+`` by ``-`` for ``e--``)
+    #. Replace the whole expression by ``LVal(addr) = e, e = operator++(e), LVal(addr)`` (replacing the ``++`` by ``--`` for ``e--``)
 
-.. note:: depending on ``e``, this can lead to calls to getters/setters or address takers.
+To reduce an expression ``++e`` or ``--e``:
+
+#. If ``e`` can be reduced to an abstract left value, do it
+#. Else replace the whole expression by ``e = operator++(e)`` (replacing the ``++`` by ``--`` for ``--e``)
+
+.. note:: depending on ``e``, evaluating these expressions can require calls to getters/setters or address takers.
+
+.. note::
+    These expressions are not defined as syntactic sugar, because e must be reduced to an abstract left value only once.
 
 .. math::
     :nowrap:
 
     \begin{align*}
         \ottdrulepostfixXXincrXXreduce{}\\
-        \ottdrulepostfixXXincrXXelim{}
+        \ottdrulepostfixXXincrXXelim{}\\
+        \ottdruleprefixXXincrXXreduce{}\\
+        \ottdruleprefixXXincrXXelim{}
     \end{align*}
 
 To reduce an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
