@@ -612,9 +612,12 @@ so that they cannot be chained. Chaining them has sufficiently surprising result
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.
 
+The operators ``|``, ``^``, ``&`` (unary), ``<``, ``>``, ``<=``, ``>=``, ``==``, ``!=``, ``<<``, ``>>``, ``*``, ``/``, ``%``, ``+``, ``-``, ``~``, ``!``, ``*`` are syntactic sugar for calls to the matching operator name.
+So for example ``e1 % e2`` is actually ``operator%(e1, e2)``. 
+
 The prefix form of increment and decrement (``++e`` and ``--e``) are syntactic sugar for ``e += 1`` and ``e -= 1``.
 
-``x -> y`` is purely syntactic sugar for ``(*x).y``, so we will ignore the ``->`` operator in the rest of this specification.
+``x -> y`` is syntactic sugar for ``(*x).y``, so we will ignore the ``->`` operator in the rest of this specification.
 
 .. productionlist::
     maybeEffectfulExpr: (`effAssignment` ("," `effAssignment`)*)?
