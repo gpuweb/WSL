@@ -130,10 +130,48 @@ for (let type of [`uint`, `int`, `float`]) {
         }
         print(`    return result;`);
         print(`}`);
+        print(`${type}${size} operator+(${type}${size} a) {`);
+        print(`    return a;`);
+        print(`}`);
+        print(`${type}${size} operator+(${type}${size} a, ${type} b) {`);
+        print(`    ${type}${size} result;`);
+        for (let m = 0; m < size; ++m) {
+            print(`    result[${m}] = a[${m}] + b;`);
+        }
+        print(`    return result;`);
+        print(`}`);
+        print(`${type}${size} operator+(${type} a, ${type}${size} b) {`);
+        print(`    ${type}${size} result;`);
+        for (let m = 0; m < size; ++m) {
+            print(`    result[${m}] = a + b[${m}];`);
+        }
+        print(`    return result;`);
+        print(`}`);
         print(`${type}${size} operator-(${type}${size} a, ${type}${size} b) {`);
         print(`    ${type}${size} result;`);
         for (let m = 0; m < size; ++m) {
             print(`    result[${m}] = a[${m}] - b[${m}];`);
+        }
+        print(`    return result;`);
+        print(`}`);
+        print(`${type}${size} operator-(${type}${size} a) {`);
+        print(`    ${type}${size} result;`);
+        for (let m = 0; m < size; ++m) {
+            print(`    result[${m}] = -a[${m}];`);
+        }
+        print(`    return result;`);
+        print(`}`);
+        print(`${type}${size} operator-(${type}${size} a, ${type} b) {`);
+        print(`    ${type}${size} result;`);
+        for (let m = 0; m < size; ++m) {
+            print(`    result[${m}] = a[${m}] - b;`);
+        }
+        print(`    return result;`);
+        print(`}`);
+        print(`${type}${size} operator-(${type} a, ${type}${size} b) {`);
+        print(`    ${type}${size} result;`);
+        for (let m = 0; m < size; ++m) {
+            print(`    result[${m}] = a - b[${m}];`);
         }
         print(`    return result;`);
         print(`}`);
@@ -181,17 +219,6 @@ for (let type of [`uint`, `int`, `float`]) {
         print(`}`);
     }
 }
-for (let type of [`int`, `float`]) {
-    for (let size of [2, 3, 4]) {
-        print(`${type}${size} operator-(${type}${size} a) {`);
-        print(`    ${type}${size} result;`);
-        for (let m = 0; m < size; ++m) {
-            print(`    result[${m}] = -a[${m}];`);
-        }
-        print(`    return result;`);
-        print(`}`);
-    }
-}
 for (let type of [`float`]) {
     for (let i of [2, 3, 4]) {
         for (let j of [2, 3, 4]) {
@@ -200,6 +227,27 @@ for (let type of [`float`]) {
             for (let m = 0; m < i; ++m) {
                 for (let n = 0; n < j; ++n) {
                     print(`    result[${m}][${n}] = a[${m}][${n}] + b[${m}][${n}];`);
+                }
+            }
+            print(`    return result;`);
+            print(`}`);
+            print(`${type}${i}x${j} operator+(${type}${i}x${j} a) {`);
+            print(`    return a;`);
+            print(`}`);
+            print(`${type}${i}x${j} operator+(${type}${i}x${j} a, ${type} b) {`);
+            print(`    ${type}${i}x${j} result;`);
+            for (let m = 0; m < i; ++m) {
+                for (let n = 0; n < j; ++n) {
+                    print(`    result[${m}][${n}] = a[${m}][${n}] + b;`);
+                }
+            }
+            print(`    return result;`);
+            print(`}`);
+            print(`${type}${i}x${j} operator+(${type} a, ${type}${i}x${j} b) {`);
+            print(`    ${type}${i}x${j} result;`);
+            for (let m = 0; m < i; ++m) {
+                for (let n = 0; n < j; ++n) {
+                    print(`    result[${m}][${n}] = a + b[${m}][${n}];`);
                 }
             }
             print(`    return result;`);
@@ -218,6 +266,24 @@ for (let type of [`float`]) {
             for (let m = 0; m < i; ++m) {
                 for (let n = 0; n < j; ++n) {
                     print(`    result[${m}][${n}] = -a[${m}][${n}];`);
+                }
+            }
+            print(`    return result;`);
+            print(`}`);
+            print(`${type}${i}x${j} operator-(${type}${i}x${j} a, ${type} b) {`);
+            print(`    ${type}${i}x${j} result;`);
+            for (let m = 0; m < i; ++m) {
+                for (let n = 0; n < j; ++n) {
+                    print(`    result[${m}][${n}] = a[${m}][${n}] - b;`);
+                }
+            }
+            print(`    return result;`);
+            print(`}`);
+            print(`${type}${i}x${j} operator-(${type} a, ${type}${i}x${j} b) {`);
+            print(`    ${type}${i}x${j} result;`);
+            for (let m = 0; m < i; ++m) {
+                for (let n = 0; n < j; ++n) {
+                    print(`    result[${m}][${n}] = a - b[${m}][${n}];`);
                 }
             }
             print(`    return result;`);
