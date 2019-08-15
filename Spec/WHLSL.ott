@@ -77,8 +77,8 @@ e :: expr_ ::= {{com expression}}
     | @ e :: :: array_reference_making
     | e [ e' ] :: :: array_deref
     | e .foo :: :: field_access
-    | ++ e :: :: prefix_incr
-    | e ++ :: :: postfix_incr
+    | ++ e :: :: prefix_incr {{tex {++}[[e]]}}
+    | e ++ :: :: postfix_incr {{tex [[e]]{++} }}
     | e1 += e2 :: :: plus_equal
     | operator+ ( e1 , e2 ) :: :: operator_plus
     | operator++ ( e ) :: :: operator_incr
@@ -194,6 +194,18 @@ terminals :: terminals_ ::=
     | /\ :: :: math_and {{tex \wedge}}
     | <= :: :: math_lesser_equal {{tex \leq}}
     | >= :: :: math_greater_equal {{tex \geq}}
+    | operator+ :: :: operator_plus {{tex \mbox{operator+} }}
+    | operator++ :: :: operator_incr {{tex \mbox{operator++} }}
+    | operator[]= :: :: operator_indexed_setter {{tex \mbox{operator[]=} }}
+    | operator[] :: :: operator_indexed_getter {{tex \mbox{operator[]} }}
+    | operator&[] :: :: operator_indexed_ander {{tex \mbox{operator\&[]} }}
+    | operator.foo= :: :: operator_setter {{tex \mbox{operator.\textit{foo}=} }}
+    | operator.foo :: :: operator_getter {{tex \mbox{operator.\textit{foo}%
+} }}
+    | operator&.foo :: :: operator_ander {{tex \mbox{operator\&.\textit{foo}%
+} }}
+    | += :: :: plus_equal {{tex \,{+}{=}\, }}
+    | freshAddress() :: :: fresh_address {{tex \mbox{freshAddress}()}}
 
 formula :: formula_ ::=
     | judgement :: :: judgement
@@ -808,7 +820,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     R |- ++ e -> ++ e' ; E ; S
 
     e is an abstract left value
-    addr = freshAddress()
     --------------------------------- :: prefix_incr_elim
     R |- ++ e -> e = operator++(e) ;;
 

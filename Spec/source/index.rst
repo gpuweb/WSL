@@ -1150,7 +1150,7 @@ To check that an expression ``e++`` or ``e--`` is well-typed:
 
 An expression ``++e`` or ``--e`` is well-typed if and only if the postfix version would be well-typed, and has the same type.
 
-To check that an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
+To check that an expression ``e1+=e2``, ``e1-=e2``, ``e1*=e2``, ``e1/=e2``, ``e1%=e2``, ``e1^=e2``, ``e1&=e2``, ``e1|=e2``, ``e1>>=e2``, or ``e1<<=e2``:
 
 #. Check that ``e1`` is well-typed, with an abstract left-value type
 #. Check that ``e2`` is well-typed
@@ -1849,7 +1849,7 @@ To reduce an expression ``++e`` or ``--e``:
         \ottdruleprefixXXincrXXelim{}
     \end{align*}
 
-To reduce an expression ``e1 += e2``, ``e1 -= e2``, ``e1 *= e2``, ``e1 /= e2``, ``e1 %= e2``, ``e1 ^= e2``, ``e1 &= e2``, ``e1 |= e2``, ``e1 >>= e2``, or ``e1 <<= e2``:
+To reduce an expression ``e1+=e2``, ``e1-=e2``, ``e1*=e2``, ``e1/=e2``, ``e1%=e2``, ``e1^=e2``, ``e1&=e2``, ``e1|=e2``, ``e1>>=e2``, or ``e1<<=e2``:
 
 #. If ``e1`` can be reduced to an abstract left-value, do it
 #. Else replace the whole expression by an assignment to ``e1`` of the result of the corresponding operator, called on ``e1`` and ``e2``
