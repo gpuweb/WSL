@@ -1073,39 +1073,27 @@ for (let addressSpace1 of [`thread`, `device`, `threadgroup`]) {
 print();
 
 for (let binaryFunction of [[`all`, `true`, `&&`], [`any`, `false`, `||`]]) {
-    print(`bool ${binaryFunction[0]}(bool x) {`);
-    print(`    return x;`);
-    print(`}`);
-    for (let size of [2, 3, 4]) {
-        print(`bool ${binaryFunction[0]}(bool${size} x) {`);
-        print(`    bool result = ${binaryFunction[1]};`);
-        for (let i = 0; i < size; ++i) {
-            print(`    result = result ${binaryFunction[2]} (x[${i}]);`);
-        }
-        print(`    return result;`);
-        print(`}`);
-    }
-    for (let type of [`uint`, `int`, `float`]) {
-        print(`bool ${binaryFunction[0]}(${type} x) {`);
-        print(`    return x != 0;`);
+    for (let type of [[`uint`, `0`], [`int`, `0`], [`float`, `0`], [`bool`, `false`]]) {
+        print(`bool ${binaryFunction[0]}(${type[0]} x) {`);
+        print(`    return x != ${type[1]};`);
         print(`}`);
         for (let size of [2, 3, 4]) {
-            print(`bool ${binaryFunction[0]}(${type}${size} x) {`);
+            print(`bool ${binaryFunction[0]}(${type[0]}${size} x) {`);
             print(`    bool result = ${binaryFunction[1]};`);
             for (let i = 0; i < size; ++i) {
-                print(`    result = result ${binaryFunction[2]} (x[${i}] != 0);`);
+                print(`    result = result ${binaryFunction[2]} (x[${i}] != ${type[1]});`);
             }
             print(`    return result;`);
             print(`}`);
         }
-        if (type == `float`) {
+        if (type[0] == `float` || type[0] == `bool`) {
             for (let i of [2, 3, 4]) {
                 for (let j of [2, 3, 4]) {
-                    print(`bool ${binaryFunction[0]}(${type}${i}x${j} x) {`);
+                    print(`bool ${binaryFunction[0]}(${type[0]}${i}x${j} x) {`);
                     print(`    bool result = ${binaryFunction[1]};`);
                     for (let m = 0; m < i; ++m) {
                         for (let n = 0; n < j; ++n) {
-                            print(`    result = result ${binaryFunction[2]} (x[${m}][${n}] != 0);`);
+                            print(`    result = result ${binaryFunction[2]} (x[${m}][${n}] != ${type[1]});`);
                         }
                     }
                     print(`    return result;`);
