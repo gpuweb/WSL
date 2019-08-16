@@ -443,7 +443,7 @@ for (let type of [`bool`, `uint`, `int`, `float`]) {
 print();
 
 for (let type of [`float`]) {
-    let variables = [`a`, `b`, `c`, `d`];
+    let variables = [`a`, `b`, `c`, `d`, `e`, `f`, `g`, `h`, `i`, `j`, `k`, `l`, `m`, `n`, `o`, `p`];
     for (let m of [2, 3, 4]) {
         for (let n of [2, 3, 4]) {
             let signature = `operator ${type}${m}x${n}(`;
@@ -460,6 +460,35 @@ for (let type of [`float`]) {
                 print(`    result[${i}] = ${variables[i]};`);
             }
             print(`    return result;`);
+            print(`}`);
+
+            signature = `operator ${type}${m}x${n}(`;
+            for (let i = 0; i < m; ++i) {
+                for (let j = 0; j < n; ++j) {
+                    if (i != 0 || j != 0) {
+                        signature += `, `;
+                    }
+                    signature += `${type} ${variables[4 * i + j]}`;
+                }
+            }
+            signature += `) {`;
+            print(signature);
+            let line = `    return ${type}${m}x${n}(`;
+            for (let i = 0; i < m; ++i) {
+                if (i != 0) {
+                    line += `, `;
+                }
+                line += `${type}${n}(`;
+                for (let j = 0; j < n; ++j) {
+                    if (j != 0) {
+                        line += `, `;
+                    }
+                    line += `${variables[4 * i + j]}`;
+                }
+                line += `)`;
+            }
+            line += ");"
+            print(line);
             print(`}`);
         }
     }
