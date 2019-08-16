@@ -540,9 +540,6 @@ We also partly desugar for loops:
     switchStmt: "switch" "(" `expr` ")" "{" `switchCase`* "}"
     switchCase: ("case" `constexpr` | "default") ":" `stmt`*
 
-Switches differ from the usual C/C++ kind in a single regard: they require an explicit ``fallthrough`` statement to fall from one case to the next.
-They still require a ``break`` to exit to the end of the switch, so it is an error to have control-flow reach the end of a switch case (see :ref:`typing_statements_label`).
-
 .. productionlist::
     variableDecls: `type` `variableDecl` ("," `variableDecl`)*
     variableDecl: `Identifier` ("=" `ternaryConditional`)?
@@ -746,13 +743,8 @@ For each top-level declaration:
         #. Its argument type and its return type must be the same
 
    #. Else if the name of the function is ``operator+`` or ``operator-``, it must have one or two arguments
-   #. Else if the name of the function is ``operator*``, ``operator/``, ``operator%``, ``operator&``, ``operator|``, ``operator^``, ``operator<<`` or ``operator>>``, it must have exactly two arguments
+   #. Else if the name of the function is ``operator==``, ``operator!=``, ``operator<``, ``operator>``, ``operator<=``, ``operator>=``, ``operator*``, ``operator/``, ``operator%``, ``operator&``, ``operator|``, ``operator^``, ``operator<<`` or ``operator>>``, it must have exactly two arguments
    #. Else if the name of the function is ``operator~``, it must have exactly one argument
-   #. Else if the name of the function is ``operator==``, ``operator!=``, ``operator<``, ``operator>``, ``operator<=`` or ``operator>=``
-
-        #. It must have exactly two arguments
-        #. Its return type must be bool
-
    #. If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set
    #. Otherwise add a new mapping from that function name to a singleton set containing that declaration
 
