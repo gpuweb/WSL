@@ -12,7 +12,7 @@ for (let type of [`bool`, `uint`, `int`, `float`]) {
 }
 print();
 
-for (let type of [`float`]) {
+for (let type of [`float`, `bool`]) {
     for (let i of [2, 3, 4]) {
         for (let j of [2, 3, 4]) {
             print(`native typedef matrix<${type}, ${i}, ${j}>;`);
@@ -442,7 +442,7 @@ for (let type of [`bool`, `uint`, `int`, `float`]) {
 }
 print();
 
-for (let type of [`float`]) {
+for (let type of [`float`, `bool`]) {
     let variables = [`a`, `b`, `c`, `d`, `e`, `f`, `g`, `h`, `i`, `j`, `k`, `l`, `m`, `n`, `o`, `p`];
     for (let m of [2, 3, 4]) {
         for (let n of [2, 3, 4]) {
@@ -496,15 +496,29 @@ for (let type of [`float`]) {
 print();
 
 for (let type of [`bool`, `uint`, `int`, `float`]) {
-    print(`bool operator==(${type}2 a, ${type}2 b) {`);
-    print(`    return a.x == b.x && a.y == b.y;`);
-    print(`}`);
-    print(`bool operator==(${type}3 a, ${type}3 b) {`);
-    print(`    return a.x == b.x && a.y == b.y && a.z == b.z;`);
-    print(`}`);
-    print(`bool operator==(${type}4 a, ${type}4 b) {`);
-    print(`    return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;`);
-    print(`}`);
+    for (let op of [`==`, `<`, `<=`, `>`, `>=`]) {
+        print(`bool2 operator${op}(${type}2 a, ${type}2 b) {`);
+        print(`    bool2 result;`);
+        print(`    result.x = a.x ${op} b.x;`);
+        print(`    result.y = a.y ${op} b.y;`);
+        print(`    return result;`);
+        print(`}`);
+        print(`bool3 operator==(${type}3 a, ${type}3 b) {`);
+        print(`    bool3 result;`);
+        print(`    result.x = a.x ${op} b.x;`);
+        print(`    result.y = a.y ${op} b.y;`);
+        print(`    result.z = a.y ${op} b.z;`);
+        print(`    return result;`);
+        print(`}`);
+        print(`bool4 operator==(${type}4 a, ${type}4 b) {`);
+        print(`    bool4 result;`);
+        print(`    result.x = a.x ${op} b.x;`);
+        print(`    result.y = a.y ${op} b.y;`);
+        print(`    result.z = a.y ${op} b.z;`);
+        print(`    result.w = a.w ${op} b.w;`);
+        print(`    return result;`);
+        print(`}`);
+    }
     print(`native ${type} operator.x(${type}2);`);
     print(`native ${type} operator.y(${type}2);`);
     print(`native ${type} operator.x(${type}3);`);
@@ -616,7 +630,7 @@ for (let type of [`bool`, `uint`, `int`, `float`]) {
 }
 print();
 
-for (let type of [`float`]) {
+for (let type of [`float`, `bool`]) {
     for (let m of [2, 3, 4]) {
         for (let n of [2, 3, 4]) {
             print(`native ${type}${n} operator[](${type}${m}x${n}, uint);`);
@@ -626,18 +640,20 @@ for (let type of [`float`]) {
 }
 print();
 
-for (let type of [`float`]) {
-    for (let i of [2, 3, 4]) {
-        for (let j of [2, 3, 4]) {
-            print(`bool operator==(${type}${i}x${j} a, ${type}${i}x${j} b) {`);
-            print(`    return`);
-            for (let m = 0; m < i; ++m) {
-                for (let n = 0; n < j; ++n) {
-                    print(`        a[${m}][${n}] == b[${m}][${n}] &&`);
+for (let type of [`float`, `bool`]) {
+    for (let op of [`==`, `<`, `<=`, `>`, `>=`]) {
+        for (let i of [2, 3, 4]) {
+            for (let j of [2, 3, 4]) {
+                print(`bool${i}x${j} operator${op}(${type}${i}x${j} a, ${type}${i}x${j} b) {`);
+                print(`    bool${i}x${j} result;`);
+                for (let m = 0; m < i; ++m) {
+                    for (let n = 0; n < j; ++n) {
+                        print(`    result[${m}][${n}] = a[${m}][${n}] ${op} b[${m}][${n}];`);
+                    }
                 }
+                print(`    return result;`);
+                print(`}`);
             }
-            print(`    true;`);
-            print(`}`);
         }
     }
 }
