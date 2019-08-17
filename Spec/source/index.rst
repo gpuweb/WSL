@@ -2107,8 +2107,17 @@ of rows, in that order. Each item below includes two types, which are synonyms f
 * float4x2, or matrix<float, 4, 2>
 * float4x3, or matrix<float, 4, 3>
 * float4x4, or matrix<float, 4, 4>
+* bool2x2, or matrix<bool, 2, 2>
+* bool2x3, or matrix<bool, 2, 3>
+* bool2x4, or matrix<bool, 2, 4>
+* bool3x2, or matrix<bool, 3, 2>
+* bool3x3, or matrix<bool, 3, 3>
+* bool3x4, or matrix<bool, 3, 4>
+* bool4x2, or matrix<bool, 4, 2>
+* bool4x3, or matrix<bool, 4, 3>
+* bool4x4, or matrix<bool, 4, 4>
 
-.. todo:: Should we have int or bool matrices?
+.. todo:: Should we have int matrices?
 
 Samplers
 """"""""
