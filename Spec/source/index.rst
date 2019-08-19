@@ -1244,7 +1244,7 @@ We create a relationship "may call" that connects two function declarations ``f`
 If this relationship is cyclic, then the program is invalid.
 
 .. note::
-    This check is done on function declarations, not on function names, so if for example foo(int) calls foo(short), it is not considered recursion, as they are different functions
+    This check is done on function declarations, not on function names, so if for example foo(int) calls foo(float), it is not considered recursion, as they are different functions
     after resolution of overloading.
 
 Dynamic rules
