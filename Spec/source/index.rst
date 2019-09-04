@@ -1183,8 +1183,8 @@ To check that a function call is well-typed:
 
 .. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
 
-Phase 4. Annotations for execution
-----------------------------------
+Annotations for execution
+-------------------------
 
 We resolved each overloaded function call in the previous section. They must now be annotated with which function is actually being called.
 
@@ -1192,8 +1192,6 @@ Every variable declaration, every function parameter, and every postfix incremen
 This identifier in turn refers to a set of contiguous bytes, of the right size; these sets are disjoint.
 
 Each control barrier must be annotated with a unique barrier identifier.
-
-Each branch, switch, loop, ternary expression, boolean or expression and boolean and expression must be annotated with a unique divergence point identifier.
 
 Every variable declaration that does not have an initializing value, must get an initializing value that is the default value for its type.
 These default values are computed as follows:
@@ -1224,8 +1222,8 @@ Finally, every array dereference (the ``[]`` operator) must be annotated with th
 This size is computed in exactly the way described above.
 If the first operand is either an array or a left-value type associated with an array type, the access must also be annotated with the statically known size of the array.
 
-Phase 5. Verifying the absence of recursion
--------------------------------------------
+Verifying the absence of recursion
+----------------------------------
 
 WHLSL does not support recursion (for efficient compilation to GPUs).
 So once all overloaded function calls have been resolved, we must do one last check.
@@ -1248,13 +1246,12 @@ loads, stores, barriers and the like.
 
 The per-thread semantics is a fairly classic small-step operational semantics, meaning that it describes a list of possible transitions that the program can
 take in one step.
-The per-thread state is made of a few element:
+The per-thread state is made of two elements:
 
 - The program being executed. Each transition transforms it.
-- A divergence stack. This is a stack of pairs of divergence point identifiers and values, which tracks whether we are in a branch, and is used by the rules for barriers and derivatives to check that control-flow is uniform.
 - An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function. It also contains a (separate) mapping from function names to sets of function definitions.
 
-Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, emitting the following memory events, and modifying the divergence stack in these ways."
+Each transition is a statement of the form "With environment :math:`\rho`, if some conditions are respected, the program may be transformed into the following, emitting the following memory events."
 
 In some of these rules we use ``ASSERT`` to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
 Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.
@@ -1301,18 +1298,13 @@ Here is how to reduce a block by one step:
         \ottdruleblockXXreduce{}
     \end{align*}
 
-Branches
-""""""""
-
-We add another kind of statement: the ``Join(s)`` construct, that takes as argument another statement ``s``.
+Branches and Switches
+"""""""""""""""""""""
 
 Here is how to reduce a branch (if-then-else construct, remember that if-then is just syntactic sugar that was eliminated during parsing) by one step:
 
-#. If the expression in the if is ``true`` or ``false``.
-
-   #. Push that value and the divergence point identifier of the branch on the divergence stack
-   #. Replace the branch by the statement in the then (for ``true``) or else (for ``false``) branch, wrapped in the ``Join`` construct
-
+#. If the expression in the if is ``true``, replace the branch by the statement in the then
+#. Else if the expression in the if is ``false``, replace the branch by the statement in the else
 #. Else reduce that expression
 
 .. math::
@@ -1326,29 +1318,6 @@ Here is how to reduce a branch (if-then-else construct, remember that if-then is
 
 .. Find a way to reduce the size of the rules in the html version, they are significantly larger than the text for some reason.
 
-Here is how to reduce a ``Join(s)`` statement:
-
-#. If the argument of the ``Join`` is a terminator (``break;``, ``continue;``, ``fallthrough;``, or ``return e?;``) or an empty block
-
-   #. ASSERT(the divergence stack is not empty)
-   #. Pop the last element from the divergence stack
-   #. Replace the ``Join`` statement by its argument
-
-#. Else reduce its argument
-
-.. math::
-    :nowrap:
-
-    \begin{align*}
-        \ottdrulejoinXXelim{}\\
-        \ottdrulejoinXXreduce{}
-    \end{align*}
-
-.. note:: Popping the last element from the divergence stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.
-
-Switches
-""""""""
-
 We add another kind of statement: the ``Cases(..)`` construct that takes as argument a sequence of statements.
 Informally it represents the different cases of a switch, and deals with the ``fallthrough;`` and ``break;`` statements.
 
@@ -1360,7 +1329,6 @@ Here is how to reduce a switch statement by one step:
     #. Wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
     #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
-    #. Push ``val`` and the divergence point identifier of the switch on the divergence stack
 
 #. Else
 
@@ -1369,7 +1337,6 @@ Here is how to reduce a switch statement by one step:
     #. Find the ``default`` case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)
     #. Do the same for each sequence of statements until the end of the switch
     #. Replace the entire switch by a ``Cases`` construct, taking as argument these resulting statements in source order
-    #. Push ``val`` and the divergence point identifier of the switch on the divergence stack
 
 .. math::
     :nowrap:
@@ -1384,18 +1351,8 @@ Here is how to reduce a ``Cases`` construct by one step:
 
 #. ASSERT(the construct has at least one argument)
 #. If the first argument is the ``fallthrough;`` statement, remove it (reducing the total number of arguments by 1)
-#. Else if the first argument is the ``break;`` statement:
-
-   #. ASSERT(the divergence stack is not empty)
-   #. Pop the last element from the divergence stack
-   #. Replace the entire construct by an empty block
-
-#. Else if the first argument is another terminator statement, that cannot be reduced (i.e. ``continue;``, ``return value;`` or ``return;``)
-
-   #. ASSERT(the divergence stack is not empty)
-   #. Pop the last element from the divergence stack
-   #. Replace the entire construct by its first argument
-
+#. Else if the first argument is the ``break;`` statement, replace the entire construct by an empty block
+#. Else if the first argument is another terminator statement, that cannot be reduced (i.e. ``continue;``, ``return value;`` or ``return;``), replace the entire construct by its first argument
 #. Else reduce the first argument by one step
 
 .. math::
@@ -1414,8 +1371,8 @@ Loops
 We add yet another kind of statement: the ``Loop(s, s', s'')`` construct that takes as arguments three statements.
 Informally, its first argument represents the current iteration of a loop, its second argument is to be executed at the end of the iteration, and its third argument is a continuation for the rest of the loop.
 
-Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, {}, if(e) do s while(e); else {})``, keeping the same divergence point identifier.
-Any ``for (;e;e') s`` statement is reduced to the following in one step ``if (e) Loop(s, e';, for(;e;e') s) else {}``, keeping the same divergence point identifier.
+Any ``do s while(e);`` statement is reduced to the following in one step: ``Loop(s, {}, if(e) do s while(e); else {})``.
+Any ``for (;e;e') s`` statement is reduced to the following in one step ``if (e) Loop(s, e';, for(;e;e') s) else {}``.
 
 .. math::
     :nowrap:
@@ -1451,14 +1408,11 @@ Here is how to reduce a ``Loop(s, s')`` statement by one step:
         \ottdruleloopXXreduce{}
     \end{align*}
 
-.. note::
-    These operations do not need to explicitly modify the divergence stack, because each iteration of a loop executes an ``if`` statement that does it.
-
 Barriers and uniform control flow
 """""""""""""""""""""""""""""""""
 
 There is no rule in the per-thread semantics for *control barriers*.
-Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction with the same identifier, and their divergence stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.
+Instead, there is a rule in the global semantics, saying that if all threads are at the same control barrier instruction then they may all advance atomically, replacing the barrier by an empty block.
 
 Other
 """""
@@ -1497,20 +1451,14 @@ Left values are the only kind of values that can be further reduced.
 Operations affecting control-flow
 """""""""""""""""""""""""""""""""
 
-Just like we added ``Join``, ``Cases`` and ``Loop`` construct to deal with control-flow affecting statements, we add a ``JoinExpr`` construct to deal with control-flow affecting expressions.
-``JoinExpr`` takes as argument an expression and return an expression. Its only use is (informally) as a marker that the divergence stack will have to be popped to access its content.
-
-There are three kinds of expressions that can cause a divergence in control-flow: the boolean and (i.e. ``&&``, that short-circuits), the boolean or (i.e. ``||``, that also short-circuits), and ternary conditions.
-
-To reduce a boolean and by one step:
+To reduce a boolean and (``e1 && e2``) by one step:
 
 #. If its first operand can be reduced, reduce it
 #. Else if its first operand is ``false``, replace the whole operation by ``false``.
 #. Else
 
     #. ASSERT(its first operand is ``true``)
-    #. Push ``true`` and the corresponding divergence point identifier on the divergence stack.
-    #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct.
+    #. Replace the whole expression by the second operand.
 
 .. math::
     :nowrap:
@@ -1521,15 +1469,14 @@ To reduce a boolean and by one step:
         \ottdruleandXXtrue{}
     \end{align*}
 
-Very similarly, to reduce a boolean or by one step:
+Very similarly, to reduce a boolean or (``e1 || e2``) by one step:
 
 #. If its first operand can be reduced, reduce it
 #. Else if its first operand is ``true``, replace the whole operation by ``true``.
 #. Else
 
     #. ASSERT(its first operand is ``false``)
-    #. Push ``false`` and the corresponding divergence point identifier on the divergence stack.
-    #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct.
+    #. Replace the whole expression by the second operand.
 
 .. math::
     :nowrap:
@@ -1543,16 +1490,11 @@ Very similarly, to reduce a boolean or by one step:
 To reduce a ternary condition by one step:
 
 #. If its first operand can be reduced, reduce it
-#. Else if its first operand is ``true``
-
-    #. Push ``true`` and the corresponding divergence point identifier on the divergence stack.
-    #. Replace the whole operation by its second operand wrapped in a ``JoinExpr`` construct
-
+#. Else if its first operand is ``true``, replace the whole expression by the second operand.
 #. Else
 
     #. ASSERT(its first operand is ``false``)
-    #. Push ``false`` and the corresponding divergence point identifier on the divergence stack.
-    #. Replace the whole operation by its third operand wrapped in a ``JoinExpr`` construct.
+    #. Replace the whole expression by the third operand.
 
 .. math::
     :nowrap:
@@ -1561,23 +1503,6 @@ To reduce a ternary condition by one step:
         \ottdruleternaryXXreduce{}\\
         \ottdruleternaryXXtrue{}\\
         \ottdruleternaryXXfalse{}
-    \end{align*}
-
-To reduce a ``JoinExpr`` by one step:
-
-#. If its operand is not a lvalue, and can be reduced, then reduce it by one step
-#. Else:
-
-   #. ASSERT(the divergence stack is not empty)
-   #. Pop the last element from the divergence stack
-   #. Replace the whole expression by its operand
-
-.. math::
-    :nowrap:
-
-    \begin{align*}
-        \ottdrulejoinXXexprXXelim{}\\
-        \ottdrulejoinXXexprXXreduce{}
     \end{align*}
 
 Variables
@@ -1827,7 +1752,7 @@ Calls
 
 Overloaded function calls have already been resolved to point to a specific function declaration during the validation phase.
 
-Like we added ``Loop`` or ``JoinExpr``, we add a special construct ``Call`` that takes as argument a statement and return an expression.
+Like we added ``Loop``, we add a special construct ``Call`` that takes as argument a statement and return an expression.
 Informally, it is a way to transform a return statement into the corresponding value.
 
 To reduce a function call by one step:
@@ -2580,9 +2505,12 @@ Finally the following three functions exist:
 - AllMemoryBarrierWithGroupSync
 
 They have the return type ``void`` and no arguments.
-Once a thread reaches a call to one of these, it waits for all other threads in its threadgroup to reach the same point (same function call with the same divergence stack).
+Once a thread reaches a call to one of these, it waits for all other threads in its threadgroup to reach the same point (same instance of the same function call).
 Then all of these threads reduce the function call to ``{}``, emitting the corresponding fence event.
 Please see :ref:`memory_model_label` for the effect of that event.
+
+.. This notion of instance is a bit fuzzy, I should probably more formally define it (something like the nth time we reach that function call).
+    For now I don't consider it high priority, since SPIRV only refers to instances of instructions at this level of formality.
 
 Cast operators
 """"""""""""""
