@@ -383,7 +383,7 @@ The following strings are reserved keywords of the language:
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Control flow                  | if else switch case default while do for break continue fallthrough return              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Literals                      | null true false                                                                         |
+| Literals                      | true false                                                                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Address space                 | constant device threadgroup thread                                                      |
 +-------------------------------+-----------------------------------------------------------------------------------------+
@@ -396,7 +396,7 @@ The following strings are reserved keywords of the language:
 | Reserved for future extension | protocol auto const static restricted native space uniform                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 
-``null``, ``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
+``true`` and ``false`` are keywords, but they are considered literals in the grammar rules later.
 
 Similarily, the following elements of punctuation are valid tokens:
 
@@ -530,7 +530,7 @@ Similarily, we desugar all while loops into do while loops.
 We also partly desugar for loops:
 
 #. If the second element of the for is empty we replace it by "true".
-#. If the third element of the for is empty we replace it by "null". (any effect-free expression would work as well).
+#. If the third element of the for is empty we replace it by "true". (any effect-free expression would work as well).
 #. If the first element of the for is not empty, we hoist it out of the loop, into a newly created block that includes the loop:
 
 .. math::
@@ -578,7 +578,7 @@ WHLSL accepts three different kinds of expressions, in different places in the g
 
 - ``expr`` is the most generic, and includes all expressions.
 - ``maybeEffectfulExpr`` is used in places where a variable declaration would also be allowed. It forbids some expressions that are normally effect-free, such as ``x * y`` or ``x < y``, to make parsing non-ambiguous.
-  As the name indicates, it may be empty. In that case it is equivalent to ``null`` (any other effect-free expression would be fine, as the result of such an expression is always discarded).
+  As the name indicates, it may be empty. In that case it is equivalent to ``true`` (any other effect-free expression would be fine, as the result of such an expression is always discarded).
 - ``constexpr`` is limited to literals and the elements of an enum. It is used in switch cases, and in type arguments.
 
 .. productionlist::
@@ -977,10 +977,7 @@ To check a block:
     Change the variable declaration ott rules to support threadgroup local variables
     https://github.com/gpuweb/WHLSL/issues/63
 
-Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and not the null literal. Its set of behaviours is then {Nothing}.
-
-.. note::
-    We forbid the null literal in all positions where there is no clear type to give it.
+Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed. Its set of behaviours is then {Nothing}.
 
 .. math::
     :nowrap:
@@ -1005,14 +1002,12 @@ Literals always have right-value types:
     - If they are representable as a 32-bit signed integer they can be give the type ``int``
     - They can be given the ``float`` type.
 
-``null`` is always well-typed and its type can be any pointer or array reference type (depending on which is required for validation to succeed).
-
 .. note::
-    integer literals an null literals are the only cases of implicit coercions in the language. See the rule for function calls for details.
+    integer literals are the only cases of implicit coercions in the language. See the rule for function calls for details.
 
 The type of an expression in parentheses, is the type of the expression in the parentheses
 
-A comma expression is well-typed if both of its operands are well-typed, and its left-operand is not the null literal. In that case, its type is the right-value type of its second operand.
+A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.
 
 .. math::
     :nowrap:
@@ -1020,8 +1015,6 @@ A comma expression is well-typed if both of its operands are well-typed, and its
     \begin{align*}
         \ottdruleliteralXXtrue{}\\
         \ottdruleliteralXXfalse{}\\
-        \ottdrulenullXXlitXXarrayXXref{}\\
-        \ottdrulenullXXlitXXptr{}\\
         \ottdruleparens{}\\
         \ottdrulecomma{}
     \end{align*}
@@ -1034,7 +1027,6 @@ To check that a ternary conditional is well-typed:
 #. If both of its branches are integer literals, then the whole expression is well-typed and has type ``int`` (right-value).
 #. Otherwise:
 
-    #. Check that if one of its branches is the null literal then the other is not
     #. Check that both of its branches are well-typed
     #. Check that the types of its branches are both right-value types and the same
     #. Check that this same type is neither a pointer type nor an array reference type.
@@ -1072,7 +1064,7 @@ If an expression is well-typed and its type is a left-value type, it can also be
 A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
 
 An expression ``&e`` is well-typed and with a pointer type if ``e`` is well-typed with a left-value type.
-An expression ``*e`` is well-typed and with a left-value type if ``e`` is not the null literal and is well-typed with a pointer type.
+An expression ``*e`` is well-typed and with a left-value type if ``e`` is well-typed with a pointer type.
 The associated right-value types and address spaces are left unchanged by these two operators.
 
 An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed with a left-value type.
@@ -1120,7 +1112,6 @@ To check a dot expression of the form ``e.foo`` (for an expression ``e`` and an 
 To check that an array dereference ``e1[e2]`` is well-typed:
 
 #. Check that ``e2`` is well-typed with the type ``uint32``
-#. Check that ``e1`` is well-typed and not the null literal
 #. If the type of ``e1`` is an array reference whose associated type is ``T``, then the whole expression is well-typed, and its type is a left-value with an associated type of ``T``, and the same address space as the type of ``e1``
 #. Else if ``e1`` has a left-value type, and there is a function called ``operator&[]`` with a first parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.
 #. Else if ``e1`` has an abstract left-value type, and there is a function called ``operator[]=`` with a first parameter whose type is the corresponding right-value type, then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the third parameter of that function.
@@ -1182,9 +1173,9 @@ To check that a function call is well-typed:
 
 .. note::
     The goal of these rules is to allow some limited coercion of literals, but only when it is non-ambiguous.
-    In particular null can be used for any array reference or pointer type, and integer literals can be used either for int, uint or float parameters.
+    In particular integer literals can be used either for int, uint or float parameters.
     If this is ambiguous, all integer literals are limited to the int type and we try again.
-    If it is still ambiguous we give up.
+    If there is no overload left we give up.
     This is more restrictive than HLSL which allows a lot of implicit coercions, on purpose, to simplify implementations.
 
 .. note::
@@ -1211,7 +1202,6 @@ These default values are computed as follows:
 - The default value for floating point types is ``0.0``
 - The default value for booleans is ``false``
 - The default value for enums is the element of the enum whose associated integer values is 0
-- The default value for pointers and array references is ``null``
 - The default value for an array is an array of the right size filled with the default values for its element type
 - The default value for a structure type is a structure whose elements are all given their respective default values
 
@@ -1494,7 +1484,6 @@ We define the following kinds of values:
 - Integers, floats, booleans and other primitives provided by the standard library
 - Pointers. These have an address and an address space
 - Left values. These also have an address and an address space
-- A special Invalid left-value, used to represent the dereferencing of out-of-bounds accesses and the dereferencing of ``null`` 
 - Array references. These have a base address, an address space and a size
 - Struct values. These are a sequence of bytes of the right size, and can be interpreted as a tuple of their elements (plus padding bits)
 
@@ -1597,7 +1586,7 @@ Variables
 A variable name can be reduced in one step into whatever that name binds in the current environment.
 This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.
 
-To reduce a (valid) lvalue:
+To reduce a lvalue:
 
 #. Emit a load to the corresponding address, of a size appropriate for the type of the value
 #. If the type of the expression was an enum type, and the value loaded is not a valid value of that type, replace it by an unspecified valid value of that type
@@ -1607,15 +1596,6 @@ To reduce a (valid) lvalue:
     The 2nd step is to prevent races from allowing the creation of invalid enum values, which could cause problems to switches without default cases.
     We don't need a similar rules for pointers or array references, because we do not allow potentially racy assignments to variables of these types.
 
-To reduce an invalid left-value, any of the following is acceptable:
-
-- Trap
-- Replace it by the default value of that type.
-
-.. todo::
-    We should extend this possible behavior to also accept (0,0,0,X) for some specific values of X for "vector reads" to match https://github.com/gpuweb/spirv-execution-env/blob/master/execution-env.md
-    I just have to figure out what exactly these vector reads map to in WHLSL.
-    https://github.com/gpuweb/WHLSL/issues/316
 
 .. _reduction_abstract_left_value_label:
 
@@ -1630,7 +1610,7 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
 #. If ``e`` is of the form ``e1.foo``
 
     #. If ``e1`` can be reduced one step to an abstract left-value, do it
-    #. Else if ``e`` had a left-value type and ``e1`` is a left value (valid or not), replace the whole expression by ``* operator&.foo(&e1)``, using the instance of ``operator&.foo`` that was used to give a left-value type to ``e``.
+    #. Else if ``e`` had a left-value type and ``e1`` is a left value, replace the whole expression by ``* operator&.foo(&e1)``, using the instance of ``operator&.foo`` that was used to give a left-value type to ``e``.
     #. Else fail
 
 #. Else if ``e`` is of the form ``e1[e2]``
@@ -1638,20 +1618,22 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
     #. If ``e1`` can be reduced one step to an abstract left-value, do it
     #. Else if ``e1`` had an array reference type and can be reduced one step (normally), do it
     #. Else if ``e2`` can be reduced one step (normally), do it
-    #. Else if ``e1`` is ``null``, replace the whole expression by an invalid left-value.
     #. Else if ``e1`` is an array reference:
  
         #. ASSERT(``e2`` is an integer)
-        #. If ``e2`` is out of the bounds of ``e1``, either replace the whole expression by an invalid left-value, or replace ``e2`` by an unspecified in-bounds value.
+        #. If ``e2`` is out of the bounds of ``e1``, replace ``e2`` by an unspecified in-bounds value.
         #. Else replace the whole expression by a left-value, to an address computed by adding the address in ``e1`` to the product of ``e2`` and the stride computed from the type of ``e1``'s elements.
 
-    #. Else if ``e`` had a left-value type and ``e1`` is a left value (valid or not), replace the whole expression by ``* operator&[](&e1, e2)`` using the instance of ``operator&[]`` that was used to give a left-value type to ``e``.
+    #. Else if ``e`` had a left-value type and ``e1`` is a left value, replace the whole expression by ``* operator&[](&e1, e2)`` using the instance of ``operator&[]`` that was used to give a left-value type to ``e``.
     #. Else fail
 
-#. Else if ``e`` is not a lValue (valid or not)
+#. Else if ``e`` is not a lValue
 
     #. ASSERT(``e`` can be reduced)
     #. Reduce ``e``
+
+.. note::
+    All array references passed to the shader must have a size of at least one so that there is at least one possible index value that is in-bounds.
 
 .. note:: in the rules we say "e is an abstract left-value" as a short hand for "e cannot be reduced further to an abstract left value"
 
@@ -1664,8 +1646,6 @@ For example, in "x = y", we do not want to reduce "x" all the way to a load, alt
         \ottdrulealvalXXarrayXXreduceXXleft{}\\
         \ottdrulealvalXXarrayXXrefXXreduce{}\\
         \ottdrulealvalXXarrayXXreduceXXright{}\\
-        \ottdrulearrayXXnullXXaccess{}\\
-        \ottdrulearrayXXrefXXinvalid{}\\
         \ottdrulearrayXXrefXXclamped{}\\
         \ottdrulearrayXXrefXXvalid{}\\
         \ottdrulealvalXXarrayXXander{}\\
@@ -1686,7 +1666,6 @@ To reduce an assignment ``e1 = e2``:
     #. Emit a store to the address of the lvalue, of the value on the right of the equal, of a size appropriate for the type of that value
     #. Replace the entire expression by the value on the right of the equal.
 
-#. Else if ``e1`` is an invalid lvalue, either replace the whole expression by ``e2`` or trap
 #. Else if ``e1`` is of the form ``e3.foo``
 
     #. ASSERT(``e1`` had an abstract left-value type)
@@ -1705,8 +1684,6 @@ To reduce an assignment ``e1 = e2``:
         \ottdruleassignXXleftXXreduce{}\\
         \ottdruleassignXXrightXXreduce{}\\
         \ottdruleassignXXexecute{}\\
-        \ottdruleassignXXinvalidXXignore{}\\
-        \ottdruleassignXXinvalidXXtrap{}\\
         \ottdruleassignXXsetter{}\\
         \ottdruleassignXXindexedXXsetter{}
     \end{align*}
@@ -1723,13 +1700,11 @@ The ``&`` and ``*`` operators simply convert between left-values and pointers.
 To reduce ``& e``:
 
 #. If ``e`` can be reduced to an abstract left-value, do it
-#. Else if ``e`` is an invalid lvalue, either replace the whole expression with null, or trap
 #. Else ASSERT(``e`` is a valid lvalue), and replace the whole expression by a pointer to the same address
 
 To reduce ``* e``:
 
-#. If ``e`` is null, either trap or replace the whole expression by an invalid left-value
-#. Else if ``e`` is a pointer, replace the whole expression by a lvalue to the same address in the same address-space
+#. If ``e`` is a pointer, replace the whole expression by a lvalue to the same address in the same address-space
 #. Else reduce ``e``
 
 .. math::
@@ -1737,11 +1712,7 @@ To reduce ``* e``:
 
     \begin{align*}
         \ottdruletakeXXptrXXreduce{}\\
-        \ottdruletakeXXptrXXinvalidXXnull{}\\
-        \ottdruletakeXXptrXXinvalidXXtrap{}\\
         \ottdruletakeXXptrXXlval{}\\
-        \ottdrulederefXXnullXXtrap{}\\
-        \ottdrulederefXXnullXXinvalid{}\\
         \ottdrulederefXXptr{}\\
         \ottdrulederefXXreduce{}
     \end{align*}
@@ -1754,7 +1725,6 @@ More precisely, to reduce ``@ e``:
 
 #. If ``e`` is an LValue and was of type LValue of an array of size ``n`` during typing, replace it by an array reference to the same address, same address space, and with a bound of ``n``
 #. Else if it is an LValue and was of type LValue of a non-array type during typing, replace it by an array reference to the same address, same address space, and with a bound of ``1``
-#. Else if it is an invalid lvalue, either replace the whole expression by null, or trap
 #. Else reduce it
 
 .. math::
@@ -1762,8 +1732,6 @@ More precisely, to reduce ``@ e``:
 
     \begin{align*}
         \ottdrulemakeXXrefXXlval{}\\
-        \ottdrulemakeXXrefXXinvalidXXnull{}\\
-        \ottdrulemakeXXrefXXinvalidXXtrap{}\\
         \ottdrulemakeXXrefXXreduce{}
     \end{align*}
 

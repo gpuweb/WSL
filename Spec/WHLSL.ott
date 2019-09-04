@@ -98,7 +98,6 @@ e :: expr_ ::= {{com expression}}
 val :: val_ ::=
     | rval :: :: rval
     | LVal ( addr ) :: :: lval
-    | Invalid_LVal :: :: invalid_lval {{com corresponds to null and out-of-bounds accesses}}
 
 addr :: addr_ ::=
     | addr + i * stride :: :: add_multiple_stride
@@ -157,7 +156,6 @@ tid :: type_identifier_ ::=
 rval, rv :: rval_ ::=
     | Ptr ( addr ) :: :: ptr 
     | Ref ( addr , j ) :: :: ref {{com Reference to array of size j}}
-    | null :: :: lit_null
     | true :: :: lit_true
     | false :: :: lit_false
     | uint :: :: lit_uint {{com unsigned integer literal}}
@@ -269,7 +267,7 @@ s --> s' :: :: desugaring_stmt :: '' {{com Desugaring statements}} by
     for (eOrVDecls ; ; eOrNothing) s --> for (eOrVDecls ; true ; eOrNothing) s
 
     --------------------------------------------------------------------------- :: for_empty_incr
-    for (eOrVDecls ; e ; ) s --> for (eOrVDecls ; e ; null) s
+    for (eOrVDecls ; e ; ) s --> for (eOrVDecls ; e ; true) s
 
     ------------------------------------------------- :: for_init_expr
     for (e ; e' ; e'') s --> {e; for ( ; e' ; e'') s}
@@ -410,7 +408,6 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- {s s1 .. sn} : (B \ {Nothing}) + B'
 
     G |- e : t
-    e != null
     ------------------- :: expr
     G |- e; : {Nothing}
 
@@ -434,12 +431,6 @@ G |-- sblock : B :: :: typing_switch_block :: '' {{tex [[G]] \vdash [[sblock]] :
 defn
 G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash [[e]] : [[t]]}} by
 
-    -------------------------- :: null_lit_array_ref
-    G |- null : Ref (tval, as)
-
-    -------------------------- :: null_lit_ptr
-    G |- null : Ptr (tval, as)
-
     ---------------- :: literal_true
     G |- true : bool
 
@@ -452,7 +443,6 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     G |- e : t
     G |- e' : tval'
-    e != null
     ------------------ :: comma
     G |- e, e' : tval'
 
@@ -469,7 +459,6 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     G |- e0 : bool
     G |- e1 : tval
     G |- e2 : tval
-    e1 != null \/ e2 != null
     e1 != integerLiteral \/ e2 != integerLiteral
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
@@ -515,7 +504,6 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
     % It seems that no
 
     G |- e : Ptr(tval, as)
-    e != null
     ------------------------ :: ptr_deref
     G |- *e : LVal(tval, as)
     % can the unary operator * be overloaded?
@@ -544,7 +532,6 @@ G |- e : t :: :: typing_expr :: '' {{com Typing expressions}} {{tex [[G]] \vdash
 
     G |- e : Ref(tval, as)
     G |- e' : uint
-    e != null
     --------------------------- :: array_ref_index
     G |- e[e'] : LVal(tval, as)
 
@@ -581,7 +568,7 @@ R |- e => e' ; E ; S :: :: exec_expr_alval :: '' {{com Small-step reduction to a
     R |- e.foo => e'.foo ; E ; S
 
     e.foo has a left value type
-    e = LVal(addr) \/ e = Invalid_LVal
+    e = LVal(addr)
     ------------------------------------ :: alval_dot_ander
     R |- e.foo => * operator&.foo(&e) ;;
 
@@ -601,17 +588,10 @@ R |- e => e' ; E ; S :: :: exec_expr_alval :: '' {{com Small-step reduction to a
     ----------------------------------------------- :: alval_array_reduce_right
     R |- e1[e2] => e1[e2'] ; E ; S
 
-    --------------------------------- :: array_null_access
-    R |- null [i] => Invalid_LVal ;;
-
     i >= k
     j < k
     ----------------------------------------------------- :: array_ref_clamped
     R |- Ref(addr, k) [i] => Ref(addr, k) [j] ;;
-
-    i >= j
-    ----------------------------------------- :: array_ref_invalid
-    R |- Ref(addr, j) [i] => Invalid_LVal ;;
 
     addr' = addr + i * stride
     i < j
@@ -619,13 +599,12 @@ R |- e => e' ; E ; S :: :: exec_expr_alval :: '' {{com Small-step reduction to a
     R |- Ref(addr, j) [i] => LVal(addr') ;;
 
     e1[rval] has a left value type
-    e1 = LVal(addr) \/ e1 = Invalid_LVal
+    e1 = LVal(addr) 
     -------------------------------------------- :: alval_array_ander
     R |- e1[rval] => * operator&[](&e1, rval) ;;
 
     R |- e -> e' ; E ; S
     e != LVal(addr)
-    e != Invalid_LVal
     e != e1[e2]
     -------------------- :: alval_generic_reduce
     R |- e => e' ; E ; S
@@ -682,12 +661,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     --------------------------------- :: deref_ptr
     R |- * Ptr(addr) -> LVal(addr) ;;
 
-    ------------------------------ :: deref_null_invalid
-    R |- * null -> Invalid_LVal ;;
-
-    --------------------------- :: deref_null_trap
-    R |- * null -> TrapValue ;;
-
     R |- e -> e' ; E ; S
     ------------------------ :: deref_reduce
     R |- * e -> * e' ; E ; S
@@ -699,14 +672,7 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     -------------------------------- :: take_ptr_lval
     R |- & LVal(addr) -> Ptr(addr);;
 
-    ----------------------------- :: take_ptr_invalid_null
-    R |- & Invalid_LVal -> null;;
-
-    --------------------------------- :: take_ptr_invalid_trap
-    R |- & Invalid_LVal -> TrapValue;;
-
     e != LVal(addr)
-    e != Invalid_LVal
     R |- e -> e' ; E ; S
     ------------------------ :: make_ref_reduce
     R |- @ e -> @ e' ; E ; S
@@ -714,12 +680,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ----------------------------------- :: make_ref_lval
     R |- @ LVal(addr) -> Ref(addr, i);;
     % TODO: find a way to express the fact that i is decided at compile time.. it should probably be made part of the @ expression
-
-    ----------------------------- :: make_ref_invalid_null
-    R |- @ Invalid_LVal -> null;;
-
-    ---------------------------------- :: make_ref_invalid_trap
-    R |- @ Invalid_LVal -> TrapValue;;
 
     R |- e1[e2] => e3 ; E ; S
     ------------------------- :: array_deref_reduce
@@ -741,13 +701,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
     ---------------- :: environment_access
     R |- x -> val ;;
 
-    rv = Default(tval)
-    -------------------------- :: load_invalid_default
-    R |- Invalid_LVal -> rv ;;
-
-    --------------------------------- :: load_invalid_trap
-    R |- Invalid_LVal -> TrapValue ;;
-
     rval a valid value for this type
     ---------------------------------------- :: load_valid
     R |- LVal(addr) -> rval ; addr -> rval ;
@@ -768,12 +721,6 @@ R |- e -> e' ; E ; S :: :: exec_expr :: '' {{com Small-step reduction on express
 
     ----------------------------------------------- :: assign_execute
     R |- LVal(addr) = rval -> rval ; addr <- rval ;
-
-    ----------------------------------- :: assign_invalid_ignore
-    R |- Invalid_LVal = rval -> rval ;;
-
-    ---------------------------------------- :: assign_invalid_trap
-    R |- Invalid_LVal = rval -> TrapValue ;;
 
     e3.foo is an abstract left value
     ---------------------------------------------------- :: assign_setter
