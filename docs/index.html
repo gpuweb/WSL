@@ -14,20 +14,20 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="index.html#document-index">WHLSL  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html#document-index">WHLSL  documentation</a> &#187;</li>
       </ul>
-    </div>  
+    </div>
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
-            
+
   <div class="section" id="whlsl-specification">
 <h1>WHLSL Specification<a class="headerlink" href="#whlsl-specification" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="general">
@@ -372,7 +372,7 @@ If the program cannot be transformed into a list of tokens by following these ru
 <td>if else switch case default while do for break continue fallthrough return</td>
 </tr>
 <tr class="row-odd"><td>Literals</td>
-<td>null true false</td>
+<td>true false</td>
 </tr>
 <tr class="row-even"><td>Address space</td>
 <td>constant device threadgroup thread</td>
@@ -390,7 +390,7 @@ SV_GroupIndex SV_GroupThreadID attribute register specialized</td>
 </tr>
 </tbody>
 </table>
-<p><code class="docutils literal notranslate"><span class="pre">null</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> are keywords, but they are considered literals in the grammar rules later.</p>
+<p><code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> are keywords, but they are considered literals in the grammar rules later.</p>
 <p>Similarily, the following elements of punctuation are valid tokens:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -419,9 +419,20 @@ SV_GroupIndex SV_GroupThreadID attribute register specialized</td>
 </tbody>
 </table>
 </div>
-<div class="section" id="identifiers">
-<h4>Identifiers<a class="headerlink" href="#identifiers" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="identifiers-and-operator-names">
+<h4>Identifiers and operator names<a class="headerlink" href="#identifiers-and-operator-names" title="Permalink to this headline">¶</a></h4>
 <p>An identifier is any sequence of characters or underscores, that does not start by a digit, that is not a single underscore (the single underscore is reserved for future extension), and that is not a reserved keyword.</p>
+<p>An operator name is the string <code class="docutils literal notranslate"><span class="pre">operator</span></code> followed directly by one of the following:</p>
+<ul class="simple">
+<li>One of the strings <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">+</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, <code class="docutils literal notranslate"><span class="pre">/</span></code>, <code class="docutils literal notranslate"><span class="pre">%</span></code>, <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, <code class="docutils literal notranslate"><span class="pre">^</span></code>, <code class="docutils literal notranslate"><span class="pre">|</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">==</span></code>, <code class="docutils literal notranslate"><span class="pre">!=</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">++</span></code>, <code class="docutils literal notranslate"><span class="pre">--</span></code>, <code class="docutils literal notranslate"><span class="pre">!</span></code>, <code class="docutils literal notranslate"><span class="pre">~</span></code>, <code class="docutils literal notranslate"><span class="pre">[]</span></code>, <code class="docutils literal notranslate"><span class="pre">[]=</span></code>, or <code class="docutils literal notranslate"><span class="pre">&amp;[]</span></code></li>
+<li>The string <code class="docutils literal notranslate"><span class="pre">&amp;.</span></code> followed by what would otherwise be a valid identifier</li>
+<li>The string <code class="docutils literal notranslate"><span class="pre">.</span></code> followed by what would otherwise be a valid identifier</li>
+<li>The string <code class="docutils literal notranslate"><span class="pre">.</span></code> followed by what would otherwise be a valid identifier followed by the string <code class="docutils literal notranslate"><span class="pre">=</span></code></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We call <code class="docutils literal notranslate"><span class="pre">operator.x</span></code> a getter for x, <code class="docutils literal notranslate"><span class="pre">operator.x=</span></code> a setter for x, and <code class="docutils literal notranslate"><span class="pre">operator&amp;.x</span></code> an address taker for x.</p>
+</div>
 </div>
 <div class="section" id="whitespace-and-comments">
 <h4>Whitespace and comments<a class="headerlink" href="#whitespace-and-comments" title="Permalink to this headline">¶</a></h4>
@@ -468,7 +479,7 @@ at global scope. We should follow suit.)
 <strong id="grammar-token-funcDecl">funcDecl          </strong> ::=  (<a class="reference internal" href="#grammar-token-entryPointDecl"><code class="xref docutils literal notranslate"><span class="pre">entryPointDecl</span></code></a> | <a class="reference internal" href="#grammar-token-normalFuncDecl"><code class="xref docutils literal notranslate"><span class="pre">normalFuncDecl</span></code></a> | <a class="reference internal" href="#grammar-token-castOperatorDecl"><code class="xref docutils literal notranslate"><span class="pre">castOperatorDecl</span></code></a>) (&quot;:&quot; <a class="reference internal" href="#grammar-token-semantic"><code class="xref docutils literal notranslate"><span class="pre">semantic</span></code></a>)?
 <strong id="grammar-token-entryPointDecl">entryPointDecl    </strong> ::=  (&quot;vertex&quot; | &quot;fragment&quot; | &quot;[&quot; <a class="reference internal" href="#grammar-token-numthreadsSemantic"><code class="xref docutils literal notranslate"><span class="pre">numthreadsSemantic</span></code></a> &quot;]&quot; &quot;compute&quot;) <a class="reference internal" href="#grammar-token-type"><code class="xref docutils literal notranslate"><span class="pre">type</span></code></a> <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> <a class="reference internal" href="#grammar-token-parameters"><code class="xref docutils literal notranslate"><span class="pre">parameters</span></code></a>
 <strong id="grammar-token-numthreadsSemantic">numthreadsSemantic</strong> ::=  &quot;numthreads&quot; &quot;(&quot; <code class="xref docutils literal notranslate"><span class="pre">IntLiteral</span></code> &quot;,&quot; <code class="xref docutils literal notranslate"><span class="pre">IntLiteral</span></code> &quot;,&quot; <code class="xref docutils literal notranslate"><span class="pre">IntLiteral</span></code> &quot;)&quot;
-<strong id="grammar-token-normalFuncDecl">normalFuncDecl    </strong> ::=  <a class="reference internal" href="#grammar-token-type"><code class="xref docutils literal notranslate"><span class="pre">type</span></code></a> (<code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> | <a class="reference internal" href="#grammar-token-operatorName"><code class="xref docutils literal notranslate"><span class="pre">operatorName</span></code></a>) <a class="reference internal" href="#grammar-token-parameters"><code class="xref docutils literal notranslate"><span class="pre">parameters</span></code></a>
+<strong id="grammar-token-normalFuncDecl">normalFuncDecl    </strong> ::=  <a class="reference internal" href="#grammar-token-type"><code class="xref docutils literal notranslate"><span class="pre">type</span></code></a> (<code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> | <code class="xref docutils literal notranslate"><span class="pre">OperatorName</span></code>) <a class="reference internal" href="#grammar-token-parameters"><code class="xref docutils literal notranslate"><span class="pre">parameters</span></code></a>
 <strong id="grammar-token-castOperatorDecl">castOperatorDecl  </strong> ::=  &quot;operator&quot; <a class="reference internal" href="#grammar-token-type"><code class="xref docutils literal notranslate"><span class="pre">type</span></code></a> <a class="reference internal" href="#grammar-token-parameters"><code class="xref docutils literal notranslate"><span class="pre">parameters</span></code></a>
 <strong id="grammar-token-parameters">parameters        </strong> ::=  &quot;(&quot; &quot;)&quot; | &quot;(&quot; <a class="reference internal" href="#grammar-token-parameter"><code class="xref docutils literal notranslate"><span class="pre">parameter</span></code></a> (&quot;,&quot; <a class="reference internal" href="#grammar-token-parameter"><code class="xref docutils literal notranslate"><span class="pre">parameter</span></code></a>)* &quot;)&quot;
 <strong id="grammar-token-parameter">parameter         </strong> ::=  <a class="reference internal" href="#grammar-token-type"><code class="xref docutils literal notranslate"><span class="pre">type</span></code></a> <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> (&quot;:&quot; <a class="reference internal" href="#grammar-token-semantic"><code class="xref docutils literal notranslate"><span class="pre">semantic</span></code></a>)?
@@ -476,13 +487,6 @@ at global scope. We should follow suit.)
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">the return type is put after the “operator” keyword when declaring a cast operator, mostly because it is also the name of the created function.</p>
-</div>
-<pre>
-<strong id="grammar-token-operatorName">operatorName</strong> ::=  &quot;operator&quot; (&quot;&gt;&gt;&quot; | &quot;&lt;&lt;&quot; | &quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;/&quot; | &quot;%&quot; | &quot;&amp;&amp;&quot; | &quot;||&quot; | &quot;&amp;&quot; | &quot;|&quot; | &quot;^&quot; | &quot;&gt;=&quot; | &quot;&lt;=&quot; | &quot;==&quot; | &quot;!=&quot; | &quot;&gt;&quot; | &quot;&lt;&quot; | &quot;++&quot; | &quot;--&quot; | &quot;!&quot; | &quot;~&quot; | &quot;[]&quot; | &quot;[]=&quot; | &quot;&amp;[]&quot; | &quot;.&quot; <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> | &quot;.&quot; <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> &quot;=&quot; | &quot;&amp;.&quot; <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code>)
-</pre>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">We call <code class="docutils literal notranslate"><span class="pre">operator.x</span></code> a getter for x, <code class="docutils literal notranslate"><span class="pre">operator.x=</span></code> a setter for x, and <code class="docutils literal notranslate"><span class="pre">operator&amp;.x</span></code> an address taker for x.</p>
 </div>
 <pre>
 <strong id="grammar-token-semantic">semantic                      </strong> ::=  <a class="reference internal" href="#grammar-token-builtInSemantic"><code class="xref docutils literal notranslate"><span class="pre">builtInSemantic</span></code></a> | <a class="reference internal" href="#grammar-token-stageInOutSemantic"><code class="xref docutils literal notranslate"><span class="pre">stageInOutSemantic</span></code></a> | <a class="reference internal" href="#grammar-token-resourceSemantic"><code class="xref docutils literal notranslate"><span class="pre">resourceSemantic</span></code></a> | <a class="reference internal" href="#grammar-token-specializationConstantSemantic"><code class="xref docutils literal notranslate"><span class="pre">specializationConstantSemantic</span></code></a>
@@ -513,7 +517,7 @@ It is not valid to have it anywhere else, or to have a switch case where control
 </pre>
 <p>The first of these two productions is merely syntactic sugar for the second:</p>
 <div class="math">
-<p><img src="images/math/4abb304b7917a87efa63560c8c47c9e05d7abc09.png" alt="\textbf{if}(e) \,s \leadsto \textbf{if}(e) \,s\, \textbf{else} \,\{\}"/></p>
+<p><img src="images/math/4bb9e26a98d5c3ca6d01b145fece560c54403dec.png" alt="\textbf{if}(e) \,s \leadsto \textbf{if}(e) \,s\, \textbf{else} \,\{\}"/></p>
 </div><pre>
 <strong id="grammar-token-whileStmt">whileStmt  </strong> ::=  &quot;while&quot; &quot;(&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> &quot;)&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>
 <strong id="grammar-token-forStmt">forStmt    </strong> ::=  &quot;for&quot; &quot;(&quot; (<a class="reference internal" href="#grammar-token-maybeEffectfulExpr"><code class="xref docutils literal notranslate"><span class="pre">maybeEffectfulExpr</span></code></a> | <a class="reference internal" href="#grammar-token-variableDecls"><code class="xref docutils literal notranslate"><span class="pre">variableDecls</span></code></a>) &quot;;&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a>? &quot;;&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a>? &quot;)&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>
@@ -521,15 +525,15 @@ It is not valid to have it anywhere else, or to have a switch case where control
 </pre>
 <p>Similarily, we desugar all while loops into do while loops.</p>
 <div class="math">
-<p><img src="images/math/a4c3abac4fbfc55be66416558e7312c810fdd439.png" alt="\textbf{while} (e)\, s \leadsto \textbf{if} (e) \textbf{do}\, s\, \textbf{while}(e)"/></p>
+<p><img src="images/math/e7838a5ad5f4ec81da3ca8d279ac4ca1409044fb.png" alt="\textbf{while} (e)\, s \leadsto \textbf{if} (e) \textbf{do}\, s\, \textbf{while}(e)"/></p>
 </div><p>We also partly desugar for loops:</p>
 <ol class="arabic simple">
 <li>If the second element of the for is empty we replace it by “true”.</li>
-<li>If the third element of the for is empty we replace it by “null”. (any effect-free expression would work as well).</li>
+<li>If the third element of the for is empty we replace it by “true”. (any effect-free expression would work as well).</li>
 <li>If the first element of the for is not empty, we hoist it out of the loop, into a newly created block that includes the loop:</li>
 </ol>
 <div class="math">
-<p><img src="images/math/27be790d1a5fd0774f6b666c0d1eaf345526fea7.png" alt="\textbf{for} (X_{pre} ; e_{cond} ; e_{iter}) \, s \leadsto \{ X_{pre} ; \textbf{for} ( ; e_{cond} ; e_{iter}) \, s \}"/></p>
+<p><img src="images/math/72baaeb5721cce4237007d3e2470d732c0afbb75.png" alt="\textbf{for} (X_{pre} ; e_{cond} ; e_{iter}) \, s \leadsto \{ X_{pre} ; \textbf{for} ( ; e_{cond} ; e_{iter}) \, s \}"/></p>
 </div><pre>
 <strong id="grammar-token-switchStmt">switchStmt</strong> ::=  &quot;switch&quot; &quot;(&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> &quot;)&quot; &quot;{&quot; <a class="reference internal" href="#grammar-token-switchCase"><code class="xref docutils literal notranslate"><span class="pre">switchCase</span></code></a>* &quot;}&quot;
 <strong id="grammar-token-switchCase">switchCase</strong> ::=  (&quot;case&quot; <a class="reference internal" href="#grammar-token-constexpr"><code class="xref docutils literal notranslate"><span class="pre">constexpr</span></code></a> | &quot;default&quot;) &quot;:&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>*
@@ -567,8 +571,8 @@ This transformation can always be done because variable declarations are only al
 <p>WHLSL accepts three different kinds of expressions, in different places in the grammar.</p>
 <ul class="simple">
 <li><code class="docutils literal notranslate"><span class="pre">expr</span></code> is the most generic, and includes all expressions.</li>
-<li><code class="docutils literal notranslate"><span class="pre">maybeEffectfulExpr</span></code> is used in places where a variable declaration would also be allowed. It forbids some expressions that are clearly effect-free, such as <code class="docutils literal notranslate"><span class="pre">x*y</span></code> or <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">y</span></code>.
-As the name indicates, it may be empty. In that case it is equivalent to “null” (any other effect-free expression would be fine, as the result of such an expression is always discarded).</li>
+<li><code class="docutils literal notranslate"><span class="pre">maybeEffectfulExpr</span></code> is used in places where a variable declaration would also be allowed. It forbids some expressions that are normally effect-free, such as <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">y</span></code> or <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">y</span></code>, to make parsing non-ambiguous.
+As the name indicates, it may be empty. In that case it is equivalent to <code class="docutils literal notranslate"><span class="pre">true</span></code> (any other effect-free expression would be fine, as the result of such an expression is always discarded).</li>
 <li><code class="docutils literal notranslate"><span class="pre">constexpr</span></code> is limited to literals and the elements of an enum. It is used in switch cases, and in type arguments.</li>
 </ul>
 <pre>
@@ -598,8 +602,9 @@ As the name indicates, it may be empty. In that case it is equivalent to “null
 so that they cannot be chained. Chaining them has sufficiently surprising results that it is not a clear
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.</p>
-<p>The prefix form of increment and decrement (<code class="docutils literal notranslate"><span class="pre">++e</span></code> and <code class="docutils literal notranslate"><span class="pre">--e</span></code>) are syntactic sugar for <code class="docutils literal notranslate"><span class="pre">e</span> <span class="pre">+=</span> <span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">e</span> <span class="pre">-=</span> <span class="pre">1</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code> is purely syntactic sugar for <code class="docutils literal notranslate"><span class="pre">(*x).y</span></code>, so we will ignore the <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code> operator in the rest of this specification.</p>
+<p>The operators <code class="docutils literal notranslate"><span class="pre">|</span></code>, <code class="docutils literal notranslate"><span class="pre">^</span></code>, <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> (unary), <code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">==</span></code>, <code class="docutils literal notranslate"><span class="pre">!=</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, <code class="docutils literal notranslate"><span class="pre">/</span></code>, <code class="docutils literal notranslate"><span class="pre">%</span></code>, <code class="docutils literal notranslate"><span class="pre">+</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code>, <code class="docutils literal notranslate"><span class="pre">~</span></code>, <code class="docutils literal notranslate"><span class="pre">!</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code> are syntactic sugar for calls to the matching operator name.
+So for example <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">%</span> <span class="pre">e2</span></code> is actually <code class="docutils literal notranslate"><span class="pre">operator%(e1,</span> <span class="pre">e2)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code> is syntactic sugar for <code class="docutils literal notranslate"><span class="pre">(*x).y</span></code>, so we will ignore the <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code> operator in the rest of this specification.</p>
 <pre>
 <strong id="grammar-token-maybeEffectfulExpr">maybeEffectfulExpr</strong> ::=  (<a class="reference internal" href="#grammar-token-effAssignment"><code class="xref docutils literal notranslate"><span class="pre">effAssignment</span></code></a> (&quot;,&quot; <a class="reference internal" href="#grammar-token-effAssignment"><code class="xref docutils literal notranslate"><span class="pre">effAssignment</span></code></a>)*)?
 <strong id="grammar-token-effAssignment">effAssignment     </strong> ::=  <a class="reference internal" href="#grammar-token-exprPrefix"><code class="xref docutils literal notranslate"><span class="pre">exprPrefix</span></code></a> <a class="reference internal" href="#grammar-token-assignOperator"><code class="xref docutils literal notranslate"><span class="pre">assignOperator</span></code></a> <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> | <a class="reference internal" href="#grammar-token-effPrefix"><code class="xref docutils literal notranslate"><span class="pre">effPrefix</span></code></a>
@@ -660,12 +665,7 @@ A function declaration for the purpose of this mapping is characterised by a tup
 <li>If there is already a type of the same name in the environment, the program is invalid</li>
 <li>If two or more fields of the struct have the same name, the program is invalid</li>
 <li>Add the struct to the environment as a new type.</li>
-<li><dl class="first docutils">
-<dt>For each field of the struct, add to the environment a mapping from the name <code class="docutils literal notranslate"><span class="pre">operator&amp;.field=</span></code> (where <code class="docutils literal notranslate"><span class="pre">field</span></code> is replaced by the name of the field) to 4 function declarations with one argument,</dt>
-<dd>whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each
-address space, that address space is used both by the pointer argument and by the return type</dd>
-</dl>
-</li>
+<li>For each field of the struct, add to the environment a mapping from the name <code class="docutils literal notranslate"><span class="pre">operator&amp;.field=</span></code> (where <code class="docutils literal notranslate"><span class="pre">field</span></code> is replaced by the name of the field) to 4 function declarations with one argument, whose return type is a pointer to the type of the field, and whose argument type is a pointer to the struct itself. There is one such function declaration for each address space, that address space is used both by the pointer argument and by the return type</li>
 </ol>
 </li>
 <li><p class="first">If it is an enum</p>
@@ -692,8 +692,6 @@ address space, that address space is used both by the pointer argument and by th
 <li><p class="first">If one or more element of the enum have a value that is not representable in the base type of the enum, the program is invalid</p>
 </li>
 <li><p class="first">Add the enum to the environment as a new type, associated with the set of the values of its elements</p>
-</li>
-<li><p class="first">For each element of the enum, add a mapping to the variables mapping, from <code class="docutils literal notranslate"><span class="pre">EnumName.ElementName</span></code> (with <code class="docutils literal notranslate"><span class="pre">EnumName</span></code> and <code class="docutils literal notranslate"><span class="pre">ElementName</span></code> replaced) to the enum type</p>
 </li>
 </ol>
 </li>
@@ -765,17 +763,9 @@ address space, that address space is used both by the pointer argument and by th
 </li>
 <li><p class="first">Else if the name of the function is <code class="docutils literal notranslate"><span class="pre">operator+</span></code> or <code class="docutils literal notranslate"><span class="pre">operator-</span></code>, it must have one or two arguments</p>
 </li>
-<li><p class="first">Else if the name of the function is <code class="docutils literal notranslate"><span class="pre">operator*</span></code>, <code class="docutils literal notranslate"><span class="pre">operator/</span></code>, <code class="docutils literal notranslate"><span class="pre">operator%</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&amp;</span></code>, <code class="docutils literal notranslate"><span class="pre">operator|</span></code>, <code class="docutils literal notranslate"><span class="pre">operator^</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&lt;&lt;</span></code> or <code class="docutils literal notranslate"><span class="pre">operator&gt;&gt;</span></code>, it must have exactly two arguments</p>
+<li><p class="first">Else if the name of the function is <code class="docutils literal notranslate"><span class="pre">operator==</span></code>, <code class="docutils literal notranslate"><span class="pre">operator!=</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&lt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&gt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">operator*</span></code>, <code class="docutils literal notranslate"><span class="pre">operator/</span></code>, <code class="docutils literal notranslate"><span class="pre">operator%</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&amp;</span></code>, <code class="docutils literal notranslate"><span class="pre">operator|</span></code>, <code class="docutils literal notranslate"><span class="pre">operator^</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&lt;&lt;</span></code> or <code class="docutils literal notranslate"><span class="pre">operator&gt;&gt;</span></code>, it must have exactly two arguments</p>
 </li>
 <li><p class="first">Else if the name of the function is <code class="docutils literal notranslate"><span class="pre">operator~</span></code>, it must have exactly one argument</p>
-</li>
-<li><p class="first">Else if the name of the function is <code class="docutils literal notranslate"><span class="pre">operator==</span></code>, <code class="docutils literal notranslate"><span class="pre">operator!=</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">operator&lt;=</span></code> or <code class="docutils literal notranslate"><span class="pre">operator&gt;=</span></code></p>
-<blockquote>
-<div><ol class="arabic simple">
-<li>It must have exactly two arguments</li>
-<li>Its return type must be bool</li>
-</ol>
-</div></blockquote>
 </li>
 <li><p class="first">If the environment already has a mapping from that function name to a set of declarations, add this declaration to that set</p>
 </li>
@@ -810,6 +800,14 @@ It must not be the type of a variable (either at the top-level or in a function)
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This last step is guaranteed to terminate thanks to the acyclicity check before it.</p>
+</div>
+</div>
+<div class="section" id="no-pointers-or-array-references-in-structs">
+<h4>No pointers or array references in structs<a class="headerlink" href="#no-pointers-or-array-references-in-structs" title="Permalink to this headline">¶</a></h4>
+<p>If any field of any structure has a type that is either a pointer or an array reference (after resolving typedefs), then the program is invalid.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This rule is to let us have a default value with which to initalize all local variables without having to deal with null pointers.</p>
 </div>
 </div>
 <div class="section" id="checking-the-coherence-of-operators-and-functions">
@@ -899,7 +897,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the if-then-else statement is well-typed, and its behaviours is the union of <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">B'</span></code></li>
 </ol>
 <div class="math">
-<p><img src="images/math/84e46a5ffb3a6085f700f5582674ba48fc793873.png" alt="\begin{align*}
+<p><img src="images/math/332b7149f9fb49e3f6e65c4bd2e3c228303f8015.png" alt="\begin{align*}
    \ottdruleif{}
 \end{align*}"/></p>
 </div><p>To check a do-while or for statement:</p>
@@ -913,7 +911,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the do-while statement is well-typed, and its behaviours is <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
 </ol>
 <div class="math">
-<p><img src="images/math/4ae5487700815e8319aa9e0b01575b8c3978e6f7.png" alt="\begin{align*}
+<p><img src="images/math/c5b8746681f1dfa051c8f79c58b621924b847389.png" alt="\begin{align*}
     \ottdruledoXXwhileXXbreak{}\\
     \ottdruledoXXwhileXXnoXXbreak{}\\
     \ottdruleforXXbreak{}\\
@@ -940,7 +938,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the switch statement is well-typed, and its behaviours is this last set</li>
 </ol>
 <div class="math">
-<p><img src="images/math/2aaf5503ee53af97a782e614c93f74af19519915.png" alt="\begin{align*}
+<p><img src="images/math/f80b656e3e3ad907a7b13c18ba17a9089ffc0565.png" alt="\begin{align*}
    \ottdruleswitchXXbreak{}\\
    \ottdruleswitchXXnoXXbreak{}\\
    \ottdrulecase{}\\
@@ -950,7 +948,7 @@ Any value with a left-value type of non-constant address space can be given an a
 </div><p>The <code class="docutils literal notranslate"><span class="pre">break;</span></code>, <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code>, <code class="docutils literal notranslate"><span class="pre">continue;</span></code> and <code class="docutils literal notranslate"><span class="pre">return;</span></code> statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.</p>
 <p>The statement <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">e;</span></code> is well-typed if <code class="docutils literal notranslate"><span class="pre">e</span></code> is a well-typed expression with a right-value type T and its behaviours is then {Return T}.</p>
 <div class="math">
-<p><img src="images/math/59461786bfbe364225cb1f8db711df3fd804622d.png" alt="\begin{align*}
+<p><img src="images/math/512c9f6f7818ec998f2ed2ce28e2ffd3f293b69f.png" alt="\begin{align*}
    \ottdrulebreak{}\\
    \ottdrulecontinue{}\\
    \ottdrulefallthrough{}\\
@@ -964,7 +962,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <li><p class="first">Else if it starts by a variable declaration:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Check that there is no other statement in that block is a variable declaration sharing the same name.</li>
+<li>Check that there is no other variable declaration in that block sharing the same name.</li>
 <li>Check that the given address space is either <code class="docutils literal notranslate"><span class="pre">thread</span></code> or <code class="docutils literal notranslate"><span class="pre">threadgroup</span></code></li>
 <li>Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space</li>
 <li>If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.</li>
@@ -983,14 +981,14 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Check that its set of behaviours B contains Nothing.</li>
 <li>Remove Nothing from it.</li>
 <li>Check that it does not contain Fallthrough</li>
-<li>Check that the rest of the block, removing the first statement, is well-typed with a set of behaviours B’.</li>
+<li>Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours B’.</li>
 <li>Then the whole block is well-typed, and its set of behaviour is the union of B and B’.</li>
 </ol>
 </div></blockquote>
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/50aa85ba1b0e4b18f56db8df91930cf1533c6315.png" alt="\begin{align*}
+<p><img src="images/math/bef2ff68f8341b52b654884c3167f5c8bf84a846.png" alt="\begin{align*}
     \ottdruleemptyXXblock{}\\
     \ottdrulevariableXXdecl{}\\
     \ottdrulevariableXXdeclXXinit{}\\
@@ -1002,47 +1000,69 @@ Any value with a left-value type of non-constant address space can be given an a
 <p class="last">Change the variable declaration ott rules to support threadgroup local variables
 <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/63">https://github.com/gpuweb/WHLSL/issues/63</a></p>
 </div>
-<p>Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed and its set of behaviours is then {Nothing}.</p>
+<p>Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed. Its set of behaviours is then {Nothing}.</p>
 <div class="math">
-<p><img src="images/math/669ac3cc59d18d7ff05c4fed0f934373c34873a1.png" alt="\begin{align*}
+<p><img src="images/math/8169e77c518b8717021260af3da4dd26483f0cd7.png" alt="\begin{align*}
     \ottdruleexpr{}
 \end{align*}"/></p>
 </div></div>
 <div class="section" id="typing-expressions">
 <span id="typing-expressions-label"></span><h4>Typing expressions<a class="headerlink" href="#typing-expressions" title="Permalink to this headline">¶</a></h4>
-<p>Literals are always well-typed and of the following right-value types:</p>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> are always boolean.</li>
-<li>float literals are of any floating-point right-value type</li>
-<li>unsigned int literals (marked by an <code class="docutils literal notranslate"><span class="pre">u</span></code> at the end) are of any unsigned integer type large enough to contain them</li>
-<li>int literals are of any integer type large enough to contain them</li>
+<p>Literals always have right-value types:</p>
+<ul>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> are always well-typed and of type <code class="docutils literal notranslate"><span class="pre">bool</span></code>.</p>
+</li>
+<li><p class="first">float literals are always well-typed and of type <code class="docutils literal notranslate"><span class="pre">float</span></code>.</p>
+</li>
+<li><p class="first">unsigned int literals (marked by an <code class="docutils literal notranslate"><span class="pre">u</span></code> at the end) are well-typed if they are representable as a 32-bit unsigned integer, in which case they are of type <code class="docutils literal notranslate"><span class="pre">uint</span></code></p>
+</li>
+<li><p class="first">int literals are always well-typed.</p>
+<blockquote>
+<div><ul class="simple">
+<li>If they are representable as a 32-bit unsigned integer they can be given the type <code class="docutils literal notranslate"><span class="pre">uint</span></code></li>
+<li>If they are representable as a 32-bit signed integer they can be give the type <code class="docutils literal notranslate"><span class="pre">int</span></code></li>
+<li>They can be given the <code class="docutils literal notranslate"><span class="pre">float</span></code> type.</li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">null</span></code> is always well-typed and its type can be any pointer or array reference type (depending on which is required for validation to succeed).</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">integer literals are the only cases of implicit coercions in the language. See the rule for function calls for details.</p>
+</div>
 <p>The type of an expression in parentheses, is the type of the expression in the parentheses</p>
 <p>A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.</p>
 <div class="math">
-<p><img src="images/math/3a4bcacc3e539023efb0727bdd596fa05ed95b85.png" alt="\begin{align*}
+<p><img src="images/math/f3dc9a25d0032d208dfc7781360ad07ef18a631c.png" alt="\begin{align*}
     \ottdruleliteralXXtrue{}\\
     \ottdruleliteralXXfalse{}\\
-    \ottdrulenullXXlitXXarrayXXref{}\\
-    \ottdrulenullXXlitXXptr{}\\
     \ottdruleparens{}\\
     \ottdrulecomma{}
 \end{align*}"/></p>
 </div><p>To check that a boolean or, or a boolean and is well-typed, check that both of its operands are well-typed and of type bool.</p>
 <p>To check that a ternary conditional is well-typed:</p>
-<ol class="arabic simple">
-<li>Check that its condition is well-typed and of type bool</li>
+<ol class="arabic">
+<li><p class="first">Check that its condition is well-typed and of type bool</p>
+</li>
+<li><p class="first">If both of its branches are integer literals, then the whole expression is well-typed and has type <code class="docutils literal notranslate"><span class="pre">int</span></code> (right-value).</p>
+</li>
+<li><p class="first">Otherwise:</p>
+<blockquote>
+<div><ol class="arabic simple">
 <li>Check that both of its branches are well-typed</li>
 <li>Check that the types of its branches are both right-value types and the same</li>
 <li>Check that this same type is neither a pointer type nor an array reference type.</li>
 <li>Then the whole expression is well-typed, and of that type</li>
 </ol>
+</div></blockquote>
+</li>
+</ol>
 <div class="math">
-<p><img src="images/math/fc7839ceec094a924ff60cde9a0c117c4ba46cca.png" alt="\begin{align*}
+<p><img src="images/math/afa55e243017e3b7193eb5bff155dfb5e4236d25.png" alt="\begin{align*}
     \ottdruleor{}\\
     \ottdruleand{}\\
-    \ottdruleternary{}
+    \ottdruleternaryXXintXXliterals{}\\
+    \ottdruleternaryXXnoXXintXXliterals{}
 \end{align*}"/></p>
 </div><p>To check that an assignment is well-typed:</p>
 <ol class="arabic simple">
@@ -1053,14 +1073,15 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Then the assignment is well-typed, and its type is “tval”</li>
 </ol>
 <div class="math">
-<p><img src="images/math/5b2d4d25688d8fbe233281aba951eda37d3c7d24.png" alt="\begin{align*}
+<p><img src="images/math/c9af7529a8e5d75e877444f8113d0496dc28a594.png" alt="\begin{align*}
     \ottdruleassignment{}
 \end{align*}"/></p>
 </div><p>If an expression is well-typed and its type is an abstract left-value type, it can also be treated as if it were of the associated right-value type.
 If an expression is well-typed and its type is a left-value type, and its address space is not constant, it can also be treated as if it were of the associated abstract left-value type.
 If an expression is well-typed and its type is a left-value type, it can also be treated as if it were of the associated right-value type.</p>
 <p>A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,</p>
-<p>An expression <code class="docutils literal notranslate"><span class="pre">&amp;e</span></code> (respectively <code class="docutils literal notranslate"><span class="pre">*e</span></code>) is well-typed and with a pointer type (respectively with a left-value type) if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a left-value type (respectively of a pointer type).
+<p>An expression <code class="docutils literal notranslate"><span class="pre">&amp;e</span></code> is well-typed and with a pointer type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a left-value type.
+An expression <code class="docutils literal notranslate"><span class="pre">*e</span></code> is well-typed and with a left-value type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a pointer type.
 The associated right-value types and address spaces are left unchanged by these two operators.</p>
 <p>An expression <code class="docutils literal notranslate"><span class="pre">&#64;e</span></code> is well-typed and with an array reference type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a left-value type.
 The associated right-value types and address spaces are left unchanged by this operator.</p>
@@ -1070,7 +1091,7 @@ The associated right-value types and address spaces are left unchanged by this o
 <code class="docutils literal notranslate"><span class="pre">&#64;x</span></code> for a variable <code class="docutils literal notranslate"><span class="pre">x</span></code> with a non-array type is valid, it will merely produce an array reference for which only the index 0 can be used.</p>
 </div>
 <div class="math">
-<p><img src="images/math/20f5e61dc9694b471c2b474f129ab96cf232856f.png" alt="\begin{align*}
+<p><img src="images/math/0a35ef1bbeb3461a6c055d7f9c5cffcb928f6c00.png" alt="\begin{align*}
     \ottdrulealvalXXtoXXrval{}\\
     \ottdrulelvalXXtoXXalval{}\\
     \ottdrulelvalXXtoXXrval{}\\
@@ -1084,21 +1105,9 @@ The associated right-value types and address spaces are left unchanged by this o
 <li><p class="first">If <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><dl class="first docutils">
-<dt>If <code class="docutils literal notranslate"><span class="pre">e</span></code> has a left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator&amp;.foo</span></code> with a first parameter whose type is a pointer to the same right-value type with the same address space,</dt>
-<dd>then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> has an abstract left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator.foo=</span></code> with a first parameter whose type is the corresponding right-value type,</dt>
-<dd>then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Else if there is a function called <code class="docutils literal notranslate"><span class="pre">operator.foo</span></code> with a parameter whose type matches the type of <code class="docutils literal notranslate"><span class="pre">e</span></code>,</dt>
-<dd>then the whole expression is well-typed and has the return type of that function.</dd>
-</dl>
-</li>
+<li>If <code class="docutils literal notranslate"><span class="pre">e</span></code> has a left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator&amp;.foo</span></code> with a parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.</li>
+<li>Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> has an abstract left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator.foo=</span></code> with a first parameter whose type is the corresponding right-value type, then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the second parameter of that function.</li>
+<li>Else if there is a function called <code class="docutils literal notranslate"><span class="pre">operator.foo</span></code> with a parameter whose type matches the type of <code class="docutils literal notranslate"><span class="pre">e</span></code>, then the whole expression is well-typed and has the return type of that function.</li>
 <li>Else the expression is ill-typed.</li>
 </ol>
 </div></blockquote>
@@ -1116,42 +1125,33 @@ The associated right-value types and address spaces are left unchanged by this o
 </ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Replacing e.foo by its value in the case of an enum is a bit weird of a thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.</p>
+<p class="last">Replacing e.foo by its value in the case of an enum is a bit of a weird thing to do at typing time, but it simplifies the writing of the execution rules if we can assume that every dot operator that we see corresponds to a getter, setter, or address-taker.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Please note that a local variable declaration can shadow a global enum declaration.</p>
+<p class="last">Please note that a variable declaration can shadow an enum declaration.</p>
 </div>
 <p>To check that an array dereference <code class="docutils literal notranslate"><span class="pre">e1[e2]</span></code> is well-typed:</p>
 <ol class="arabic simple">
 <li>Check that <code class="docutils literal notranslate"><span class="pre">e2</span></code> is well-typed with the type <code class="docutils literal notranslate"><span class="pre">uint32</span></code></li>
-<li>Check that <code class="docutils literal notranslate"><span class="pre">e1</span></code> is well-typed</li>
 <li>If the type of <code class="docutils literal notranslate"><span class="pre">e1</span></code> is an array reference whose associated type is <code class="docutils literal notranslate"><span class="pre">T</span></code>, then the whole expression is well-typed, and its type is a left-value with an associated type of <code class="docutils literal notranslate"><span class="pre">T</span></code>, and the same address space as the type of <code class="docutils literal notranslate"><span class="pre">e1</span></code></li>
-<li>Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> has a left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator&amp;[]</span></code> with a first parameter whose type is a pointer to the same right-value type with the same address space,
-then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.</li>
-<li><dl class="first docutils">
-<dt>Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> has an abstract left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator[]=</span></code> with a first parameter whose type is the corresponding right-value type,</dt>
-<dd>then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the third parameter of that function.</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Else if there is a function called <code class="docutils literal notranslate"><span class="pre">operator.[]</span></code> with a parameter whose type matches the type of <code class="docutils literal notranslate"><span class="pre">e1</span></code>,</dt>
-<dd>then the whole expression is well-typed and has the return type of that function.</dd>
-</dl>
-</li>
+<li>Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> has a left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator&amp;[]</span></code> with a first parameter whose type is a pointer to the same right-value type with the same address space, then the whole expression is well-typed, and has a left-value type corresponding to the right-value type and address-space of the return type of that function.</li>
+<li>Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> has an abstract left-value type, and there is a function called <code class="docutils literal notranslate"><span class="pre">operator[]=</span></code> with a first parameter whose type is the corresponding right-value type, then the whole expression is well-typed, and has an abstract left-value type corresponding to the type of the third parameter of that function.</li>
+<li>Else if there is a function called <code class="docutils literal notranslate"><span class="pre">operator.[]</span></code> with a parameter whose type matches the type of <code class="docutils literal notranslate"><span class="pre">e1</span></code>, then the whole expression is well-typed and has the return type of that function.</li>
 <li>Else the expression is ill-typed</li>
 </ol>
 <div class="math">
-<p><img src="images/math/73868bd7124037446cc433c1df796bf20ef8d42e.png" alt="\begin{align*}
+<p><img src="images/math/309deb53392457d6a6399a955a50c1884d88ac4f.png" alt="\begin{align*}
     \ottdrulearrayXXrefXXindex{}
 \end{align*}"/></p>
-</div><p>To check that an expression <code class="docutils literal notranslate"><span class="pre">e++</span></code>, or <code class="docutils literal notranslate"><span class="pre">e--</span></code> is well-typed:</p>
+</div><p>To check that an expression <code class="docutils literal notranslate"><span class="pre">e++</span></code> or <code class="docutils literal notranslate"><span class="pre">e--</span></code> is well-typed:</p>
 <ol class="arabic simple">
 <li>Check that <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed, with an abstract left-value type</li>
-<li>Check that a call to <code class="docutils literal notranslate"><span class="pre">operator+(e,</span> <span class="pre">1)</span></code> (respectively <code class="docutils literal notranslate"><span class="pre">operator-(e,</span> <span class="pre">1)</span></code>) would be well-typed, with a right-value type that matches <code class="docutils literal notranslate"><span class="pre">e</span></code></li>
+<li>Check that a call to <code class="docutils literal notranslate"><span class="pre">operator++(e)</span></code> (respectively <code class="docutils literal notranslate"><span class="pre">operator--(e)</span></code>) would be well-typed, with a right-value type that matches <code class="docutils literal notranslate"><span class="pre">e</span></code></li>
 <li>Then the expression is well-typed, and of the right-value type of <code class="docutils literal notranslate"><span class="pre">e</span></code></li>
 </ol>
-<p>To check that an expression <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">+=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">-=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">*=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">/=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">%=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">^=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&amp;=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">|=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&gt;&gt;=</span> <span class="pre">e2</span></code>, or <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&lt;&lt;=</span> <span class="pre">e2</span></code>:</p>
+<p>An expression <code class="docutils literal notranslate"><span class="pre">++e</span></code> or <code class="docutils literal notranslate"><span class="pre">--e</span></code> is well-typed if and only if the postfix version would be well-typed, and has the same type.</p>
+<p>To check that an expression <code class="docutils literal notranslate"><span class="pre">e1+=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1-=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1*=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1/=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1%=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1^=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1&amp;=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1|=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1&gt;&gt;=e2</span></code>, or <code class="docutils literal notranslate"><span class="pre">e1&lt;&lt;=e2</span></code>:</p>
 <ol class="arabic simple">
 <li>Check that <code class="docutils literal notranslate"><span class="pre">e1</span></code> is well-typed, with an abstract left-value type</li>
 <li>Check that <code class="docutils literal notranslate"><span class="pre">e2</span></code> is well-typed</li>
@@ -1159,57 +1159,67 @@ then the whole expression is well-typed, and has a left-value type corresponding
 <li>Then the expression is well-typed, and of the right-value type of <code class="docutils literal notranslate"><span class="pre">e1</span></code></li>
 </ol>
 <div class="math">
-<p><img src="images/math/58a41211481f8980151d13b31a512709b0d556f1.png" alt="\begin{align*}
+<p><img src="images/math/b094bafd1d2ab6c199e2734e26ddffdd57bb8747.png" alt="\begin{align*}
     \ottdrulepostfixXXincr{}\\
+    \ottdruleprefixXXincr{}\\
     \ottdruleoperatorXXplusXXequal{}
 \end{align*}"/></p>
 </div><p>To check that a function call is well-typed:</p>
 <ol class="arabic">
 <li><p class="first">Check that each argument is well-typed</p>
 </li>
-<li><p class="first">Make a set of all the functions in the global environment that share the same name and number of parameters, and that is not an entry point</p>
+<li><p class="first">Make a set of all the functions in the global environment that share the same name and number of parameters, and that are not an entry point. Call them candidate functions.</p>
 </li>
-<li><p class="first">For each function in that set:</p>
+<li><p class="first">If function name is <code class="docutils literal notranslate"><span class="pre">operator.length</span></code> and there is a single argument:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Check that each argument can be given a type that match the type of the parameter</li>
-<li>Otherwise, remove the function from the set</li>
+<li>If the argument is of array type, the whole expression is well-typed, of right-value type <code class="docutils literal notranslate"><span class="pre">uint</span></code>, and the call resolves to a special function that just returns the (known at compile time) length of the array.</li>
+<li>Else if the argument is of array reference type, the whole expression is well-typed, of right-value type <code class="docutils literal notranslate"><span class="pre">uint</span></code>, and the call resolves to a special function that just returns the (known at runtime as part of the array reference) length of the array reference.</li>
+<li>Else the function call is ill-typed.</li>
 </ol>
 </div></blockquote>
 </li>
-<li><p class="first">Check that the set now contains a single function</p>
+<li><p class="first">For each candidate function:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>For each parameter, if the corresponding argument can not be given the parameter type, remove this function from the set of candidate functions</li>
+</ol>
+</div></blockquote>
 </li>
-<li><p class="first">Then the function call is well-typed, and its type is the return type of that function</p>
+<li><p class="first">If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function, and it resolves to that function.</p>
+</li>
+<li><p class="first">Else if it contains several functions, for each candidate function:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>For each parameter, if the corresponding argument is an integer literal and the parameter type is not <code class="docutils literal notranslate"><span class="pre">int</span></code>, remove this function from the set of candidate functions</li>
+</ol>
+</div></blockquote>
+</li>
+<li><p class="first">If the set of candidate functions now contains exactly one function, then the function call is well-typed, and its type is the return type of that function, and it resolves to that function.</p>
+</li>
+<li><p class="first">In all other cases, the function call is ill-typed.</p>
 </li>
 </ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Our overloading resolution is only this simple because this version of the language does not have generics.</p>
+<p class="last">The goal of these rules is to allow some limited coercion of literals, but only when it is non-ambiguous.
+In particular integer literals can be used either for int, uint or float parameters.
+If this is ambiguous, all integer literals are limited to the int type and we try again.
+If there is no overload left we give up.
+This is more restrictive than HLSL which allows a lot of implicit coercions, on purpose, to simplify implementations.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Entry points cannot be called from within a shader. A function is an entry point if and only if it is marked with one of <code class="docutils literal notranslate"><span class="pre">vertex</span></code>, <code class="docutils literal notranslate"><span class="pre">fragment</span></code> or <code class="docutils literal notranslate"><span class="pre">compute</span></code>.</p>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">A consequence of the rule that overloading must be resolved without ambiguity is that if there are two implementations of a function <code class="docutils literal notranslate"><span class="pre">foo</span></code>
-that take respectively an int and a short, then the program <code class="docutils literal notranslate"><span class="pre">foo(42)</span></code> is invalid (as it could refer to either of these implementations).
-The programmer can easily make their intent clear with something like <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">42;</span> <span class="pre">foo(x);</span></code>.</p>
-</div>
-<div class="admonition-todo admonition" id="index-2">
-<p class="first admonition-title">Todo</p>
-<p class="last">This rule for overloading resolution is very different from the implementation, the two should be brought back in sync one way or another.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/313">https://github.com/gpuweb/WHLSL/issues/313</a></p>
 </div>
 </div>
-</div>
-<div class="section" id="phase-4-annotations-for-execution">
-<h3>Phase 4. Annotations for execution<a class="headerlink" href="#phase-4-annotations-for-execution" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="annotations-for-execution">
+<h3>Annotations for execution<a class="headerlink" href="#annotations-for-execution" title="Permalink to this headline">¶</a></h3>
 <p>We resolved each overloaded function call in the previous section. They must now be annotated with which function is actually being called.</p>
 <p>Every variable declaration, every function parameter, and every postfix increment/decrement must be associated with a unique store identifier.
 This identifier in turn refers to a set of contiguous bytes, of the right size; these sets are disjoint.</p>
 <p>Each control barrier must be annotated with a unique barrier identifier.</p>
-<p>Each branch, switch, loop, ternary expression, boolean or expression and boolean and expression must be annotated with a unique divergence point identifier.</p>
 <p>Every variable declaration that does not have an initializing value, must get an initializing value that is the default value for its type.
 These default values are computed as follows:</p>
 <ul class="simple">
@@ -1217,7 +1227,6 @@ These default values are computed as follows:</p>
 <li>The default value for floating point types is <code class="docutils literal notranslate"><span class="pre">0.0</span></code></li>
 <li>The default value for booleans is <code class="docutils literal notranslate"><span class="pre">false</span></code></li>
 <li>The default value for enums is the element of the enum whose associated integer values is 0</li>
-<li>The default value for pointers and array references is <code class="docutils literal notranslate"><span class="pre">null</span></code></li>
 <li>The default value for an array is an array of the right size filled with the default values for its element type</li>
 <li>The default value for a structure type is a structure whose elements are all given their respective default values</li>
 </ul>
@@ -1237,15 +1246,15 @@ also copies any padding bits. This may be observable by the outside world depend
 This size is computed in exactly the way described above.
 If the first operand is either an array or a left-value type associated with an array type, the access must also be annotated with the statically known size of the array.</p>
 </div>
-<div class="section" id="phase-5-verifying-the-absence-of-recursion">
-<h3>Phase 5. Verifying the absence of recursion<a class="headerlink" href="#phase-5-verifying-the-absence-of-recursion" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="verifying-the-absence-of-recursion">
+<h3>Verifying the absence of recursion<a class="headerlink" href="#verifying-the-absence-of-recursion" title="Permalink to this headline">¶</a></h3>
 <p>WHLSL does not support recursion (for efficient compilation to GPUs).
 So once all overloaded function calls have been resolved, we must do one last check.</p>
 <p>We create a relationship “may call” that connects two function declarations <code class="docutils literal notranslate"><span class="pre">f</span></code> and <code class="docutils literal notranslate"><span class="pre">g</span></code> if there is a call to <code class="docutils literal notranslate"><span class="pre">g</span></code> in the body of <code class="docutils literal notranslate"><span class="pre">f</span></code> (after resolving overloading).
 If this relationship is cyclic, then the program is invalid.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This check is done on function declarations, not on function names, so if for example foo(int) calls foo(short), it is not considered recursion, as they are different functions
+<p class="last">This check is done on function declarations, not on function names, so if for example foo(int) calls foo(float), it is not considered recursion, as they are different functions
 after resolution of overloading.</p>
 </div>
 </div>
@@ -1258,15 +1267,16 @@ after resolution of overloading.</p>
 loads, stores, barriers and the like.</p>
 <p>The per-thread semantics is a fairly classic small-step operational semantics, meaning that it describes a list of possible transitions that the program can
 take in one step.
-The per-thread state is made of a few element:</p>
+The per-thread state is made of two elements:</p>
 <ul class="simple">
 <li>The program being executed. Each transition transforms it.</li>
-<li>A divergence stack. This is a stack of pairs of divergence point identifiers and values, which tracks whether we are in a branch, and is used by the rules for barriers and derivatives to check that control-flow is uniform.</li>
-<li>An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function.</li>
+<li>An environment. This is a mapping from variable names to values and is used to keep track of arguments and variables declared in the function. It also contains a (separate) mapping from function names to sets of function definitions.</li>
 </ul>
-<p>Each transition is a statement of the form “With environment <img class="math" src="images/math/e13213b284578cff04a56a0bc6a3827dd8fe74d1.png" alt="\rho"/>, if some conditions are respected, the program may be transformed into the following, emitting the following memory events, and modifying the divergence stack in these ways.”</p>
+<p>Each transition is a statement of the form “With environment <img class="math" src="images/math/6893ed43521cfc213e8b1c9965fa1a1e418843a8.png" alt="\rho"/>, if some conditions are respected, the program may be transformed into the following, emitting the following memory events.”</p>
 <p>In some of these rules we use <code class="docutils literal notranslate"><span class="pre">ASSERT</span></code> to provide some properties that are true either by construction or thanks to the validation rules of the previous section.
 Such assertions are not tests that must be done by any implementation, they are merely hints to our intent.</p>
+<p>We start at the execution by a call to the relevant entry point with the relevant arguments.
+The environment is initialized with all of the function definitions from the shader, as well as all of the functions defined in the standard library (see <a class="reference internal" href="#standard-library-label"><span class="std std-ref">Standard library</span></a>).</p>
 </div>
 <div class="section" id="execution-of-statements">
 <h3>Execution of statements<a class="headerlink" href="#execution-of-statements" title="Permalink to this headline">¶</a></h3>
@@ -1293,7 +1303,7 @@ Such assertions are not tests that must be done by any implementation, they are 
 <li>Else reduce the first statement of the block, using the environment that the block was annotated with (not the top-level environment)</li>
 </ol>
 <div class="math">
-<p><img src="images/math/68f476d3aca624174394f4ba0260f50c382b989a.png" alt="\begin{align*}
+<p><img src="images/math/478473bb1ac5765e4d3938d0c86d78a4be88e678.png" alt="\begin{align*}
     \ottdruleblockXXannotate{}\\
     \ottdruleblockXXnextXXstmt{}\\
     \ottdruleblockXXterminator{}\\
@@ -1303,47 +1313,21 @@ Such assertions are not tests that must be done by any implementation, they are 
     \ottdruleblockXXreduce{}
 \end{align*}"/></p>
 </div></div>
-<div class="section" id="branches">
-<h4>Branches<a class="headerlink" href="#branches" title="Permalink to this headline">¶</a></h4>
-<p>We add another kind of statement: the <code class="docutils literal notranslate"><span class="pre">Join(s)</span></code> construct, that takes as argument another statement <code class="docutils literal notranslate"><span class="pre">s</span></code>.</p>
+<div class="section" id="branches-and-switches">
+<h4>Branches and Switches<a class="headerlink" href="#branches-and-switches" title="Permalink to this headline">¶</a></h4>
 <p>Here is how to reduce a branch (if-then-else construct, remember that if-then is just syntactic sugar that was eliminated during parsing) by one step:</p>
 <ol class="arabic simple">
-<li>If the expression in the if is <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">false</span></code>.<ol class="arabic">
-<li>Push that value and the divergence point identifier of the branch on the divergence stack</li>
-<li>Replace the branch by the statement in the then (for <code class="docutils literal notranslate"><span class="pre">true</span></code>) or else (for <code class="docutils literal notranslate"><span class="pre">false</span></code>) branch, wrapped in the <code class="docutils literal notranslate"><span class="pre">Join</span></code> construct</li>
-</ol>
-</li>
+<li>If the expression in the if is <code class="docutils literal notranslate"><span class="pre">true</span></code>, replace the branch by the statement in the then</li>
+<li>Else if the expression in the if is <code class="docutils literal notranslate"><span class="pre">false</span></code>, replace the branch by the statement in the else</li>
 <li>Else reduce that expression</li>
 </ol>
 <div class="math">
-<p><img src="images/math/021d3be669ef84684a63f57fe783fd5ebe56728a.png" alt="\begin{align*}
+<p><img src="images/math/52be366edf9376584b6b4dd61d8a29c330ce621d.png" alt="\begin{align*}
     \ottdruleifXXtrue{}\\
     \ottdruleifXXfalse{}\\
     \ottdruleifXXreduce{}
 \end{align*}"/></p>
-</div><p>Here is how to reduce a <code class="docutils literal notranslate"><span class="pre">Join(s)</span></code> statement:</p>
-<ol class="arabic simple">
-<li>If the argument of the <code class="docutils literal notranslate"><span class="pre">Join</span></code> is a terminator (<code class="docutils literal notranslate"><span class="pre">break;</span></code>, <code class="docutils literal notranslate"><span class="pre">continue;</span></code>, <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code>, or <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">e?;</span></code>) or an empty block<ol class="arabic">
-<li>ASSERT(the divergence stack is not empty)</li>
-<li>Pop the last element from the divergence stack</li>
-<li>Replace the <code class="docutils literal notranslate"><span class="pre">Join</span></code> statement by its argument</li>
-</ol>
-</li>
-<li>Else reduce its argument</li>
-</ol>
-<div class="math">
-<p><img src="images/math/2a164651baca5cfd104d1941967f0841a77b4829.png" alt="\begin{align*}
-    \ottdrulejoinXXelim{}\\
-    \ottdrulejoinXXreduce{}
-\end{align*}"/></p>
-</div><div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Popping the last element from the divergence stack never fails, as a Join only appears when eliminating a branch, which pushes a value on it.</p>
-</div>
-</div>
-<div class="section" id="switches">
-<h4>Switches<a class="headerlink" href="#switches" title="Permalink to this headline">¶</a></h4>
-<p>We add another kind of statement: the <code class="docutils literal notranslate"><span class="pre">Cases(..)</span></code> construct that takes as argument a sequence of statements.
+</div><p>We add another kind of statement: the <code class="docutils literal notranslate"><span class="pre">Cases(..)</span></code> construct that takes as argument a sequence of statements.
 Informally it represents the different cases of a switch, and deals with the <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code> and <code class="docutils literal notranslate"><span class="pre">break;</span></code> statements.</p>
 <p>Here is how to reduce a switch statement by one step:</p>
 <ol class="arabic">
@@ -1355,7 +1339,6 @@ Informally it represents the different cases of a switch, and deals with the <co
 <li>Wrap the corresponding sequence of statements into a block (turning it into a single statement)</li>
 <li>Do the same for each sequence of statements until the end of the switch</li>
 <li>Replace the entire switch by a <code class="docutils literal notranslate"><span class="pre">Cases</span></code> construct, taking as argument these resulting statements in source order</li>
-<li>Push <code class="docutils literal notranslate"><span class="pre">val</span></code> and the divergence point identifier of the switch on the divergence stack</li>
 </ol>
 </div></blockquote>
 </li>
@@ -1367,13 +1350,12 @@ Informally it represents the different cases of a switch, and deals with the <co
 <li>Find the <code class="docutils literal notranslate"><span class="pre">default</span></code> case, and wrap the corresponding sequence of statements into a block (turning it into a single statement)</li>
 <li>Do the same for each sequence of statements until the end of the switch</li>
 <li>Replace the entire switch by a <code class="docutils literal notranslate"><span class="pre">Cases</span></code> construct, taking as argument these resulting statements in source order</li>
-<li>Push <code class="docutils literal notranslate"><span class="pre">val</span></code> and the divergence point identifier of the switch on the divergence stack</li>
 </ol>
 </div></blockquote>
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/09e0c71061c7e20dae69a99a4172237248383d27.png" alt="\begin{align*}
+<p><img src="images/math/9918e3a773bc78f0d008794fce27f21c9492abeb.png" alt="\begin{align*}
     \ottdruleswitchXXreduce{}\\
     \ottdruleswitchXXcaseXXfound{}\\
     \ottdruleswitchXXdefault{}
@@ -1382,22 +1364,12 @@ Informally it represents the different cases of a switch, and deals with the <co
 <ol class="arabic simple">
 <li>ASSERT(the construct has at least one argument)</li>
 <li>If the first argument is the <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code> statement, remove it (reducing the total number of arguments by 1)</li>
-<li>Else if the first argument is the <code class="docutils literal notranslate"><span class="pre">break;</span></code> statement:<ol class="arabic">
-<li>ASSERT(the divergence stack is not empty)</li>
-<li>Pop the last element from the divergence stack</li>
-<li>Replace the entire construct by an empty block</li>
-</ol>
-</li>
-<li>Else if the first argument is another terminator statement, that cannot be reduced (i.e. <code class="docutils literal notranslate"><span class="pre">continue;</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">value;</span></code> or <code class="docutils literal notranslate"><span class="pre">return;</span></code>)<ol class="arabic">
-<li>ASSERT(the divergence stack is not empty)</li>
-<li>Pop the last element from the divergence stack</li>
-<li>Replace the entire construct by its first argument</li>
-</ol>
-</li>
+<li>Else if the first argument is the <code class="docutils literal notranslate"><span class="pre">break;</span></code> statement, replace the entire construct by an empty block</li>
+<li>Else if the first argument is another terminator statement, that cannot be reduced (i.e. <code class="docutils literal notranslate"><span class="pre">continue;</span></code>, <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">value;</span></code> or <code class="docutils literal notranslate"><span class="pre">return;</span></code>), replace the entire construct by its first argument</li>
 <li>Else reduce the first argument by one step</li>
 </ol>
 <div class="math">
-<p><img src="images/math/b443d8e15a9a69bb2825e4600733a3784294049a.png" alt="\begin{align*}
+<p><img src="images/math/bad6466f11bd892f3749b2afdacd73861c7cb494.png" alt="\begin{align*}
     \ottdrulecasesXXfallthrough{}\\
     \ottdrulecasesXXbreak{}\\
     \ottdrulecasesXXotherXXterminator{}\\
@@ -1408,10 +1380,10 @@ Informally it represents the different cases of a switch, and deals with the <co
 <h4>Loops<a class="headerlink" href="#loops" title="Permalink to this headline">¶</a></h4>
 <p>We add yet another kind of statement: the <code class="docutils literal notranslate"><span class="pre">Loop(s,</span> <span class="pre">s',</span> <span class="pre">s'')</span></code> construct that takes as arguments three statements.
 Informally, its first argument represents the current iteration of a loop, its second argument is to be executed at the end of the iteration, and its third argument is a continuation for the rest of the loop.</p>
-<p>Any <code class="docutils literal notranslate"><span class="pre">do</span> <span class="pre">s</span> <span class="pre">while(e);</span></code> statement is reduced to the following in one step: <code class="docutils literal notranslate"><span class="pre">Loop(s,</span> <span class="pre">{},</span> <span class="pre">if(e)</span> <span class="pre">do</span> <span class="pre">s</span> <span class="pre">while(e);</span> <span class="pre">else</span> <span class="pre">{})</span></code>, keeping the same divergence point identifier.
-Any <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">(;e;e')</span> <span class="pre">s</span></code> statement is reduced to the following in one step <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(e)</span> <span class="pre">Loop(s,</span> <span class="pre">e';,</span> <span class="pre">for(;e;e')</span> <span class="pre">s)</span> <span class="pre">else</span> <span class="pre">{}</span></code>, keeping the same divergence point identifier.</p>
+<p>Any <code class="docutils literal notranslate"><span class="pre">do</span> <span class="pre">s</span> <span class="pre">while(e);</span></code> statement is reduced to the following in one step: <code class="docutils literal notranslate"><span class="pre">Loop(s,</span> <span class="pre">{},</span> <span class="pre">if(e)</span> <span class="pre">do</span> <span class="pre">s</span> <span class="pre">while(e);</span> <span class="pre">else</span> <span class="pre">{})</span></code>.
+Any <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">(;e;e')</span> <span class="pre">s</span></code> statement is reduced to the following in one step <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(e)</span> <span class="pre">Loop(s,</span> <span class="pre">e';,</span> <span class="pre">for(;e;e')</span> <span class="pre">s)</span> <span class="pre">else</span> <span class="pre">{}</span></code>.</p>
 <div class="math">
-<p><img src="images/math/29573dc1b9638fcf2fc22572395b4edebe7da97e.png" alt="\begin{align*}
+<p><img src="images/math/ffee9fd9cc833d9c803c366af982a0572854dce0.png" alt="\begin{align*}
     \ottdruledoXXwhileXXloop{}\\
     \ottdruleforXXloop{}
 \end{align*}"/></p>
@@ -1441,36 +1413,30 @@ Any <code class="docutils literal notranslate"><span class="pre">for</span> <spa
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/3997f39dd8c9d2f56f6b209a0d018ebf65f33cb7.png" alt="\begin{align*}
+<p><img src="images/math/bc7936073147a1b16ea874bcb5f5d2f2eb2d9e43.png" alt="\begin{align*}
     \ottdruleloopXXbreak{}\\
     \ottdruleloopXXnextXXiteration{}\\
     \ottdruleloopXXincrement{}\\
     \ottdruleloopXXotherXXterminator{}\\
     \ottdruleloopXXreduce{}
 \end{align*}"/></p>
-</div><div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">These operations do not need to explicitly modify the divergence stack, because each iteration of a loop executes an <code class="docutils literal notranslate"><span class="pre">if</span></code> statement that does it.</p>
-</div>
-</div>
+</div></div>
 <div class="section" id="barriers-and-uniform-control-flow">
 <h4>Barriers and uniform control flow<a class="headerlink" href="#barriers-and-uniform-control-flow" title="Permalink to this headline">¶</a></h4>
 <p>There is no rule in the per-thread semantics for <em>control barriers</em>.
-Instead, there is a rule in the global semantics, saying that if all threads are at a control barrier instruction with the same identifier, and their divergence stacks are identical, then they may all advance atomically, replacing the barrier by an empty block.</p>
+Instead, there is a rule in the global semantics, saying that if all threads are at the same control barrier instruction then they may all advance atomically, replacing the barrier by an empty block.</p>
 </div>
 <div class="section" id="other">
 <h4>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h4>
 <p>If a statement is just an expression (<code class="docutils literal notranslate"><span class="pre">effectfulExpr</span></code> in the grammar), it is either discarded (if it is a value) or reduced by one step (otherwise).</p>
 <p>If a statement is a return followed by an expression, and the expression can be reduced, then the statement can as well by reducing the expression.</p>
 <div class="math">
-<p><img src="images/math/096ea45df57395c87c8d32cecff3225023b72076.png" alt="\begin{align*}
+<p><img src="images/math/5d4801fbcaf29399cc96713b5dd37566c092ee89.png" alt="\begin{align*}
     \ottdruleeffectfulXXexprXXreduce{}\\
     \ottdruleeffectfulXXexprXXelim{}\\
     \ottdrulereturnXXreduce{}\\
 \end{align*}"/></p>
-</div><p>The standard library also offers atomic operations and fences (a.k.a. <em>memory barriers</em>, not to be confused with <em>control barriers</em>).
-Each of these emit a specific memory event when they are executed, whose semantics is described in the memory model section.</p>
-</div>
+</div></div>
 </div>
 <div class="section" id="execution-of-expressions">
 <h3>Execution of expressions<a class="headerlink" href="#execution-of-expressions" title="Permalink to this headline">¶</a></h3>
@@ -1479,23 +1445,19 @@ Each of these emit a specific memory event when they are executed, whose semanti
 <li>Integers, floats, booleans and other primitives provided by the standard library</li>
 <li>Pointers. These have an address and an address space</li>
 <li>Left values. These also have an address and an address space</li>
-<li>A special Invalid left-value, used to represent the dereferencing of out-of-bounds accesses and the dereferencing of <code class="docutils literal notranslate"><span class="pre">null</span></code></li>
 <li>Array references. These have a base address, an address space and a size</li>
 <li>Struct values. These are a sequence of bytes of the right size, and can be interpreted as a tuple of their elements (plus padding bits)</li>
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Abstract left-value types were used in the typing section to represent things that can be assigned to.
-At runtime they are either left-values, or normal values with a setter applicable to them.</p>
+At runtime they are either left-values, or become calls to a setter.</p>
 </div>
 <p>In this section we describe how to reduce each kind of expression to another expression or to a value.
 Left values are the only kind of values that can be further reduced.</p>
 <div class="section" id="operations-affecting-control-flow">
 <h4>Operations affecting control-flow<a class="headerlink" href="#operations-affecting-control-flow" title="Permalink to this headline">¶</a></h4>
-<p>Just like we added <code class="docutils literal notranslate"><span class="pre">Join</span></code>, <code class="docutils literal notranslate"><span class="pre">Cases</span></code> and <code class="docutils literal notranslate"><span class="pre">Loop</span></code> construct to deal with control-flow affecting statements, we add a <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> construct to deal with control-flow affecting expressions.
-<code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> takes as argument an expression and return an expression. Its only use is (informally) as a marker that the divergence stack will have to be popped to access its content.</p>
-<p>There are three kinds of expressions that can cause a divergence in control-flow: the boolean and (i.e. <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code>, that short-circuits), the boolean or (i.e. <code class="docutils literal notranslate"><span class="pre">||</span></code>, that also short-circuits), and ternary conditions.</p>
-<p>To reduce a boolean and by one step:</p>
+<p>To reduce a boolean and (<code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&amp;&amp;</span> <span class="pre">e2</span></code>) by one step:</p>
 <ol class="arabic">
 <li><p class="first">If its first operand can be reduced, reduce it</p>
 </li>
@@ -1505,19 +1467,18 @@ Left values are the only kind of values that can be further reduced.</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>ASSERT(its first operand is <code class="docutils literal notranslate"><span class="pre">true</span></code>)</li>
-<li>Push <code class="docutils literal notranslate"><span class="pre">true</span></code> and the corresponding divergence point identifier on the divergence stack.</li>
-<li>Replace the whole operation by its second operand wrapped in a <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> construct.</li>
+<li>Replace the whole expression by the second operand.</li>
 </ol>
 </div></blockquote>
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/e50817491ef91ac6bda0efc17b04e161d4fda27b.png" alt="\begin{align*}
+<p><img src="images/math/5e5f2d4bb01291a0df238524eae2a80f1a0896c4.png" alt="\begin{align*}
     \ottdruleandXXreduce{}\\
     \ottdruleandXXfalse{}\\
     \ottdruleandXXtrue{}
 \end{align*}"/></p>
-</div><p>Very similarly, to reduce a boolean or by one step:</p>
+</div><p>Very similarly, to reduce a boolean or (<code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">||</span> <span class="pre">e2</span></code>) by one step:</p>
 <ol class="arabic">
 <li><p class="first">If its first operand can be reduced, reduce it</p>
 </li>
@@ -1527,14 +1488,13 @@ Left values are the only kind of values that can be further reduced.</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>ASSERT(its first operand is <code class="docutils literal notranslate"><span class="pre">false</span></code>)</li>
-<li>Push <code class="docutils literal notranslate"><span class="pre">false</span></code> and the corresponding divergence point identifier on the divergence stack.</li>
-<li>Replace the whole operation by its second operand wrapped in a <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> construct.</li>
+<li>Replace the whole expression by the second operand.</li>
 </ol>
 </div></blockquote>
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/5794d77fc5438cc216ff878bcd27d266b3495f33.png" alt="\begin{align*}
+<p><img src="images/math/2f1669ddcc5642978a6296966db7257ae2d51f0c.png" alt="\begin{align*}
     \ottdruleorXXreduce{}\\
     \ottdruleorXXtrue{}\\
     \ottdruleorXXfalse{}
@@ -1543,51 +1503,29 @@ Left values are the only kind of values that can be further reduced.</p>
 <ol class="arabic">
 <li><p class="first">If its first operand can be reduced, reduce it</p>
 </li>
-<li><p class="first">Else if its first operand is <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
-<blockquote>
-<div><ol class="arabic simple">
-<li>Push <code class="docutils literal notranslate"><span class="pre">true</span></code> and the corresponding divergence point identifier on the divergence stack.</li>
-<li>Replace the whole operation by its second operand wrapped in a <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> construct</li>
-</ol>
-</div></blockquote>
+<li><p class="first">Else if its first operand is <code class="docutils literal notranslate"><span class="pre">true</span></code>, replace the whole expression by the second operand.</p>
 </li>
 <li><p class="first">Else</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>ASSERT(its first operand is <code class="docutils literal notranslate"><span class="pre">false</span></code>)</li>
-<li>Push <code class="docutils literal notranslate"><span class="pre">false</span></code> and the corresponding divergence point identifier on the divergence stack.</li>
-<li>Replace the whole operation by its third operand wrapped in a <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> construct.</li>
+<li>Replace the whole expression by the third operand.</li>
 </ol>
 </div></blockquote>
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/9eed636bcf178d97d1deef6ac8635c89f5b70c79.png" alt="\begin{align*}
+<p><img src="images/math/4c863b5080d432bf8347338186bd8426dd68b6cc.png" alt="\begin{align*}
     \ottdruleternaryXXreduce{}\\
     \ottdruleternaryXXtrue{}\\
     \ottdruleternaryXXfalse{}
-\end{align*}"/></p>
-</div><p>To reduce a <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code> by one step:</p>
-<ol class="arabic simple">
-<li>If its operand is not a lvalue, and can be reduced, then reduce it by one step</li>
-<li>Else:<ol class="arabic">
-<li>ASSERT(the divergence stack is not empty)</li>
-<li>Pop the last element from the divergence stack</li>
-<li>Replace the whole expression by its operand</li>
-</ol>
-</li>
-</ol>
-<div class="math">
-<p><img src="images/math/8165a62e2f4e98de35fa134a9e7bf624ade3f4d3.png" alt="\begin{align*}
-    \ottdrulejoinXXexprXXelim{}\\
-    \ottdrulejoinXXexprXXreduce{}
 \end{align*}"/></p>
 </div></div>
 <div class="section" id="variables">
 <h4>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h4>
 <p>A variable name can be reduced in one step into whatever that name binds in the current environment.
 This does not require any memory access: it is purely used to represent scoping, and most names just bind to lvalues.</p>
-<p>To reduce a (valid) lvalue:</p>
+<p>To reduce a lvalue:</p>
 <ol class="arabic simple">
 <li>Emit a load to the corresponding address, of a size appropriate for the type of the value</li>
 <li>If the type of the expression was an enum type, and the value loaded is not a valid value of that type, replace it by an unspecified valid value of that type</li>
@@ -1598,21 +1536,10 @@ This does not require any memory access: it is purely used to represent scoping,
 <p class="last">The 2nd step is to prevent races from allowing the creation of invalid enum values, which could cause problems to switches without default cases.
 We don’t need a similar rules for pointers or array references, because we do not allow potentially racy assignments to variables of these types.</p>
 </div>
-<p>To reduce an invalid left-value, any of the following is acceptable:</p>
-<ul class="simple">
-<li>Trap</li>
-<li>Replace it by the default value of that type.</li>
-</ul>
-<div class="admonition-todo admonition" id="index-3">
-<p class="first admonition-title">Todo</p>
-<p class="last">We should extend this possible behavior to also accept (0,0,0,X) for some specific values of X for “vector reads” to match <a class="reference external" href="https://github.com/gpuweb/spirv-execution-env/blob/master/execution-env.md">https://github.com/gpuweb/spirv-execution-env/blob/master/execution-env.md</a>
-I just have to figure out what exactly these vector reads map to in WHLSL.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/316">https://github.com/gpuweb/WHLSL/issues/316</a></p>
-</div>
 </div>
 <div class="section" id="reduction-to-an-abstract-left-value">
 <span id="reduction-abstract-left-value-label"></span><h4>Reduction to an abstract left-value<a class="headerlink" href="#reduction-to-an-abstract-left-value" title="Permalink to this headline">¶</a></h4>
-<div class="admonition-todo admonition" id="index-4">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">my naming here is utterly terrible, I really should find better names for these things.</p>
 </div>
@@ -1623,7 +1550,7 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 <blockquote>
 <div><ol class="arabic simple">
 <li>If <code class="docutils literal notranslate"><span class="pre">e1</span></code> can be reduced one step to an abstract left-value, do it</li>
-<li>Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> had a left-value type and <code class="docutils literal notranslate"><span class="pre">e1</span></code> is a left value (valid or not), replace the whole expression by <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">operator&amp;.foo(&amp;e1)</span></code>, using the instance of <code class="docutils literal notranslate"><span class="pre">operator&amp;.foo</span></code> that was used to give a left-value type to <code class="docutils literal notranslate"><span class="pre">e</span></code>.</li>
+<li>Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> had a left-value type and <code class="docutils literal notranslate"><span class="pre">e1</span></code> is a left value, replace the whole expression by <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">operator&amp;.foo(&amp;e1)</span></code>, using the instance of <code class="docutils literal notranslate"><span class="pre">operator&amp;.foo</span></code> that was used to give a left-value type to <code class="docutils literal notranslate"><span class="pre">e</span></code>.</li>
 <li>Else fail</li>
 </ol>
 </div></blockquote>
@@ -1637,25 +1564,23 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 </li>
 <li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e2</span></code> can be reduced one step (normally), do it</p>
 </li>
-<li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code>, replace the whole expression by an invalid left-value.</p>
-</li>
 <li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> is an array reference:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>ASSERT(<code class="docutils literal notranslate"><span class="pre">e2</span></code> is an integer)</li>
-<li>If <code class="docutils literal notranslate"><span class="pre">e2</span></code> is out of the bounds of <code class="docutils literal notranslate"><span class="pre">e1</span></code>, either replace the whole expression by an invalid left-value, or replace <code class="docutils literal notranslate"><span class="pre">e2</span></code> by an unspecified in-bounds value.</li>
+<li>If <code class="docutils literal notranslate"><span class="pre">e2</span></code> is out of the bounds of <code class="docutils literal notranslate"><span class="pre">e1</span></code>, replace <code class="docutils literal notranslate"><span class="pre">e2</span></code> by an unspecified in-bounds value.</li>
 <li>Else replace the whole expression by a left-value, to an address computed by adding the address in <code class="docutils literal notranslate"><span class="pre">e1</span></code> to the product of <code class="docutils literal notranslate"><span class="pre">e2</span></code> and the stride computed from the type of <code class="docutils literal notranslate"><span class="pre">e1</span></code>’s elements.</li>
 </ol>
 </div></blockquote>
 </li>
-<li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> had a left-value type and <code class="docutils literal notranslate"><span class="pre">e1</span></code> is a left value (valid or not), replace the whole expression by <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">operator&amp;[](&amp;e1,</span> <span class="pre">e2)</span></code> using the instance of <code class="docutils literal notranslate"><span class="pre">operator&amp;[]</span></code> that was used to give a left-value type to <code class="docutils literal notranslate"><span class="pre">e</span></code>.</p>
+<li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> had a left-value type and <code class="docutils literal notranslate"><span class="pre">e1</span></code> is a left value, replace the whole expression by <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">operator&amp;[](&amp;e1,</span> <span class="pre">e2)</span></code> using the instance of <code class="docutils literal notranslate"><span class="pre">operator&amp;[]</span></code> that was used to give a left-value type to <code class="docutils literal notranslate"><span class="pre">e</span></code>.</p>
 </li>
 <li><p class="first">Else fail</p>
 </li>
 </ol>
 </div></blockquote>
 </li>
-<li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> is not a lValue (valid or not)</p>
+<li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> is not a lValue</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>ASSERT(<code class="docutils literal notranslate"><span class="pre">e</span></code> can be reduced)</li>
@@ -1666,17 +1591,19 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 </ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
+<p class="last">All array references passed to the shader must have a size of at least one so that there is at least one possible index value that is in-bounds.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
 <p class="last">in the rules we say “e is an abstract left-value” as a short hand for “e cannot be reduced further to an abstract left value”</p>
 </div>
 <div class="math">
-<p><img src="images/math/bc50368984d799eea039fa96f0064796a9c32894.png" alt="\begin{align*}
+<p><img src="images/math/f501dddde35f1d309c63e47bee78e34a3288d06b.png" alt="\begin{align*}
     \ottdrulealvalXXdotXXreduce{}\\
     \ottdrulealvalXXdotXXander{}\\
     \ottdrulealvalXXarrayXXreduceXXleft{}\\
     \ottdrulealvalXXarrayXXrefXXreduce{}\\
     \ottdrulealvalXXarrayXXreduceXXright{}\\
-    \ottdrulearrayXXnullXXaccess{}\\
-    \ottdrulearrayXXrefXXinvalid{}\\
     \ottdrulearrayXXrefXXclamped{}\\
     \ottdrulearrayXXrefXXvalid{}\\
     \ottdrulealvalXXarrayXXander{}\\
@@ -1699,8 +1626,6 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 </ol>
 </div></blockquote>
 </li>
-<li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> is an invalid lvalue, either replace the whole expression by <code class="docutils literal notranslate"><span class="pre">e2</span></code> or trap</p>
-</li>
 <li><p class="first">Else if <code class="docutils literal notranslate"><span class="pre">e1</span></code> is of the form <code class="docutils literal notranslate"><span class="pre">e3.foo</span></code></p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -1720,12 +1645,10 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 </li>
 </ol>
 <div class="math">
-<p><img src="images/math/e6466bbd4a7f5ab916d9416c189143cf99dba7ae.png" alt="\begin{align*}
+<p><img src="images/math/63b2f9205fc649857b326dfa60da690c56631a04.png" alt="\begin{align*}
     \ottdruleassignXXleftXXreduce{}\\
     \ottdruleassignXXrightXXreduce{}\\
     \ottdruleassignXXexecute{}\\
-    \ottdruleassignXXinvalidXXignore{}\\
-    \ottdruleassignXXinvalidXXtrap{}\\
     \ottdruleassignXXsetter{}\\
     \ottdruleassignXXindexedXXsetter{}
 \end{align*}"/></p>
@@ -1738,23 +1661,17 @@ Array references are actually bounds-checked fat-pointers.</p>
 To reduce <code class="docutils literal notranslate"><span class="pre">&amp;</span> <span class="pre">e</span></code>:</p>
 <ol class="arabic simple">
 <li>If <code class="docutils literal notranslate"><span class="pre">e</span></code> can be reduced to an abstract left-value, do it</li>
-<li>Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> is an invalid lvalue, either replace the whole expression with null, or trap</li>
 <li>Else ASSERT(<code class="docutils literal notranslate"><span class="pre">e</span></code> is a valid lvalue), and replace the whole expression by a pointer to the same address</li>
 </ol>
 <p>To reduce <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">e</span></code>:</p>
 <ol class="arabic simple">
-<li>If <code class="docutils literal notranslate"><span class="pre">e</span></code> is null, either trap or replace the whole expression by an invalid left-value</li>
-<li>Else if <code class="docutils literal notranslate"><span class="pre">e</span></code> is a pointer, replace the whole expression by a lvalue to the same address in the same address-space</li>
+<li>If <code class="docutils literal notranslate"><span class="pre">e</span></code> is a pointer, replace the whole expression by a lvalue to the same address in the same address-space</li>
 <li>Else reduce <code class="docutils literal notranslate"><span class="pre">e</span></code></li>
 </ol>
 <div class="math">
-<p><img src="images/math/5752416c1dbf24a46efdae1262a31c41f3bed780.png" alt="\begin{align*}
+<p><img src="images/math/c7e6688e9679a2e2c93a0053c3753e3dccae71ff.png" alt="\begin{align*}
     \ottdruletakeXXptrXXreduce{}\\
-    \ottdruletakeXXptrXXinvalidXXnull{}\\
-    \ottdruletakeXXptrXXinvalidXXtrap{}\\
     \ottdruletakeXXptrXXlval{}\\
-    \ottdrulederefXXnullXXtrap{}\\
-    \ottdrulederefXXnullXXinvalid{}\\
     \ottdrulederefXXptr{}\\
     \ottdrulederefXXreduce{}
 \end{align*}"/></p>
@@ -1766,14 +1683,11 @@ More precisely, to reduce <code class="docutils literal notranslate"><span class
 <ol class="arabic simple">
 <li>If <code class="docutils literal notranslate"><span class="pre">e</span></code> is an LValue and was of type LValue of an array of size <code class="docutils literal notranslate"><span class="pre">n</span></code> during typing, replace it by an array reference to the same address, same address space, and with a bound of <code class="docutils literal notranslate"><span class="pre">n</span></code></li>
 <li>Else if it is an LValue and was of type LValue of a non-array type during typing, replace it by an array reference to the same address, same address space, and with a bound of <code class="docutils literal notranslate"><span class="pre">1</span></code></li>
-<li>Else if it is an invalid lvalue, either replace the whole expression by null, or trap</li>
 <li>Else reduce it</li>
 </ol>
 <div class="math">
-<p><img src="images/math/34e69f19205a8bacda598d196f1189884e37d7f7.png" alt="\begin{align*}
+<p><img src="images/math/ef4b511aaa3ad6f3548bf637b69db1f643fdc14d.png" alt="\begin{align*}
     \ottdrulemakeXXrefXXlval{}\\
-    \ottdrulemakeXXrefXXinvalidXXnull{}\\
-    \ottdrulemakeXXrefXXinvalidXXtrap{}\\
     \ottdrulemakeXXrefXXreduce{}
 \end{align*}"/></p>
 </div><p>There is no explicit dereferencing operator for array references: they can just be used with the array syntax.
@@ -1788,7 +1702,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e1[e2]</s
 <p class="last">In the case where <code class="docutils literal notranslate"><span class="pre">operator&amp;[]</span></code> can be used, it will be used through the rules for reduction to an abstract left-value (see <a class="reference internal" href="#reduction-abstract-left-value-label"><span class="std std-ref">Reduction to an abstract left-value</span></a>). For <code class="docutils literal notranslate"><span class="pre">operator[]=</span></code>, see the section on assignment (<a class="reference internal" href="#assignment-exec-label"><span class="std std-ref">Assignment</span></a>).</p>
 </div>
 <div class="math">
-<p><img src="images/math/d87e910dbef668fe638e391447655075d9cb7cb8.png" alt="\begin{align*}
+<p><img src="images/math/2abbc8707346f5b38504e487346ffd0d9a14d013.png" alt="\begin{align*}
     \ottdrulearrayXXderefXXreduce{}\\
     \ottdrulearrayXXderefXXgetter{}
 \end{align*}"/></p>
@@ -1808,7 +1722,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e.foo</sp
 <p class="last">In the case where <code class="docutils literal notranslate"><span class="pre">operator&amp;.foo</span></code> can be used, it will be used through the rules for reduction to an abstract left-value (see <a class="reference internal" href="#reduction-abstract-left-value-label"><span class="std std-ref">Reduction to an abstract left-value</span></a>). For <code class="docutils literal notranslate"><span class="pre">operator.foo=</span></code>, see the section on assignment (<a class="reference internal" href="#assignment-exec-label"><span class="std std-ref">Assignment</span></a>).</p>
 </div>
 <div class="math">
-<p><img src="images/math/94019cdb99cb91cad97539b69abb32b743ddc46b.png" alt="\begin{align*}
+<p><img src="images/math/0bf416ada3bcb1b74c074bbcc2e87f36621cf6d1.png" alt="\begin{align*}
     \ottdruledotXXreduce{}\\
     \ottdruledotXXgetter{}
 \end{align*}"/></p>
@@ -1823,27 +1737,38 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e.foo</sp
 <blockquote>
 <div><ol class="arabic simple">
 <li>Let <code class="docutils literal notranslate"><span class="pre">addr</span></code> be a fresh address</li>
-<li>Replace the whole expression by <code class="docutils literal notranslate"><span class="pre">LVal(addr)</span> <span class="pre">=</span> <span class="pre">e,</span> <span class="pre">e</span> <span class="pre">=</span> <span class="pre">LVal(addr)</span> <span class="pre">+</span> <span class="pre">1,</span> <span class="pre">LVal(addr)</span></code> (replacing the <code class="docutils literal notranslate"><span class="pre">+</span></code> by <code class="docutils literal notranslate"><span class="pre">-</span></code> for <code class="docutils literal notranslate"><span class="pre">e--</span></code>)</li>
+<li>Replace the whole expression by <code class="docutils literal notranslate"><span class="pre">LVal(addr)</span> <span class="pre">=</span> <span class="pre">e,</span> <span class="pre">e</span> <span class="pre">=</span> <span class="pre">operator++(e),</span> <span class="pre">LVal(addr)</span></code> (replacing the <code class="docutils literal notranslate"><span class="pre">++</span></code> by <code class="docutils literal notranslate"><span class="pre">--</span></code> for <code class="docutils literal notranslate"><span class="pre">e--</span></code>)</li>
 </ol>
 </div></blockquote>
 </li>
 </ol>
+<p>To reduce an expression <code class="docutils literal notranslate"><span class="pre">++e</span></code> or <code class="docutils literal notranslate"><span class="pre">--e</span></code>:</p>
+<ol class="arabic simple">
+<li>If <code class="docutils literal notranslate"><span class="pre">e</span></code> can be reduced to an abstract left value, do it</li>
+<li>Else replace the whole expression by <code class="docutils literal notranslate"><span class="pre">e</span> <span class="pre">=</span> <span class="pre">operator++(e)</span></code> (replacing the <code class="docutils literal notranslate"><span class="pre">++</span></code> by <code class="docutils literal notranslate"><span class="pre">--</span></code> for <code class="docutils literal notranslate"><span class="pre">--e</span></code>)</li>
+</ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">depending on <code class="docutils literal notranslate"><span class="pre">e</span></code>, this can lead to calls to getters/setters or address takers.</p>
+<p class="last">depending on <code class="docutils literal notranslate"><span class="pre">e</span></code>, evaluating these expressions can require calls to getters/setters or address takers.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These expressions are not defined as syntactic sugar, because e must be reduced to an abstract left value only once.</p>
 </div>
 <div class="math">
-<p><img src="images/math/4e70021f01e337f14f22f30a27ab76b219ad74df.png" alt="\begin{align*}
+<p><img src="images/math/c68a7a501ff6a563e553129076e683e8484edec2.png" alt="\begin{align*}
     \ottdrulepostfixXXincrXXreduce{}\\
-    \ottdrulepostfixXXincrXXelim{}
+    \ottdrulepostfixXXincrXXelim{}\\
+    \ottdruleprefixXXincrXXreduce{}\\
+    \ottdruleprefixXXincrXXelim{}
 \end{align*}"/></p>
-</div><p>To reduce an expression <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">+=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">-=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">*=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">/=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">%=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">^=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&amp;=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">|=</span> <span class="pre">e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&gt;&gt;=</span> <span class="pre">e2</span></code>, or <code class="docutils literal notranslate"><span class="pre">e1</span> <span class="pre">&lt;&lt;=</span> <span class="pre">e2</span></code>:</p>
+</div><p>To reduce an expression <code class="docutils literal notranslate"><span class="pre">e1+=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1-=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1*=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1/=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1%=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1^=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1&amp;=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1|=e2</span></code>, <code class="docutils literal notranslate"><span class="pre">e1&gt;&gt;=e2</span></code>, or <code class="docutils literal notranslate"><span class="pre">e1&lt;&lt;=e2</span></code>:</p>
 <ol class="arabic simple">
 <li>If <code class="docutils literal notranslate"><span class="pre">e1</span></code> can be reduced to an abstract left-value, do it</li>
 <li>Else replace the whole expression by an assignment to <code class="docutils literal notranslate"><span class="pre">e1</span></code> of the result of the corresponding operator, called on <code class="docutils literal notranslate"><span class="pre">e1</span></code> and <code class="docutils literal notranslate"><span class="pre">e2</span></code></li>
 </ol>
 <div class="math">
-<p><img src="images/math/859063942575f639744349f4b8fb3f0ad6ce9301.png" alt="\begin{align*}
+<p><img src="images/math/4917b75d5a790020b079975adbfabdce459dde36.png" alt="\begin{align*}
     \ottdruleplusXXequalXXreduce{}\\
     \ottdruleplusXXequalXXelim{}
 \end{align*}"/></p>
@@ -1851,7 +1776,7 @@ To reduce <code class="docutils literal notranslate"><span class="pre">e.foo</sp
 <div class="section" id="calls">
 <h4>Calls<a class="headerlink" href="#calls" title="Permalink to this headline">¶</a></h4>
 <p>Overloaded function calls have already been resolved to point to a specific function declaration during the validation phase.</p>
-<p>Like we added <code class="docutils literal notranslate"><span class="pre">Loop</span></code> or <code class="docutils literal notranslate"><span class="pre">JoinExpr</span></code>, we add a special construct <code class="docutils literal notranslate"><span class="pre">Call</span></code> that takes as argument a statement and return an expression.
+<p>Like we added <code class="docutils literal notranslate"><span class="pre">Loop</span></code>, we add a special construct <code class="docutils literal notranslate"><span class="pre">Call</span></code> that takes as argument a statement and return an expression.
 Informally, it is a way to transform a return statement into the corresponding value.</p>
 <p>To reduce a function call by one step:</p>
 <ol class="arabic">
@@ -1893,7 +1818,7 @@ Informally, it is a way to transform a return statement into the corresponding v
 This allows shadowing global variables.</p>
 </div>
 <div class="math">
-<p><img src="images/math/ddffb878bba26429f744720f8a81effcc96942fb.png" alt="\begin{align*}
+<p><img src="images/math/3d9325bcbdf1751c0d4490a03d851893e3eabb8f.png" alt="\begin{align*}
     \ottdrulecallXXreduce{}\\
     \ottdrulecallXXresolve{}
 \end{align*}"/></p>
@@ -1904,7 +1829,7 @@ This allows shadowing global variables.</p>
 <li>Else if its argument is <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">val;</span></code> for some value <code class="docutils literal notranslate"><span class="pre">val</span></code>, then replace it by this value.</li>
 </ol>
 <div class="math">
-<p><img src="images/math/864fa9b4023cd0c68d30883773329aed79ef3e4a.png" alt="\begin{align*}
+<p><img src="images/math/76b743685c735e885111569ee65ca3b0c6a8ade1.png" alt="\begin{align*}
     \ottdrulecallXXconstructXXreduce{}\\
     \ottdrulecallXXreturnXXvoid{}\\
     \ottdrulecallXXendXXfunction{}\\
@@ -1916,7 +1841,7 @@ This allows shadowing global variables.</p>
 <p>Parentheses have no effect at runtime (beyond their effect during parsing).</p>
 <p>The comma operator simply reduces its first operand as long as it can, then drops it and is replaced by its second operand.</p>
 <div class="math">
-<p><img src="images/math/0d09544bfe5e907b8294a53b8875b48cd712c82a.png" alt="\begin{align*}
+<p><img src="images/math/d0ed55107b0aa0e453f577d00038417fec9eb363.png" alt="\begin{align*}
     \ottdrulecommaXXreduce{}\\
     \ottdrulecommaXXnext{}\\
     \ottdruleparensXXexec{}
@@ -1968,7 +1893,7 @@ When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar 
 </div>
 </div>
 <div class="section" id="memory-model">
-<h3>Memory model<a class="headerlink" href="#memory-model" title="Permalink to this headline">¶</a></h3>
+<span id="memory-model-label"></span><h3>Memory model<a class="headerlink" href="#memory-model" title="Permalink to this headline">¶</a></h3>
 <p>Our memory model is strongly inspired by the Vulkan memory model, as presented in <a class="reference external" href="https://github.com/KhronosGroup/Vulkan-MemoryModel/blob/master/alloy/spirv.als">https://github.com/KhronosGroup/Vulkan-MemoryModel/blob/master/alloy/spirv.als</a> as of the git commit f9110270e1799041bdaaf00a1db70fd4175d433f
 and in <a class="reference external" href="https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/memorymodel.txt">https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/memorymodel.txt</a> as of the git commit 56e0289318a4cd23aa5f5dcfb290ee873be53b82.
 That memory model is under Creative Commons Attribution 4.0 International License per the comment at the top of both files: <a class="reference external" href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a> and is Copyright (c) 2017-2018 Khronos Group or Copyright (c) 2017-2019 Khronos Group depending on the file.</p>
@@ -1989,18 +1914,16 @@ its set of memory locations.</p>
 <div class="section" id="memory-events-and-program-order">
 <h4>Memory events and program order<a class="headerlink" href="#memory-events-and-program-order" title="Permalink to this headline">¶</a></h4>
 <p>Some steps in the execution rules provided in the previous section emit memory events.
-There are a few possible such events:
-- A store of a value to some set of (contiguous) memory locations, that may be atomic
-- A load of a value from some set of (contiguous) memory locations, that may be atomic
-- A memory barrier (a.k.a. memory fence), that may either ensure synchronization at the threadgroup or whole device scope.
-- A control barrier, with a scope that may be threadgroup or device, that may optionally act as a memory barrier at the threadgroup level, or at the device level</p>
+There are a few possible such events:</p>
+<ul class="simple">
+<li>A store of a value to some set of (contiguous) memory locations, that may be atomic</li>
+<li>A load of a value from some set of (contiguous) memory locations, that may be atomic</li>
+<li>A read-modify-write at some set of (contiguous) memory locations, recording both the value read and the value written. They are all considered atomic.</li>
+<li>A fence (a.k.a. memory barrier), that ensures synchronization either for threadgroup memory or for device memory or for both.</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">A write whose value is the same as what was already in those memory locations is still considered to be a write and has all the same effects.</p>
-</div>
-<div class="admonition-todo admonition" id="index-5">
-<p class="first admonition-title">Todo</p>
-<p class="last">Add a note here giving an informal mapping of these to Vulkan/MSL/HLSL.</p>
 </div>
 <p>There is furthermore a total order <code class="docutils literal notranslate"><span class="pre">po</span></code> (program order) on all such events by any given thread. An event is before another by <code class="docutils literal notranslate"><span class="pre">po</span></code> if it is emitted by an
 execution rule that is executed by this thread before the rule that emitted the other event. Additionally the store events emitted by the call execution rule
@@ -2009,7 +1932,7 @@ are ordered by <code class="docutils literal notranslate"><span class="pre">po</
 <p class="first admonition-title">Note</p>
 <p class="last"><code class="docutils literal notranslate"><span class="pre">po</span></code> is guaranteed to be a total order for a given thread because the call rule is the only one that emits several memory events.</p>
 </div>
-<div class="admonition-todo admonition" id="index-6">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">Rewrite the rest of the model here, translating the kinds of atomics provided; and formalizing what we mean about races.</p>
 </div>
@@ -2099,10 +2022,19 @@ of rows, in that order. Each item below includes two types, which are synonyms f
 <li>float4x2, or matrix&lt;float, 4, 2&gt;</li>
 <li>float4x3, or matrix&lt;float, 4, 3&gt;</li>
 <li>float4x4, or matrix&lt;float, 4, 4&gt;</li>
+<li>bool2x2, or matrix&lt;bool, 2, 2&gt;</li>
+<li>bool2x3, or matrix&lt;bool, 2, 3&gt;</li>
+<li>bool2x4, or matrix&lt;bool, 2, 4&gt;</li>
+<li>bool3x2, or matrix&lt;bool, 3, 2&gt;</li>
+<li>bool3x3, or matrix&lt;bool, 3, 3&gt;</li>
+<li>bool3x4, or matrix&lt;bool, 3, 4&gt;</li>
+<li>bool4x2, or matrix&lt;bool, 4, 2&gt;</li>
+<li>bool4x3, or matrix&lt;bool, 4, 3&gt;</li>
+<li>bool4x4, or matrix&lt;bool, 4, 4&gt;</li>
 </ul>
-<div class="admonition-todo admonition" id="index-7">
+<div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
-<p class="last">Should we have int or bool matrices?</p>
+<p class="last">Should we have int matrices?</p>
 </div>
 </div>
 <div class="section" id="samplers">
@@ -2112,12 +2044,12 @@ declared in the “constant” address space. There is no constructor for sample
 or destory one in WHLSL. The type is defined as <code class="docutils literal notranslate"><span class="pre">native</span> <span class="pre">typedef</span> <span class="pre">sampler;</span></code>. Samplers are impossible to
 introspect. Arrays must not contain samplers anywhere inside them. Functions that return samplers must only
 have one return point. Ternary expressions must not return references.</p>
-<div class="admonition-todo admonition" id="index-8">
+<div class="admonition-todo admonition" id="index-5">
 <p class="first admonition-title">Todo</p>
 <p class="last">The last sentence does not seem related to samplers. Or should we s/references/samplers/g in it?
 <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/332">https://github.com/gpuweb/WHLSL/issues/332</a></p>
 </div>
-<div class="admonition-todo admonition" id="index-9">
+<div class="admonition-todo admonition" id="index-6">
 <p class="first admonition-title">Todo</p>
 <p class="last">Robin: I have not put the <code class="docutils literal notranslate"><span class="pre">native</span> <span class="pre">typedef</span></code> syntax in the grammar or the semantics so far, should I?
 <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/332">https://github.com/gpuweb/WHLSL/issues/332</a></p>
@@ -2144,7 +2076,7 @@ have one return point. Ternary expressions must not return references.</p>
 <li>RWTextureDepth2DArray&lt;float&gt;</li>
 <li>TextureDepthCube&lt;float&gt;</li>
 </ul>
-<div class="admonition-todo admonition" id="index-10">
+<div class="admonition-todo admonition" id="index-7">
 <p class="first admonition-title">Todo</p>
 <p class="last">Texture2DMS&lt;T&gt;, TextureDepth2DMS&lt;float&gt;
 <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/333">https://github.com/gpuweb/WHLSL/issues/333</a></p>
@@ -2156,7 +2088,7 @@ in either the <code class="docutils literal notranslate"><span class="pre">const
 must never be modified. There is no constructor for textures; it is impossible to create or destroy one in WHLSL.
 Arrays must not contain textures anywhere inside them. Functions that return textures must only have one return
 point. Ternary expressions must not return references.</p>
-<div class="admonition-todo admonition" id="index-11">
+<div class="admonition-todo admonition" id="index-8">
 <p class="first admonition-title">Todo</p>
 <p>“Therefore”: it is not clear to me how it is a consequence (Robin).
 “Ternary expressions must not return references”: What kind of references are you referring to? If it is array references, I don’t think it is the right place to mention this (but thank you for the reminder to put it in the validation section).
@@ -2290,12 +2222,6 @@ shaders:</p>
 </div>
 <div class="section" id="built-in-functions">
 <h3>Built-in Functions<a class="headerlink" href="#built-in-functions" title="Permalink to this headline">¶</a></h3>
-<div class="admonition-todo admonition" id="index-12">
-<p class="first admonition-title">Todo</p>
-<p class="last">Fill in this section, including all of the basic arithmetic operators, explaining what behaviors are allowed on overflow.</p>
-</div>
-<p>Some of these functions only appear in specific shader stages.</p>
-<p>We should figure out if atomic handling goes here.</p>
 <div class="section" id="integer-arithmetic">
 <h4>Integer arithmetic<a class="headerlink" href="#integer-arithmetic" title="Permalink to this headline">¶</a></h4>
 <div class="admonition note">
@@ -2313,7 +2239,7 @@ Its return type is also <code class="docutils literal notranslate"><span class="
 <p><code class="docutils literal notranslate"><span class="pre">operator++</span></code> and <code class="docutils literal notranslate"><span class="pre">operator--</span></code> are defined as unary functions on integers, both signed and unsigned.
 Their return type is the same as the type of their argument.
 They return the addition or substraction (respectively) of <code class="docutils literal notranslate"><span class="pre">1</span></code> to their argument, behaving like <code class="docutils literal notranslate"><span class="pre">operator+</span></code> and <code class="docutils literal notranslate"><span class="pre">operator-</span></code> in the case of overflow/underflow.</p>
-<div class="admonition-todo admonition" id="index-13">
+<div class="admonition-todo admonition" id="index-9">
 <p class="first admonition-title">Todo</p>
 <p class="last">Decide whether we want to have operator++ at all, or whether it should just be sugar for +1.
 We are currently not consistent, not only between spec and implementation, but between sections of this spec.
@@ -2334,7 +2260,7 @@ Its return type is int.
 If its argument is positive, it returns <code class="docutils literal notranslate"><span class="pre">1</span></code>.
 If its argument is negative, it returns <code class="docutils literal notranslate"><span class="pre">-1</span></code>.
 If its argument is <code class="docutils literal notranslate"><span class="pre">0</span></code>, it returns <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
-<div class="admonition-todo admonition" id="index-14">
+<div class="admonition-todo admonition" id="index-10">
 <p class="first admonition-title">Todo</p>
 <p class="last">In the current implementation, its return type is always the same as its argument type.
 <a class="reference external" href="https://bugs.webkit.org/show_bug.cgi?id=200252">https://bugs.webkit.org/show_bug.cgi?id=200252</a></p>
@@ -2345,7 +2271,7 @@ They return respectively the minimum and the maximum of their arguments.</p>
 <p><code class="docutils literal notranslate"><span class="pre">clamp</span></code> is defined as a ternary function on integers, both signed and unsigned.
 Its return type is the same as the type of its arguments.
 If its third argument is less than its second, it returns an unspecified value.
-Otherwise it returns <code class="docutils literal notranslate"><span class="pre">min(max(first,</span> <span class="pre">second),</span> <span class="pre">third)</span></code>.</p>
+Otherwise <code class="docutils literal notranslate"><span class="pre">clamp(x,</span> <span class="pre">min,</span> <span class="pre">max)</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">min(max(x,</span> <span class="pre">min),</span> <span class="pre">max)</span></code>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">We must return an unspecified value in the case where second &gt; third, because it is what SPIR-V (GLSL.std.450 extended instruction set) does.
@@ -2387,7 +2313,7 @@ Their return type is also <code class="docutils literal notranslate"><span class
 <li>If its argument is positive, it returns the index (from the lowest bit being 0 to the highest bit being 31) of the highest bit set.</li>
 <li>If its argument is negative and not -1, it returns the index of the highest bit that is not set.</li>
 </ul>
-<div class="admonition-todo admonition" id="index-15">
+<div class="admonition-todo admonition" id="index-11">
 <p class="first admonition-title">Todo</p>
 <p class="last">That semantic for firstbithigh is insane, I’d like to get rid of it:
 <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/337">https://github.com/gpuweb/WHLSL/issues/337</a></p>
@@ -2398,12 +2324,17 @@ Their return type is also <code class="docutils literal notranslate"><span class
 <p><code class="docutils literal notranslate"><span class="pre">operator+</span></code>, <code class="docutils literal notranslate"><span class="pre">operator-</span></code>, <code class="docutils literal notranslate"><span class="pre">operator*</span></code>, and <code class="docutils literal notranslate"><span class="pre">operator/</span></code> are defined as binary functions on floats.
 Their return type is the same as the type of their arguments, and they respectively implement floating-point addition, substraction, multiplication and division
 The result of <code class="docutils literal notranslate"><span class="pre">operator/</span></code> is an undefined value if its second argument is either <code class="docutils literal notranslate"><span class="pre">+0.0</span></code> or <code class="docutils literal notranslate"><span class="pre">-0.0</span></code></p>
+<div class="admonition-todo admonition" id="index-12">
+<p class="first admonition-title">Todo</p>
+<p class="last">HLSL has an operator% on floats, which is equivalent to fmod, except for emitting different bit patterns for NaN..
+I should probably specify them as dupes of each other.</p>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Our treatment of division by 0 here is based on the SPIR-V specification for OpFDiv.
 MSL instead mandates either NaN or +/-Infinity, following the IEEE-754 standard.</p>
 </div>
-<div class="admonition-todo admonition" id="index-16">
+<div class="admonition-todo admonition" id="index-13">
 <p class="first admonition-title">Todo</p>
 <p class="last">Decide on what to do about NaN, Inf, Denormals, etc..
 See <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/335">https://github.com/gpuweb/WHLSL/issues/335</a></p>
@@ -2411,84 +2342,198 @@ See <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/3
 <p><code class="docutils literal notranslate"><span class="pre">operator-</span></code> is also defined as an unary function on floats.
 Its return type is also <code class="docutils literal notranslate"><span class="pre">float</span></code>, and it simply returns the negation of its argument.</p>
 <p>The following functions are all unary functions on floats, and their return type is also float:</p>
-<ul class="simple">
-<li>cos
-Returns the cosine of its argument interpreted as radians
-TODO: NaN/+Inf/-Inf</li>
-<li>sin
-Returns the sine of its argument interpreted as radians
-TODO: NaN/+Inf/-Inf</li>
-<li>tan
-Returns the tangent of its argument interpreted as radians
-TODO: NaN/+Inf/-Inf</li>
-<li>acos
-Returns the arccosine of its argument in radians
+<dl class="docutils">
+<dt>cos</dt>
+<dd>Returns the cosine of its argument interpreted as radians.</dd>
+<dt>sin</dt>
+<dd>Returns the sine of its argument interpreted as radians.</dd>
+<dt>tan</dt>
+<dd>Returns the tangent of its argument interpreted as radians.</dd>
+<dt>acos</dt>
+<dd>Returns the arccosine of its argument in radians.
 In other words, its result is a number in radians whose cosine is its argument.
 The range of results is [0 ; Pi], it returns an undefined value if its argument is greater than 1 or smaller than -1.
-TODO: verify the range in HLSL + MSL</li>
-<li>asin
-Returns the arcsine of its argument in radians
+TODO: verify the range in HLSL + MSL</dd>
+<dt>asin</dt>
+<dd>Returns the arcsine of its argument in radians.
 In other words its result is a number in radians whose sine is its argument.
 The range of results is [-Pi/2 ; Pi/2], it returns an undefined value if its argument is greater than 1 or smaller than -1.
-TODO: verify the range in HLSL + MSL</li>
-<li>atan
-Returns the arctangent of its argument in radians
+TODO: verify the range in HLSL + MSL</dd>
+<dt>atan</dt>
+<dd>Returns the arctangent of its argument in radians.
 In other words its result is a number in radians whose tangent is its argument.
-The range of results is [-Pi ; Pi].
-TODO: verify the range in HLSL + MSL
-In C++ it is always in [-Pi/2 ; Pi/2] for example. This makes a lot more sense, because there are two pre-images of any number by tangent in [-Pi/Pi], and we need more information (from atan2) to get the right one.</li>
-<li>cosh</li>
-<li>sinh</li>
-<li>tanh</li>
-<li>ceil</li>
-<li>floor</li>
-<li>round</li>
-<li>trunc</li>
-<li>exp</li>
-<li>exp2</li>
-<li>log</li>
-<li>log2</li>
-<li>log10</li>
-<li>sqrt</li>
-<li>rsqrt</li>
-<li>degrees</li>
-<li>radians</li>
-<li>saturate</li>
-</ul>
-<div class="admonition-todo admonition" id="index-17">
+The range of results is [-Pi/2 ; Pi/2].</dd>
+<dt>cosh</dt>
+<dd>Returns the hyperbolic cosine of its argument interpreted as radians.</dd>
+<dt>sinh</dt>
+<dd>Returns the hyperbolic sine of its argument interpreted as radians.</dd>
+<dt>tanh</dt>
+<dd>Returns the hyperbolic tangent of its argument interpreted as radians.</dd>
+<dt>ceil</dt>
+<dd>Returns the smallest integer value (as a floating point number) that is greater or equal to its argument.
+It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.</dd>
+<dt>floor</dt>
+<dd>Returns the largest integer value (as a floating point number) that is smaller or equal to its argument.
+It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.</dd>
+<dt>round</dt>
+<dd>Returns the nearest integer value (as a floating point number).
+If there are two equally distant possible integer values (e.g. for 0.5), which one is picked is undefined.
+It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.</dd>
+<dt>trunc</dt>
+<dd>Returns its argument truncated to the integer component.
+In other words, it behaves like <code class="docutils literal notranslate"><span class="pre">ceil</span></code> for negative arguments and like <code class="docutils literal notranslate"><span class="pre">floor</span></code> for positive ones.
+It behaves as the identity on 0.0, -0.0, NaN, +Infinity and -Infinity.</dd>
+<dt>frac</dt>
+<dd>Returns <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">floor(x)</span></code> where <code class="docutils literal notranslate"><span class="pre">x</span></code> is its argument.
+For example <code class="docutils literal notranslate"><span class="pre">frac(-3.7)</span> <span class="pre">==</span> <span class="pre">0.3</span></code> and <code class="docutils literal notranslate"><span class="pre">frac(3.7)</span> <span class="pre">==</span> <span class="pre">0.7</span></code>.
+It returns +0.0 for both -0.0 and +0.0.
+It returns NaN for NaN, +Infinity and -Infinity.</dd>
+<dt>exp</dt>
+<dd>Returns the natural exponentiation of its argument.</dd>
+<dt>exp2</dt>
+<dd>Returns 2 raised to the power of its argument.</dd>
+<dt>log</dt>
+<dd>Returns the natural logarithm of its argument.
+Returns an unspecified value if its argument is smaller or equal to 0.</dd>
+<dt>log2</dt>
+<dd>Returns the base-2 logarithm of its argument.
+Returns an unspecified value if its argument is smaller or equal to 0.</dd>
+<dt>log10</dt>
+<dd>Returns the base-10 logarithm of its argument.
+Returns an unspecified value if its argument is smaller or equal to 0.</dd>
+<dt>sqrt</dt>
+<dd>Returns the square root of its argument.
+Returns an unspecified value if its argument is negative.</dd>
+<dt>rsqrt</dt>
+<dd>Returns the reciprocal of the square root of its argument.
+Returns an unspecified value if its argument is non-positive.</dd>
+<dt>degrees</dt>
+<dd>Converts radians to degrees.
+In other words it returns its argument multiplied by 180 and divided by Pi.</dd>
+<dt>radians</dt>
+<dd>Converts degrees to radians.
+In other words it returns its argument multiplied by Pi and divided by 180.</dd>
+<dt>saturate</dt>
+<dd>Clamps its argument between 0.0 and 1.0, as per the <code class="docutils literal notranslate"><span class="pre">clamp</span></code> function.</dd>
+</dl>
+<div class="admonition-todo admonition" id="index-14">
 <p class="first admonition-title">Todo</p>
-<p class="last">I’ve followed the SPIRV-GLSL.std.450 extended instruction set specification here.
-I should check what happens to</p>
+<p class="last">The range of results for atan on every platform but SPIR-V.GLSL.std.450 is [-Pi/2;Pi/2], but on SPIR-V.GLSL.std.450 it is [-Pi;Pi].
+We should verify that we are not introducing a portability hazard by using the sane/common/restrictive specification.
+<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/340">https://github.com/gpuweb/WHLSL/issues/340</a></p>
 </div>
-<div class="admonition-todo admonition" id="index-18">
+<div class="admonition-todo admonition" id="index-15">
+<p class="first admonition-title">Todo</p>
+<p class="last">Decide whether we want to support acosh/asinh/atanh.
+They are not in HLSL, but are in GLSL, MSL and Vulkan.
+<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/338">https://github.com/gpuweb/WHLSL/issues/338</a></p>
+</div>
+<div class="admonition-todo admonition" id="index-16">
 <p class="first admonition-title">Todo</p>
 <p class="last">ddx, ddy, ddx_fine, ddx_coarse, ddy_fine, ddy_coarse, fwidth</p>
 </div>
 <p>The following functions are all binary functions on floats, and their return type is also float:</p>
-<ul class="simple">
-<li>pow</li>
-<li>step</li>
-<li>ldexp</li>
-<li>fmod</li>
-<li>atan2</li>
+<dl class="docutils">
+<dt>min</dt>
+<dd>If one or both of the two arguments is NaN, this function returns one of its arguments, but which one is unspecified.
+If the two arguments are -0.0 and 0.0 in any order, then this function returns one of the two, but which one is unspecified.
+Otherwise, it returns the smaller of its arguments.</dd>
+<dt>max</dt>
+<dd>If one or both of the two arguments is NaN, this function returns one of its arguments, but which one is unspecified.
+If the two arguments are -0.0 and 0.0 in any order, then this function returns one of the two, but which one is unspecified.
+Otherwise, it returns the greater of its arguments.</dd>
+<dt>pow</dt>
+<dd>Returns its first argument raised to the power of its second argument.
+If its first argument is less than zero, returns an unspecified value instead.
+If its first argument is 0.0 or -0.0 and its second argument is equal or less than 0, returns an unspecified value.</dd>
+<dt>step</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">step(x,</span> <span class="pre">y)</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">&gt;=</span> <span class="pre">y)</span> <span class="pre">?</span> <span class="pre">1</span> <span class="pre">:</span> <span class="pre">0</span></code></dd>
+<dt>ldexp</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">ldexp(x,</span> <span class="pre">y)</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">pow(2.0,</span> <span class="pre">y)</span></code></dd>
+<dt>fmod</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">fmod(x,</span> <span class="pre">y)</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">y</span> <span class="pre">*</span> <span class="pre">trunc(x</span> <span class="pre">/</span> <span class="pre">y)</span></code>.
+In particular, if the second argument is 0.0 or -0.0 then it returns an unspecified value.
+And otherwise it returns a value with the same sign as its first argument.</dd>
+<dt>atan2</dt>
+<dd><p class="first"><code class="docutils literal notranslate"><span class="pre">atan2(y,</span> <span class="pre">x)</span></code> returns a number whose tangent is <code class="docutils literal notranslate"><span class="pre">x/y</span></code> (note that <code class="docutils literal notranslate"><span class="pre">y</span></code> is the first argument and <code class="docutils literal notranslate"><span class="pre">x</span></code> the second!).
+Its result falls in an interval that depends on the sign of <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>:</p>
+<ul class="last simple">
+<li>If x &gt; 0 and y &gt; 0, [0 ; Pi/2]</li>
+<li>If x &gt; 0 and y &lt; 0, [-Pi/2 ; 0]</li>
+<li>If x &lt; 0 and y &gt; 0, [Pi/2 ; Pi]</li>
+<li>If x &lt; 0 and y &lt; 0, [-Pi ; -Pi/2]</li>
 </ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">About min(-0.0, 0.0) and min(0.0, -0.0), here is what other languages do/say:
+C++/SPIR-V say that they should return the first argument, while HLSL and MSL don’t specify the result but always return -0.0.
+So I declared the result here unspecified between the two arguments because I was not sure how to make a specification that is efficiently implementable everywhere.
+We can easily revisit this in the future if needed.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>HLSL got documentation for what is returned by pow(x, y) in corner cases amounting to the following:</p>
+<ul class="simple">
+<li>If the first argument is less than 0, the result is NaN</li>
+<li>If the first argument is -0.0 or +0.0, and the second argument is less than 0, the result is +Infinity</li>
+<li>If both arguments are 0 (either +0.0 or -0.0), the result is unspecified</li>
+<li>If the first argument is -0.0 or +0.0, and the second argument is greater than 0, the result is +0.0</li>
+</ul>
+<p class="last">I gave implementations more flexibility to match what SPIR-V.GLSL.std.450 specifies, we can easily revisit this choice.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">step(x, y) in HLSL appears to be the same as step(y, x) in both Metal and SPIR-V.GLSL.std.450 !
+I followed the HLSL documentation here; but we can easily revisit.</p>
+</div>
+<div class="admonition-todo admonition" id="index-17">
+<p class="first admonition-title">Todo</p>
+<p class="last">In Metal, SPIR-V and GLSL, the second argument of ldexp must be an integer.
+We currently follow HLSL documentation in allowing it to be a float.
+We should double-check whether it is useful, and whether ldexp is even actually sane on floats in HLSL.
+<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/339">https://github.com/gpuweb/WHLSL/issues/339</a></p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Our definition of fmod follows those of HLSL and Metal.
+GLSL (and by extension SPIRV) instead use <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">y</span> <span class="pre">*</span> <span class="pre">floor(x</span> <span class="pre">/</span> <span class="pre">y)</span></code> for fmod(x, y).
+So for negative numbers, they match the sign of their second argument and not their first.</p>
+</div>
 <p>The following functions are all ternary functions on floats, and their return type is also float:</p>
-<ul class="simple">
-<li>smoothstep</li>
-<li>lerp</li>
-<li>fmod</li>
+<dl class="docutils">
+<dt>clamp</dt>
+<dd>If its third argument is less than its second, or if any of its arguments is NaN, then it returns an unspecified value.
+Otherwise <code class="docutils literal notranslate"><span class="pre">clamp(x,</span> <span class="pre">min,</span> <span class="pre">max)</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">min(max(x,</span> <span class="pre">min),</span> <span class="pre">max)</span></code>.</dd>
+<dt>smoothstep</dt>
+<dd><p class="first">If its second argument is less than its first, or if any of its arguments is NaN, then it returns an unspecified value.
+Otherwise <code class="docutils literal notranslate"><span class="pre">smoothstep(min,</span> <span class="pre">max,</span> <span class="pre">x)</span></code> returns:</p>
+<ul class="last simple">
+<li>If x &lt;= min, then 0</li>
+<li>If x &gt;= max, then 1</li>
+<li>Else a smooth Hermite interpolation between 0 and 1, equivalent to <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">*</span> <span class="pre">t</span> <span class="pre">*</span> <span class="pre">(3</span> <span class="pre">-</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">t)</span></code> where <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">=</span> <span class="pre">(x</span> <span class="pre">-</span> <span class="pre">min)</span> <span class="pre">/</span> <span class="pre">(max</span> <span class="pre">-</span> <span class="pre">min)</span></code></li>
 </ul>
+</dd>
+<dt>lerp</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">lerp(x,</span> <span class="pre">y,</span> <span class="pre">s)</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">x*(1-s)</span> <span class="pre">+</span> <span class="pre">y*s</span></code></dd>
+<dt>mad</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">mad(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> computes <code class="docutils literal notranslate"><span class="pre">a*b</span> <span class="pre">+</span> <span class="pre">c</span></code>, but with potentially different precision.
+See the section <a class="reference internal" href="#numerical-compliance-label"><span class="std std-ref">Numerical Compliance</span></a> for details.</dd>
+</dl>
 <p>The following functions are all unary functions on floats, and their return type is bool:</p>
-<ul class="simple">
-<li>isfinite</li>
-<li>isinf</li>
-<li>isnan</li>
-</ul>
-<p>Also includes a bunch of special functions like cos, isNaN, …</p>
+<dl class="docutils">
+<dt>isfinite</dt>
+<dd>Returns true if and only if its argument is neither a NaN nor an infinity.</dd>
+<dt>isinf</dt>
+<dd>Returns true if and only if its argument is an infinity.</dd>
+<dt>isnan</dt>
+<dd>Returns true if and only if its argument is a NaN.</dd>
+</dl>
 </div>
 <div class="section" id="numerical-compliance">
-<h4>Numerical Compliance<a class="headerlink" href="#numerical-compliance" title="Permalink to this headline">¶</a></h4>
-<div class="admonition-todo admonition" id="index-19">
+<span id="numerical-compliance-label"></span><h4>Numerical Compliance<a class="headerlink" href="#numerical-compliance" title="Permalink to this headline">¶</a></h4>
+<div class="admonition-todo admonition" id="index-18">
 <p class="first admonition-title">Todo</p>
 <p class="last">Decide on what precision guarantees we can make.
 MSL got two different tables, depending on whether it is running in fast-math mode or not.
@@ -2499,6 +2544,58 @@ We should probably measure how costly forbidding fast-math would be, since NotNa
 </div>
 <div class="section" id="fences-and-atomic-operations">
 <h4>Fences and atomic operations<a class="headerlink" href="#fences-and-atomic-operations" title="Permalink to this headline">¶</a></h4>
+<p>Each of the following functions take three arguments and have a return type of <code class="docutils literal notranslate"><span class="pre">void</span></code>:</p>
+<ul class="simple">
+<li>InterlockedAdd</li>
+<li>InterlockedAnd</li>
+<li>InterlockedOr</li>
+<li>InterlockedXor</li>
+<li>InterlockedMin</li>
+<li>InterlockedMax</li>
+<li>InterlockedExchange</li>
+</ul>
+<p>For all of these the first argument must be a pointer to an atomic type (which can only be in the device or threadgroup address space).
+The second argument is a value of the corresponding base type (int/uint for atomic_int/atomic_uint).
+The third argument is a pointer to that same base type, in a non-constant address space.
+There are overloads for all sets of types that verify these constraints.</p>
+<p><code class="docutils literal notranslate"><span class="pre">InterlockedAdd(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code> has the following semantic:</p>
+<ol class="arabic simple">
+<li>Emit a ReadModifyWrite event at the address <code class="docutils literal notranslate"><span class="pre">*x</span></code>, that reads a value and stores the sum of that value and <code class="docutils literal notranslate"><span class="pre">y</span></code></li>
+<li>Emit a Store event at the address <code class="docutils literal notranslate"><span class="pre">*z</span></code> of the value that was read in the previous step</li>
+</ol>
+<p>Which value can be read by the ReadModifyWrite event is defined by the memory model (see <a class="reference internal" href="#memory-model-label"><span class="std std-ref">Memory model</span></a>).
+The other functions in that list are the same except that they do the corresponding operation instead of an addition.
+And the ReadModifyWrite of InterlockedExchange just stores <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p>
+<p>InterlockedCompareExchange has a return type of <code class="docutils literal notranslate"><span class="pre">void</span></code> and takes four arguments. It has overloads for all sets of types such that:
+Its first parameter must be a pointer to an atomic type (which can only be in the device or threadgroup address space).
+Its second and third parameters must be of the corresponding base type (int/uint for atomic_int/atomic_uint).
+Its fourth argument is a pointer to that same base type, in a non-constant address space.
+InterlockedCompareExchange(x, old, new, previous) has the following semantic:</p>
+<ol class="arabic simple">
+<li>Either emit a ReadModifyWrite event at the address <code class="docutils literal notranslate"><span class="pre">*x</span></code>, that reads the value <code class="docutils literal notranslate"><span class="pre">old</span></code> and stores the value <code class="docutils literal notranslate"><span class="pre">new</span></code><ol class="arabic">
+<li>Then emit a Store event at the address <code class="docutils literal notranslate"><span class="pre">*previous</span></code> of the value <code class="docutils literal notranslate"><span class="pre">old</span></code></li>
+</ol>
+</li>
+<li>Or emit a Load event at the address <code class="docutils literal notranslate"><span class="pre">*x</span></code>, that reads a value different from <code class="docutils literal notranslate"><span class="pre">old</span></code><ol class="arabic">
+<li>Then emit a Store event at the address <code class="docutils literal notranslate"><span class="pre">*previous</span></code> of that value.</li>
+</ol>
+</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is a so-called strong compare-and-exchange, in that it is not allowed to fail spuriously.
+If the value that gets stored in <code class="docutils literal notranslate"><span class="pre">*previous</span></code> is <code class="docutils literal notranslate"><span class="pre">old</span></code>, then it must have been replaced by <code class="docutils literal notranslate"><span class="pre">new</span></code> in <code class="docutils literal notranslate"><span class="pre">*x</span></code>.</p>
+</div>
+<p>Finally the following three functions exist:</p>
+<ul class="simple">
+<li>DeviceMemoryBarrierWithGroupSync</li>
+<li>GroupMemoryBarrierWithGroupSync</li>
+<li>AllMemoryBarrierWithGroupSync</li>
+</ul>
+<p>They have the return type <code class="docutils literal notranslate"><span class="pre">void</span></code> and no arguments.
+Once a thread reaches a call to one of these, it waits for all other threads in its threadgroup to reach the same point (same instance of the same function call).
+Then all of these threads reduce the function call to <code class="docutils literal notranslate"><span class="pre">{}</span></code>, emitting the corresponding fence event.
+Please see <a class="reference internal" href="#memory-model-label"><span class="std std-ref">Memory model</span></a> for the effect of that event.</p>
 </div>
 <div class="section" id="cast-operators">
 <h4>Cast operators<a class="headerlink" href="#cast-operators" title="Permalink to this headline">¶</a></h4>
@@ -2553,12 +2650,12 @@ which is understood to be of type ‘DOMString’.</p>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="index.html#document-index">WHLSL  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html#document-index">WHLSL  documentation</a> &#187;</li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> &#169; 2019 the Contributors to the Web High-Level Shading Language Specification, published by the W3C <a href="https://www.w3.org/community/gpu/">GPU for the Web Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>. A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/">summary</a> is available.
-        Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+        &#169; Copyright 2018, Robin Morisset, Filip Pizlo, Myles C. Maxfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>
