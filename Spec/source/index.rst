@@ -2525,18 +2525,24 @@ Cast operators
 
 Also include the ``as`` function.
 
+.. todo:: fill this section
+
 Comparison operators
 """"""""""""""""""""
+
+.. todo:: fill this section
 
 Vector and matrix operations
 """"""""""""""""""""""""""""
 
-Includes arithmetic operators (per-element), various swizzles, length, getDimensions, operator[] and operator[]=, determinant 
+.. todo:: fill this section
+    Includes arithmetic operators (per-element), various swizzles, length, getDimensions, operator[] and operator[]=, determinant
 
 Sampler and texture operations
 """"""""""""""""""""""""""""""
 
-Sample, Load, Gather, etc..
+.. todo:: fill this section
+    Sample, Load, Gather, etc..
 
 Interface with JavaScript
 =========================
