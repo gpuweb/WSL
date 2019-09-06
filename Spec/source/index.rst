@@ -785,6 +785,14 @@ Then each typedef must be resolved, meaning that each mention of it in the progr
 .. note::
     This last step is guaranteed to terminate thanks to the acyclicity check before it.
 
+No pointers or array references in structs
+""""""""""""""""""""""""""""""""""""""""""
+
+If any field of any structure has a type that is either a pointer or an array reference (after resolving typedefs), then the program is invalid.
+
+.. note::
+    This rule is to let us have a default value with which to initalize all local variables without having to deal with null pointers.
+
 Checking the coherence of operators and functions
 """""""""""""""""""""""""""""""""""""""""""""""""
 
