@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>WHLSL documentation</title>
+    <title>WSL documentation</title>
     <link rel="stylesheet" href="static/nature.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="static/documentation_options.js"></script>
@@ -19,7 +19,7 @@
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="index.html#document-index">WHLSL  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html#document-index">WSL  documentation</a> &#187;</li>
       </ul>
     </div>
 
@@ -28,8 +28,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
 
-  <div class="section" id="whlsl-specification">
-<h1>WHLSL Specification<a class="headerlink" href="#whlsl-specification" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="wsl-specification">
+<h1>WSL Specification<a class="headerlink" href="#wsl-specification" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="general">
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <p><em>This section is non-normative.</em></p>
@@ -41,11 +41,11 @@ the scope of this specification.</p>
 <dt>. Note:: The WebGPU Shading Language is designed to target other high-level shading</dt>
 <dd>languages as compilation targets.</dd>
 </dl>
-<p>WHLSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
+<p>WSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
 and manipulate shaders are specified in the WebGPU specification, not this document.
 This document describes which programs are well-formed; the exact form of error
 reporting is not discussed in this specification.</p>
-<p>WHLSL does not support extensions or optional behavior.</p>
+<p>WSL does not support extensions or optional behavior.</p>
 <p>Terms in this document such as <em>must</em>, <em>must not</em>, <em>required</em>, <em>shall</em>, <em>shall not</em>,
 <em>should</em>, <em>should not</em>, <em>recommended</em>, <em>may</em>, and <em>optional</em> in normative parts of
 this document are to be interpreted as described in RFC 2119.</p>
@@ -63,11 +63,11 @@ specification.</p>
 errors in dead code must cause a compilation failure. However, optimizations may,
 in general, be observable, such as fusing a multiply followed by an add into a
 single operation which has higher intermediate precision than the distinct operations.
-This means that the same WHLSL program run on different machines, browsers, or operating
-systems may might not produce the exact same results bit-for-bit.</p>
+This means that the same WSL program run on different machines, browsers, or operating
+systems may not produce the exact same results bit-for-bit.</p>
 </div>
 <p>A shader is a compilation unit which includes type definitions and function definitions.</p>
-<p>WHLSL is used to describe different types of shaders:</p>
+<p>WSL is used to describe different types of shaders:</p>
 <ol class="arabic simple">
 <li>Vertex shaders</li>
 <li>Fragment shaders</li>
@@ -76,14 +76,14 @@ systems may might not produce the exact same results bit-for-bit.</p>
 <p>Each shader type represents software which may execute on a specialized processor. Different
 draw calls, different shader types, or different invocations of the same shader, may execute
 on independent processors.</p>
-<p>A WHLSL string passes through the following stages of processing before it is executed:</p>
+<p>A WSL string passes through the following stages of processing before it is executed:</p>
 <ol class="arabic simple">
 <li>Tokenization</li>
 <li>Parsing</li>
 <li>Validation</li>
 </ol>
-<p>Once a WHLSL string passes all the validation checks, it is then available to be used in a
-draw call or dispatch call. A WHLSL string contains zero or more shaders, and each shader is
+<p>Once a WSL string passes all the validation checks, it is then available to be used in a
+draw call or dispatch call. A WSL string contains zero or more shaders, and each shader is
 of a specific shader type. Compute shaders must only be used for dispatch calls, and vertex
 and fragment shaders must only be used in draw calls.</p>
 </div>
@@ -126,7 +126,7 @@ before the shader may be used.</li>
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
 Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
 units at the entire shader level or the instruction level (or any level in between). Therefore,
-when using simple loads and stores, load tearing may occur, or any such artifacts. WHLSL authors must
+when using simple loads and stores, load tearing may occur, or any such artifacts. WSL authors must
 take care to create shaders which are portable. See below for advice on how to accomplish this.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -178,7 +178,7 @@ before the shader may be used.</li>
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
 Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
 units at the entire shader level or the instruction level (or any level in between). Therefore,
-WHLSL authors must take care to create shaders which are portable. See below for advice on how to
+WSL authors must take care to create shaders which are portable. See below for advice on how to
 accomplish this.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -234,31 +234,31 @@ before the shader may be used.</li>
 </div>
 <div class="section" id="entry-points">
 <h3>Entry Points<a class="headerlink" href="#entry-points" title="Permalink to this headline">¶</a></h3>
-<p>All functions in WHLSL are either “entry points” or “non-entry points.” An entry point is a function
+<p>All functions in WSL are either “entry points” or “non-entry points.” An entry point is a function
 that may be associated with a particular programmable stage in a pipeline. Entry points may call
 non-entry points, non-entry points may call non-entry points, but entry points may not be called
-by any WHLSL function. When execution of a particular shader stage begins, the entry point associated
+by any WSL function. When execution of a particular shader stage begins, the entry point associated
 with that shader stage begins, and when that entry point returns, the associated shader stage ends.</p>
-<p>Exactly one WHLSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
+<p>Exactly one WSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
 of the same shader type must not be used together in the same draw call or dispatch call.
 Every stage of the appropriate WebGPU pipeline must be occupied by a shader in order to
 execute a draw call or dispatch call.</p>
 <p>All entry points must begin with the keyword “vertex”, “fragment”, or “compute”, and the keyword
 describes which pipeline stage that shader is appropriate for. An entry point is only valid for one
 type of shader stage.</p>
-<p>Built-ins are identified by name. WHLSL does not include annotations for identifying built-ins. If
+<p>Built-ins are identified by name. WSL does not include annotations for identifying built-ins. If
 the return of a shader should be assigned to a built-in, the author should create a struct with
 a variable named according to to the built-in, and the shader should return that struct.</p>
 <p>Vertex and fragment entry points must transitively never refer to the <code class="docutils literal notranslate"><span class="pre">threadgroup</span></code> memory space.</p>
 <div class="section" id="arguments-and-return-types">
 <h4>Arguments and Return Types<a class="headerlink" href="#arguments-and-return-types" title="Permalink to this headline">¶</a></h4>
-<p>Arguments return types of an entry point are more restricted than arguments to an arbitrary WHLSL function.
+<p>Argument and return types of an entry point are more restricted than arguments to an arbitrary WSL function.
 They are flattened through structs - that is, each member of any struct appearing in an argument to an entry
 point or return type is considered independently, recursively. Arguments to entry points are not
 distinguished by position or order.</p>
 <p>Multiple members with the same name may appear inside the flattened collection of arguments. However,
 if multiple members with the same name appear, the entire variable (type, qualifiers, etc.) must be
-identical. Otherwise, the entire program is in error.</p>
+identical. Otherwise, the program is invalid.</p>
 <p>The items of the flattened structs can be partitioned into a number of buckets:</p>
 <ol class="arabic simple">
 <li>Built-in variables. These declaractions use the appropriate built-in semantic from the list below,
@@ -297,7 +297,7 @@ one vertex shader invocation per primitive, known as the “provoking vertex.”
 provoking vertex is the vertex associated with that point (since points only have a single vertex).
 When drawing lines, the provoking vertex is the initial vertex (rather than the final vertex). When
 drawing triangles, the provoking vertex is also the initial vertex. Strips and fans are not supported
-by WHLSL.</p>
+by WSL.</p>
 <p>When not in the context of arguments or return values of entry points, semantics are ignored.</p>
 </div>
 </div>
@@ -308,20 +308,20 @@ by WHLSL.</p>
 <h3>Lexical analysis<a class="headerlink" href="#lexical-analysis" title="Permalink to this headline">¶</a></h3>
 <p>Shaders exist as a Unicode string, and therefore support all the code points
 Unicode supports.</p>
-<p>WHLSL does not include any digraphs or trigraphs. WHLSL is case-sensitive. It does not include any
+<p>WSL does not include any digraphs or trigraphs. WSL is case-sensitive. It does not include any
 escape sequences.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">WHLSL does not include a string type, so escape characters are not present in the
+<p class="last">WSL does not include a string type, so escape characters are not present in the
 language.</p>
 </div>
-<p>WHLSL does not include a preprocessor step.</p>
+<p>WSL does not include a preprocessor step.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Because there is no processor step, tokens such as ‘#if’ are generally considered
 parse errors.</p>
 </div>
-<p>Before parsing, the text of a WHLSL program is first turned into a list of tokens, removing comments and whitespace along the way.
+<p>Before parsing, the text of a WSL program is first turned into a list of tokens, removing comments and whitespace along the way.
 Tokens are built greedily, in other words each token is as long as possible.
 If the program cannot be transformed into a list of tokens by following these rules, the program is invalid and must be rejected.</p>
 <p>A token can be either of:</p>
@@ -369,7 +369,7 @@ If the program cannot be transformed into a list of tokens by following these ru
 <td>struct typedef enum operator vertex fragment compute numthreads</td>
 </tr>
 <tr class="row-even"><td>Control flow</td>
-<td>if else switch case default while do for break continue fallthrough return</td>
+<td>if else switch case default while do for break continue discard fallthrough return</td>
 </tr>
 <tr class="row-odd"><td>Literals</td>
 <td>true false</td>
@@ -437,7 +437,7 @@ SV_GroupIndex SV_GroupThreadID attribute register specialized</td>
 <div class="section" id="whitespace-and-comments">
 <h4>Whitespace and comments<a class="headerlink" href="#whitespace-and-comments" title="Permalink to this headline">¶</a></h4>
 <p>Any of the following characters are considered whitespace, and ignored after this phase: space, tabulation (<code class="docutils literal notranslate"><span class="pre">\t</span></code>), carriage return (<code class="docutils literal notranslate"><span class="pre">\r</span></code>), new line(<code class="docutils literal notranslate"><span class="pre">\n</span></code>).</p>
-<p>WHLSL also allows two kinds of comments. These are treated like whitespace (i.e. ignored during parsing).
+<p>WSL also allows two kinds of comments. These are treated like whitespace (i.e. ignored during parsing).
 The first kind is a line comment, that starts with the string <code class="docutils literal notranslate"><span class="pre">//</span></code> and continues until the next end of line character.
 The second kind is a multi-line comment, that starts with the string <code class="docutils literal notranslate"><span class="pre">/*</span></code> and ends as soon as the string <code class="docutils literal notranslate"><span class="pre">*/</span></code> is read.</p>
 <div class="admonition note">
@@ -448,7 +448,7 @@ The second kind is a multi-line comment, that starts with the string <code class
 </div>
 <div class="section" id="parsing">
 <span id="parsing-label"></span><h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this headline">¶</a></h3>
-<p>In this section we will describe the grammar of WHLSL programs, using the usual BNF metalanguage (<a class="reference external" href="https://en.wikipedia.org/wiki/Backus–Naur_form">https://en.wikipedia.org/wiki/Backus–Naur_form</a>).
+<p>In this section we will describe the grammar of WSL programs, using the usual BNF metalanguage (<a class="reference external" href="https://en.wikipedia.org/wiki/Backus–Naur_form">https://en.wikipedia.org/wiki/Backus–Naur_form</a>).
 We use names starting with an upper case letter to refer to lexical tokens defined in the previous section, and names starting with a lower case letter to refer to non-terminals. These are linked (at least in the HTML version of this document).
 We use non-bold text surrounded by quotes for text terminals (keywords, punctuation, etc..).</p>
 <div class="section" id="top-level-declarations">
@@ -461,7 +461,7 @@ We use non-bold text surrounded by quotes for text terminals (keywords, punctuat
 <p class="first admonition-title">Todo</p>
 <p class="last">We may want to also allow variable declarations at the top-level if it can easily be supported by all of our targets. (Myles: We can emulate it an all the targets, but the targets themselves only allow constant variables
 at global scope. We should follow suit.)
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/310">https://github.com/gpuweb/WHLSL/issues/310</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/310">https://github.com/gpuweb/WSL/issues/310</a></p>
 </div>
 <pre>
 <strong id="grammar-token-typedef">typedef</strong> ::=  &quot;typedef&quot; <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> &quot;=&quot; <a class="reference internal" href="#grammar-token-type"><code class="xref docutils literal notranslate"><span class="pre">type</span></code></a> &quot;;&quot;
@@ -504,12 +504,17 @@ at global scope. We should follow suit.)
                     | <a class="reference internal" href="#grammar-token-terminatorStmt"><code class="xref docutils literal notranslate"><span class="pre">terminatorStmt</span></code></a> &quot;;&quot;
                     | <a class="reference internal" href="#grammar-token-maybeEffectfulExpr"><code class="xref docutils literal notranslate"><span class="pre">maybeEffectfulExpr</span></code></a> &quot;;&quot;
 <strong id="grammar-token-compoundStmt">compoundStmt  </strong> ::=  <a class="reference internal" href="#grammar-token-ifStmt"><code class="xref docutils literal notranslate"><span class="pre">ifStmt</span></code></a> | <a class="reference internal" href="#grammar-token-ifElseStmt"><code class="xref docutils literal notranslate"><span class="pre">ifElseStmt</span></code></a> | <a class="reference internal" href="#grammar-token-whileStmt"><code class="xref docutils literal notranslate"><span class="pre">whileStmt</span></code></a> | <a class="reference internal" href="#grammar-token-doWhileStmt"><code class="xref docutils literal notranslate"><span class="pre">doWhileStmt</span></code></a> | <a class="reference internal" href="#grammar-token-forStmt"><code class="xref docutils literal notranslate"><span class="pre">forStmt</span></code></a> | <a class="reference internal" href="#grammar-token-switchStmt"><code class="xref docutils literal notranslate"><span class="pre">switchStmt</span></code></a>
-<strong id="grammar-token-terminatorStmt">terminatorStmt</strong> ::=  &quot;break&quot; | &quot;continue&quot; | &quot;fallthrough&quot; | &quot;return&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a>?
+<strong id="grammar-token-terminatorStmt">terminatorStmt</strong> ::=  &quot;break&quot; | &quot;continue&quot; | &quot;discard&quot; | &quot;fallthrough&quot; | &quot;return&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a>?
 </pre>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The <code class="docutils literal notranslate"><span class="pre">fallthrough</span></code> statement is used at the end of switch cases to fallthrough to the next case.
 It is not valid to have it anywhere else, or to have a switch case where control-flow reaches the end without a fallthrough (see section <a class="reference internal" href="#typing-statements-label"><span class="std std-ref">Typing statements</span></a>).</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <code class="docutils literal notranslate"><span class="pre">discard</span></code> statement can only be used in fragment shaders and kills execution in the current thread.
+It corresponds to OpKill in SPIRV.</p>
 </div>
 <pre>
 <strong id="grammar-token-ifStmt">ifStmt    </strong> ::=  &quot;if&quot; &quot;(&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> &quot;)&quot; <a class="reference internal" href="#grammar-token-stmt"><code class="xref docutils literal notranslate"><span class="pre">stmt</span></code></a>
@@ -568,7 +573,7 @@ This transformation can always be done because variable declarations are only al
 </div>
 <div class="section" id="expressions">
 <h4>Expressions<a class="headerlink" href="#expressions" title="Permalink to this headline">¶</a></h4>
-<p>WHLSL accepts three different kinds of expressions, in different places in the grammar.</p>
+<p>WSL accepts three different kinds of expressions, in different places in the grammar.</p>
 <ul class="simple">
 <li><code class="docutils literal notranslate"><span class="pre">expr</span></code> is the most generic, and includes all expressions.</li>
 <li><code class="docutils literal notranslate"><span class="pre">maybeEffectfulExpr</span></code> is used in places where a variable declaration would also be allowed. It forbids some expressions that are normally effect-free, such as <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">*</span> <span class="pre">y</span></code> or <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">y</span></code>, to make parsing non-ambiguous.
@@ -598,7 +603,7 @@ As the name indicates, it may be empty. In that case it is equivalent to <code c
 <strong id="grammar-token-callExpression">callExpression    </strong> ::=  <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> &quot;(&quot; (<a class="reference internal" href="#grammar-token-ternaryConditional"><code class="xref docutils literal notranslate"><span class="pre">ternaryConditional</span></code></a> (&quot;,&quot; <a class="reference internal" href="#grammar-token-ternaryConditional"><code class="xref docutils literal notranslate"><span class="pre">ternaryConditional</span></code></a>)*)? &quot;)&quot;
 <strong id="grammar-token-term">term              </strong> ::=  <code class="xref docutils literal notranslate"><span class="pre">Literal</span></code> | <code class="xref docutils literal notranslate"><span class="pre">Identifier</span></code> | &quot;(&quot; <a class="reference internal" href="#grammar-token-expr"><code class="xref docutils literal notranslate"><span class="pre">expr</span></code></a> &quot;)&quot;
 </pre>
-<p>WHLSL matches the precedence and associativity of operators from C++, with one exception: relational operators are non-associative,
+<p>WSL matches the precedence and associativity of operators from C++, with one exception: relational operators are non-associative,
 so that they cannot be chained. Chaining them has sufficiently surprising results that it is not a clear
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.</p>
@@ -651,7 +656,7 @@ A function declaration for the purpose of this mapping is characterised by a tup
 <li><p class="first">If it is a variable declaration</p>
 <ol class="arabic simple">
 <li>If there is already a variable of the same name in the environment, the program is invalid</li>
-<li>Add it to the mapping with a type Left-value of its declared type in the Constant address space (see <a class="reference internal" href="#typing-expressions-label"><span class="std std-ref">Typing expressions</span></a> for details on types of values)</li>
+<li>Add it to the mapping with a type Left-value of its declared type in the Constant address space (see <a class="reference internal" href="#typing-label"><span class="std std-ref">Typing of functions</span></a> for details on types of values)</li>
 </ol>
 </li>
 <li><p class="first">If it is a typedef</p>
@@ -681,7 +686,7 @@ A function declaration for the purpose of this mapping is characterised by a tup
 <div><ol class="arabic simple">
 <li>If it has an explicit value, then this is its value</li>
 <li>Else if it is the first element of the enum, its value is 0</li>
-<li>Else its value is the value of the precedent element increased by one.</li>
+<li>Else its value is the value of the preceding element increased by one.</li>
 </ol>
 </div></blockquote>
 </li>
@@ -781,7 +786,7 @@ A function declaration for the purpose of this mapping is characterised by a tup
 <div class="section" id="void-type">
 <h4>Void type<a class="headerlink" href="#void-type" title="Permalink to this headline">¶</a></h4>
 <p>The void type is a special type that can only appear as the return type of functions.
-It must not be part of a composite type (i.e. there is no pointer to void, no array reference to void, no array of void)
+It must not be part of a composite type (i.e. there is no pointer to void, no array reference to void, no array of void).
 It must not be the type of a variable (either at the top-level or in a function), the type of a field of a struct, the type of a function parameter, or the definition of a typedef.</p>
 </div>
 <div class="section" id="validating-types">
@@ -802,9 +807,10 @@ It must not be the type of a variable (either at the top-level or in a function)
 <p class="last">This last step is guaranteed to terminate thanks to the acyclicity check before it.</p>
 </div>
 </div>
-<div class="section" id="no-pointers-or-array-references-in-structs">
-<h4>No pointers or array references in structs<a class="headerlink" href="#no-pointers-or-array-references-in-structs" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="no-pointers-or-array-references-in-structs-and-arrays">
+<h4>No pointers or array references in structs and arrays<a class="headerlink" href="#no-pointers-or-array-references-in-structs-and-arrays" title="Permalink to this headline">¶</a></h4>
 <p>If any field of any structure has a type that is either a pointer or an array reference (after resolving typedefs), then the program is invalid.</p>
+<p>Similarly, if any type in the program after resolving typedef is an array whose elements are pointers or array references, then the program is invalid.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This rule is to let us have a default value with which to initalize all local variables without having to deal with null pointers.</p>
@@ -848,14 +854,21 @@ It must not be the type of a variable (either at the top-level or in a function)
 <p>Each function must be well-typed following the rules in this section.</p>
 <p>To check that a function is well-typed:</p>
 <ol class="arabic simple">
+<li>Check that all parameters have distinct names</li>
 <li>Make a new copy of the global environment (built above)</li>
-<li>For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type</li>
+<li>For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type (if there is already a mapping for that name it is overwritten).</li>
 <li>Check that the function body is well-typed in this typing environment (treating it as a block of statement)</li>
-<li>If the return type of the function is <code class="docutils literal notranslate"><span class="pre">void</span></code>, then the set of behaviours of the function body must be included in <code class="docutils literal notranslate"><span class="pre">{Nothing,</span> <span class="pre">Return</span> <span class="pre">Void}</span></code></li>
-<li>Else if the return type of the function is a type T, then the set of behaviours of the function body must be <code class="docutils literal notranslate"><span class="pre">{Return</span> <span class="pre">T}</span></code></li>
+<li>The set of behaviors of the function body must not include <code class="docutils literal notranslate"><span class="pre">Break</span></code>, <code class="docutils literal notranslate"><span class="pre">Continue</span></code> or <code class="docutils literal notranslate"><span class="pre">Fallthrough</span></code>.</li>
+<li>The set of behaviors of the function body must not include <code class="docutils literal notranslate"><span class="pre">Return</span> <span class="pre">T</span></code> for a type <code class="docutils literal notranslate"><span class="pre">T</span></code> that is not the function return type.</li>
+<li>If the return type of the funciton is not <code class="docutils literal notranslate"><span class="pre">void</span></code>, then the set of behaviors of the function body must not include <code class="docutils literal notranslate"><span class="pre">Nothing</span></code>.</li>
+<li>If the function is a vertex or compute entry point, then the set of behaviors of the function body must not include <code class="docutils literal notranslate"><span class="pre">Discard</span></code>.</li>
 </ol>
 <p>In this section we define the terms above, and in particular, what it means for a statement or an expression to be well-typed.
-More formally we define two mutually recursive judgments: “In typing environment Gamma, s is a well-typed statement whose set of behaviours is B” and “In typing environment Gamma, e is a well-typed expression whose type is Tau”.</p>
+More formally we define two mutually recursive judgments: “In typing environment Gamma, s is a well-typed statement whose set of behaviours is B” and “In typing environment Gamma, e is a well-typed expression whose type is Tau and that may/may not discard”.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We track which expression include calls to function that include <code class="docutils literal notranslate"><span class="pre">discard;</span></code> because a it can only be used from a fragment entry point, not from a compute or vertex one.</p>
+</div>
 <p>A type can either be:</p>
 <ul>
 <li><p class="first">A left-value type with an associated right-value type and an address space</p>
@@ -884,9 +897,11 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Break</li>
 <li>Continue</li>
 <li>Fallthrough</li>
+<li>Discard</li>
 <li>Nothing</li>
 </ul>
-<p>We use these “behaviours” to check the effect of statements on the control flow.</p>
+<p>We use these “behaviours” to check the effect of statements on the control flow.
+“Nothing” simply means that the control-flow can reach the end of this statement normally (and flow into the next one).</p>
 <div class="section" id="typing-statements">
 <span id="typing-statements-label"></span><h4>Typing statements<a class="headerlink" href="#typing-statements" title="Permalink to this headline">¶</a></h4>
 <p>To check an if-then-else statement:</p>
@@ -894,7 +909,9 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Check that the condition is a well-typed expression of type bool</li>
 <li>Check that the then and else branches are well-typed statements whose behaviours we will respectively call <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">B'</span></code></li>
 <li>Check that neither <code class="docutils literal notranslate"><span class="pre">B</span></code> nor <code class="docutils literal notranslate"><span class="pre">B'</span></code> contain a return of a pointer type, or of an array reference type</li>
-<li>Then the if-then-else statement is well-typed, and its behaviours is the union of <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">B'</span></code></li>
+<li>Let <code class="docutils literal notranslate"><span class="pre">B''</span></code> be the union of <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">B'</span></code></li>
+<li>If the condition may discard, then add Discard to <code class="docutils literal notranslate"><span class="pre">B''</span></code></li>
+<li>The if-then-else statement is well-typed, and its behaviours is <code class="docutils literal notranslate"><span class="pre">B''</span></code></li>
 </ol>
 <div class="math">
 <p><img src="images/math/332b7149f9fb49e3f6e65c4bd2e3c228303f8015.png" alt="\begin{align*}
@@ -908,7 +925,9 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Check that <code class="docutils literal notranslate"><span class="pre">B</span></code> does not contain a return of a pointer type, or of an array reference type</li>
 <li>If Continue is in <code class="docutils literal notranslate"><span class="pre">B</span></code>, remove it</li>
 <li>If Break is in <code class="docutils literal notranslate"><span class="pre">B</span></code>, remove it and add Nothing to <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
-<li>Then the do-while statement is well-typed, and its behaviours is <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
+<li>If the condition may discard, add Discard to <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
+<li>If the loop is a for loop, and the expression which is executed at the end of each iteration may discard, add Discard to <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
+<li>The do-while statement is well-typed, and its behaviours is <code class="docutils literal notranslate"><span class="pre">B</span></code></li>
 </ol>
 <div class="math">
 <p><img src="images/math/c5b8746681f1dfa051c8f79c58b621924b847389.png" alt="\begin{align*}
@@ -935,7 +954,8 @@ Any value with a left-value type of non-constant address space can be given an a
 <li>Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type</li>
 <li>If Fallthrough is in this set, remove it</li>
 <li>If Break is in this set, remove it and add Nothing</li>
-<li>Then the switch statement is well-typed, and its behaviours is this last set</li>
+<li>If the expression being switched on may discard, add Discard to this set.</li>
+<li>The switch statement is well-typed, and its behaviours is this last set</li>
 </ol>
 <div class="math">
 <p><img src="images/math/f80b656e3e3ad907a7b13c18ba17a9089ffc0565.png" alt="\begin{align*}
@@ -945,7 +965,7 @@ Any value with a left-value type of non-constant address space can be given an a
    \ottdruledefault{}\\
    \ottdruleswitchXXblock{}
 \end{align*}"/></p>
-</div><p>The <code class="docutils literal notranslate"><span class="pre">break;</span></code>, <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code>, <code class="docutils literal notranslate"><span class="pre">continue;</span></code> and <code class="docutils literal notranslate"><span class="pre">return;</span></code> statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.</p>
+</div><p>The <code class="docutils literal notranslate"><span class="pre">break;</span></code>, <code class="docutils literal notranslate"><span class="pre">fallthrough;</span></code>, <code class="docutils literal notranslate"><span class="pre">continue;</span></code>, <code class="docutils literal notranslate"><span class="pre">discard;</span></code>, and <code class="docutils literal notranslate"><span class="pre">return;</span></code> statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue}, {Discard}, and {Return void}.</p>
 <p>The statement <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">e;</span></code> is well-typed if <code class="docutils literal notranslate"><span class="pre">e</span></code> is a well-typed expression with a right-value type T and its behaviours is then {Return T}.</p>
 <div class="math">
 <p><img src="images/math/512c9f6f7818ec998f2ed2ce28e2ffd3f293b69f.png" alt="\begin{align*}
@@ -964,11 +984,12 @@ Any value with a left-value type of non-constant address space can be given an a
 <div><ol class="arabic simple">
 <li>Check that there is no other variable declaration in that block sharing the same name.</li>
 <li>Check that the given address space is either <code class="docutils literal notranslate"><span class="pre">thread</span></code> or <code class="docutils literal notranslate"><span class="pre">threadgroup</span></code></li>
-<li>Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space</li>
+<li>Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space (if there was already a mapping for that variable name it is overwritten).</li>
 <li>If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.</li>
 <li>Else if there is an initializing expression, check that it is well-typed in this new environment and that its type match the type of the variable</li>
-<li>Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours B.</li>
-<li>Then the block is well-typed and has the same set of behaviours B.</li>
+<li>Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours <code class="docutils literal notranslate"><span class="pre">B</span></code>.</li>
+<li>If there is an initializing expression and it may discard, then add Discard to <code class="docutils literal notranslate"><span class="pre">B</span></code>.</li>
+<li>The block is well-typed and has the same set of behaviours <code class="docutils literal notranslate"><span class="pre">B</span></code>.</li>
 </ol>
 </div></blockquote>
 </li>
@@ -978,11 +999,11 @@ Any value with a left-value type of non-constant address space can be given an a
 <blockquote>
 <div><ol class="arabic simple">
 <li>Check that this block’s first statement is well-typed</li>
-<li>Check that its set of behaviours B contains Nothing.</li>
+<li>Check that its set of behaviours <code class="docutils literal notranslate"><span class="pre">B</span></code> contains Nothing.</li>
 <li>Remove Nothing from it.</li>
 <li>Check that it does not contain Fallthrough</li>
-<li>Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours B’.</li>
-<li>Then the whole block is well-typed, and its set of behaviour is the union of B and B’.</li>
+<li>Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours <code class="docutils literal notranslate"><span class="pre">B'</span></code>.</li>
+<li>Then the whole block is well-typed, and its set of behaviour is the union of <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">B'</span></code>.</li>
 </ol>
 </div></blockquote>
 </li>
@@ -998,9 +1019,10 @@ Any value with a left-value type of non-constant address space can be given an a
 </div><div class="admonition-todo admonition" id="index-1">
 <p class="first admonition-title">Todo</p>
 <p class="last">Change the variable declaration ott rules to support threadgroup local variables
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/63">https://github.com/gpuweb/WHLSL/issues/63</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/63">https://github.com/gpuweb/WSL/issues/63</a></p>
 </div>
-<p>Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed. Its set of behaviours is then {Nothing}.</p>
+<p>Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed.
+Its set of behaviours is either {Nothing} if the expression cannot discard, or {Nothing, Discard} otherwise.</p>
 <div class="math">
 <p><img src="images/math/8169e77c518b8717021260af3da4dd26483f0cd7.png" alt="\begin{align*}
     \ottdruleexpr{}
@@ -1008,7 +1030,8 @@ Any value with a left-value type of non-constant address space can be given an a
 </div></div>
 <div class="section" id="typing-expressions">
 <span id="typing-expressions-label"></span><h4>Typing expressions<a class="headerlink" href="#typing-expressions" title="Permalink to this headline">¶</a></h4>
-<p>Literals always have right-value types:</p>
+<p>Expressions that are not calls may discard if and only if at least one of their sub-expressions may discard (expressions that are not calls and have no sub-expressions such as literals and variables may not discard).</p>
+<p>Literals always have right-value types.</p>
 <ul>
 <li><p class="first"><code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> are always well-typed and of type <code class="docutils literal notranslate"><span class="pre">bool</span></code>.</p>
 </li>
@@ -1030,7 +1053,7 @@ Any value with a left-value type of non-constant address space can be given an a
 <p class="first admonition-title">Note</p>
 <p class="last">integer literals are the only cases of implicit coercions in the language. See the rule for function calls for details.</p>
 </div>
-<p>The type of an expression in parentheses, is the type of the expression in the parentheses</p>
+<p>Parentheses around an expression have no effect on its type or whether it discards.</p>
 <p>A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.</p>
 <div class="math">
 <p><img src="images/math/f3dc9a25d0032d208dfc7781360ad07ef18a631c.png" alt="\begin{align*}
@@ -1079,12 +1102,11 @@ Any value with a left-value type of non-constant address space can be given an a
 </div><p>If an expression is well-typed and its type is an abstract left-value type, it can also be treated as if it were of the associated right-value type.
 If an expression is well-typed and its type is a left-value type, and its address space is not constant, it can also be treated as if it were of the associated abstract left-value type.
 If an expression is well-typed and its type is a left-value type, it can also be treated as if it were of the associated right-value type.</p>
-<p>A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,</p>
+<p>A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment.</p>
 <p>An expression <code class="docutils literal notranslate"><span class="pre">&amp;e</span></code> is well-typed and with a pointer type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a left-value type.
 An expression <code class="docutils literal notranslate"><span class="pre">*e</span></code> is well-typed and with a left-value type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a pointer type.
-The associated right-value types and address spaces are left unchanged by these two operators.</p>
-<p>An expression <code class="docutils literal notranslate"><span class="pre">&#64;e</span></code> is well-typed and with an array reference type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a left-value type.
-The associated right-value types and address spaces are left unchanged by this operator.</p>
+An expression <code class="docutils literal notranslate"><span class="pre">&#64;e</span></code> is well-typed and with an array reference type if <code class="docutils literal notranslate"><span class="pre">e</span></code> is well-typed with a left-value type.
+The associated right-value types and address spaces are left unchanged by these operators.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The dynamic behaviour depends on whether the expression is a left-value array type or not, but it makes no difference during validation.
@@ -1212,6 +1234,11 @@ This is more restrictive than HLSL which allows a lot of implicit coercions, on 
 <p class="first admonition-title">Note</p>
 <p class="last">Entry points cannot be called from within a shader. A function is an entry point if and only if it is marked with one of <code class="docutils literal notranslate"><span class="pre">vertex</span></code>, <code class="docutils literal notranslate"><span class="pre">fragment</span></code> or <code class="docutils literal notranslate"><span class="pre">compute</span></code>.</p>
 </div>
+<p>A function call may discard if:</p>
+<ul class="simple">
+<li>at least one of its arguments is an expression that may discard</li>
+<li>or the callee has a body whose behaviors include Discard (this definition is not circular because we forbid recursion).</li>
+</ul>
 </div>
 </div>
 <div class="section" id="annotations-for-execution">
@@ -1248,7 +1275,7 @@ If the first operand is either an array or a left-value type associated with an 
 </div>
 <div class="section" id="verifying-the-absence-of-recursion">
 <h3>Verifying the absence of recursion<a class="headerlink" href="#verifying-the-absence-of-recursion" title="Permalink to this headline">¶</a></h3>
-<p>WHLSL does not support recursion (for efficient compilation to GPUs).
+<p>WSL does not support recursion (for efficient compilation to GPUs).
 So once all overloaded function calls have been resolved, we must do one last check.</p>
 <p>We create a relationship “may call” that connects two function declarations <code class="docutils literal notranslate"><span class="pre">f</span></code> and <code class="docutils literal notranslate"><span class="pre">g</span></code> if there is a call to <code class="docutils literal notranslate"><span class="pre">g</span></code> in the body of <code class="docutils literal notranslate"><span class="pre">f</span></code> (after resolving overloading).
 If this relationship is cyclic, then the program is invalid.</p>
@@ -1421,10 +1448,12 @@ Any <code class="docutils literal notranslate"><span class="pre">for</span> <spa
     \ottdruleloopXXreduce{}
 \end{align*}"/></p>
 </div></div>
-<div class="section" id="barriers-and-uniform-control-flow">
-<h4>Barriers and uniform control flow<a class="headerlink" href="#barriers-and-uniform-control-flow" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="barriers-and-discard">
+<h4>Barriers and discard<a class="headerlink" href="#barriers-and-discard" title="Permalink to this headline">¶</a></h4>
 <p>There is no rule in the per-thread semantics for <em>control barriers</em>.
 Instead, there is a rule in the global semantics, saying that if all threads are at the same control barrier instruction then they may all advance atomically, replacing the barrier by an empty block.</p>
+<p><code class="docutils literal notranslate"><span class="pre">discard;</span></code> ends a thread, preventing it from having any further side-effect, and discards its part of the fragment output.
+Side-effects made before <code class="docutils literal notranslate"><span class="pre">discard</span></code> are not affected.</p>
 </div>
 <div class="section" id="other">
 <h4>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h4>
@@ -1655,7 +1684,7 @@ For example, in “x = y”, we do not want to reduce “x” all the way to a l
 </div></div>
 <div class="section" id="pointers-and-references">
 <h4>Pointers and references<a class="headerlink" href="#pointers-and-references" title="Permalink to this headline">¶</a></h4>
-<p>WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
+<p>WSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
 Array references are actually bounds-checked fat-pointers.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> and <code class="docutils literal notranslate"><span class="pre">*</span></code> operators simply convert between left-values and pointers.
 To reduce <code class="docutils literal notranslate"><span class="pre">&amp;</span> <span class="pre">e</span></code>:</p>
@@ -1899,7 +1928,7 @@ and in <a class="reference external" href="https://github.com/KhronosGroup/Vulka
 That memory model is under Creative Commons Attribution 4.0 International License per the comment at the top of both files: <a class="reference external" href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a> and is Copyright (c) 2017-2018 Khronos Group or Copyright (c) 2017-2019 Khronos Group depending on the file.</p>
 <p>The main difference between the two models is that we avoid undefined behaviour by making races merely make reads return unspecified results.
 This is in turn safe, as our execution semantics for loads (see above) clamp any enum value to a valid value of that type, and there can be no race on pointers or array references as they are limited to the <code class="docutils literal notranslate"><span class="pre">thread</span></code> address space.</p>
-<p>Apart from that, we only removed parts of the model, since some operations supported by Vulkhan are not supported by WHLSL, and renamed some elements for consistency with the rest of this specification.</p>
+<p>Apart from that, we only removed parts of the model, since some operations supported by Vulkhan are not supported by WSL, and renamed some elements for consistency with the rest of this specification.</p>
 <div class="section" id="memory-locations">
 <h4>Memory locations<a class="headerlink" href="#memory-locations" title="Permalink to this headline">¶</a></h4>
 <p>A memory location identifies unique storage for 8 bits of data.
@@ -1982,7 +2011,7 @@ are ordered by <code class="docutils literal notranslate"><span class="pre">po</
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The following types are not present in WHLSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64</p>
+<p class="last">The following types are not present in WSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64</p>
 </div>
 </div>
 <div class="section" id="built-in-atomic-types">
@@ -2041,18 +2070,18 @@ of rows, in that order. Each item below includes two types, which are synonyms f
 <h4>Samplers<a class="headerlink" href="#samplers" title="Permalink to this headline">¶</a></h4>
 <p>Samplers must only be passed into an entry point inside an argument. All samplers are immutable and must be
 declared in the “constant” address space. There is no constructor for samplers; it is impossible to create
-or destory one in WHLSL. The type is defined as <code class="docutils literal notranslate"><span class="pre">native</span> <span class="pre">typedef</span> <span class="pre">sampler;</span></code>. Samplers are impossible to
+or destory one in WSL. The type is defined as <code class="docutils literal notranslate"><span class="pre">native</span> <span class="pre">typedef</span> <span class="pre">sampler;</span></code>. Samplers are impossible to
 introspect. Arrays must not contain samplers anywhere inside them. Functions that return samplers must only
 have one return point. Ternary expressions must not return references.</p>
 <div class="admonition-todo admonition" id="index-5">
 <p class="first admonition-title">Todo</p>
 <p class="last">The last sentence does not seem related to samplers. Or should we s/references/samplers/g in it?
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/332">https://github.com/gpuweb/WHLSL/issues/332</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/332">https://github.com/gpuweb/WSL/issues/332</a></p>
 </div>
 <div class="admonition-todo admonition" id="index-6">
 <p class="first admonition-title">Todo</p>
 <p class="last">Robin: I have not put the <code class="docutils literal notranslate"><span class="pre">native</span> <span class="pre">typedef</span></code> syntax in the grammar or the semantics so far, should I?
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/332">https://github.com/gpuweb/WHLSL/issues/332</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/332">https://github.com/gpuweb/WSL/issues/332</a></p>
 </div>
 </div>
 <div class="section" id="textures">
@@ -2079,13 +2108,13 @@ have one return point. Ternary expressions must not return references.</p>
 <div class="admonition-todo admonition" id="index-7">
 <p class="first admonition-title">Todo</p>
 <p class="last">Texture2DMS&lt;T&gt;, TextureDepth2DMS&lt;float&gt;
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/333">https://github.com/gpuweb/WHLSL/issues/333</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/333">https://github.com/gpuweb/WSL/issues/333</a></p>
 </div>
 <p>Each of the above types accepts a “type argument”. The “T” types above may be any scalar or vector integral or floating point type.</p>
 <p>If the type argument, including the <code class="docutils literal notranslate"><span class="pre">&lt;&gt;</span></code> characters is missing, is is assumed to be <code class="docutils literal notranslate"><span class="pre">float4</span></code>.</p>
 <p>Textures must only be passed into an entry point inside an argument. Therefore, textures must only be declared
 in either the <code class="docutils literal notranslate"><span class="pre">constant</span></code> or <code class="docutils literal notranslate"><span class="pre">device</span></code> address space. A texture declared in the <code class="docutils literal notranslate"><span class="pre">constant</span></code> address space
-must never be modified. There is no constructor for textures; it is impossible to create or destroy one in WHLSL.
+must never be modified. There is no constructor for textures; it is impossible to create or destroy one in WSL.
 Arrays must not contain textures anywhere inside them. Functions that return textures must only have one return
 point. Ternary expressions must not return references.</p>
 <div class="admonition-todo admonition" id="index-8">
@@ -2094,7 +2123,7 @@ point. Ternary expressions must not return references.</p>
 “Ternary expressions must not return references”: What kind of references are you referring to? If it is array references, I don’t think it is the right place to mention this (but thank you for the reminder to put it in the validation section).
 Similarily, most of these constraints should probably be either duplicated in or moved to the validation section, I will take care of it.</p>
 <p class="last">They are not copyable, ie they are references.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/334">https://github.com/gpuweb/WHLSL/issues/334</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/334">https://github.com/gpuweb/WSL/issues/334</a></p>
 </div>
 </div>
 </div>
@@ -2243,7 +2272,7 @@ They return the addition or substraction (respectively) of <code class="docutils
 <p class="first admonition-title">Todo</p>
 <p class="last">Decide whether we want to have operator++ at all, or whether it should just be sugar for +1.
 We are currently not consistent, not only between spec and implementation, but between sections of this spec.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/336">https://github.com/gpuweb/WHLSL/issues/336</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/336">https://github.com/gpuweb/WSL/issues/336</a></p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">operator/</span></code> and <code class="docutils literal notranslate"><span class="pre">operator%</span></code> are defined as binary functions on integers, both signed and unsigned.
 Their return type is the same as the type of their arguments.
@@ -2280,7 +2309,7 @@ HLSL does not document that case, but in practice it seems to always return the 
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">In the HLSL documentation, <code class="docutils literal notranslate"><span class="pre">abs</span></code>, <code class="docutils literal notranslate"><span class="pre">sign</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span></code> and <code class="docutils literal notranslate"><span class="pre">clamp</span></code> are not defined on unsigned integers.
-But we found them defined on unsigned integers in the actual implementation, so they are supported in WHLSL on unsigned integers for portability.</p>
+But we found them defined on unsigned integers in the actual implementation, so they are supported in WSL on unsigned integers for portability.</p>
 </div>
 </div>
 <div class="section" id="bit-manipulation">
@@ -2316,7 +2345,7 @@ Their return type is also <code class="docutils literal notranslate"><span class
 <div class="admonition-todo admonition" id="index-11">
 <p class="first admonition-title">Todo</p>
 <p class="last">That semantic for firstbithigh is insane, I’d like to get rid of it:
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/337">https://github.com/gpuweb/WHLSL/issues/337</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/337">https://github.com/gpuweb/WSL/issues/337</a></p>
 </div>
 </div>
 <div class="section" id="floating-point-arithmetic">
@@ -2337,7 +2366,7 @@ MSL instead mandates either NaN or +/-Infinity, following the IEEE-754 standard.
 <div class="admonition-todo admonition" id="index-13">
 <p class="first admonition-title">Todo</p>
 <p class="last">Decide on what to do about NaN, Inf, Denormals, etc..
-See <a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/335">https://github.com/gpuweb/WHLSL/issues/335</a></p>
+See <a class="reference external" href="https://github.com/gpuweb/WSL/issues/335">https://github.com/gpuweb/WSL/issues/335</a></p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">operator-</span></code> is also defined as an unary function on floats.
 Its return type is also <code class="docutils literal notranslate"><span class="pre">float</span></code>, and it simply returns the negation of its argument.</p>
@@ -2420,13 +2449,13 @@ In other words it returns its argument multiplied by Pi and divided by 180.</dd>
 <p class="first admonition-title">Todo</p>
 <p class="last">The range of results for atan on every platform but SPIR-V.GLSL.std.450 is [-Pi/2;Pi/2], but on SPIR-V.GLSL.std.450 it is [-Pi;Pi].
 We should verify that we are not introducing a portability hazard by using the sane/common/restrictive specification.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/340">https://github.com/gpuweb/WHLSL/issues/340</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/340">https://github.com/gpuweb/WSL/issues/340</a></p>
 </div>
 <div class="admonition-todo admonition" id="index-15">
 <p class="first admonition-title">Todo</p>
 <p class="last">Decide whether we want to support acosh/asinh/atanh.
 They are not in HLSL, but are in GLSL, MSL and Vulkan.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/338">https://github.com/gpuweb/WHLSL/issues/338</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/338">https://github.com/gpuweb/WSL/issues/338</a></p>
 </div>
 <div class="admonition-todo admonition" id="index-16">
 <p class="first admonition-title">Todo</p>
@@ -2493,7 +2522,7 @@ I followed the HLSL documentation here; but we can easily revisit.</p>
 <p class="last">In Metal, SPIR-V and GLSL, the second argument of ldexp must be an integer.
 We currently follow HLSL documentation in allowing it to be a float.
 We should double-check whether it is useful, and whether ldexp is even actually sane on floats in HLSL.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/339">https://github.com/gpuweb/WHLSL/issues/339</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/339">https://github.com/gpuweb/WSL/issues/339</a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2539,7 +2568,7 @@ See the section <a class="reference internal" href="#numerical-compliance-label"
 MSL got two different tables, depending on whether it is running in fast-math mode or not.
 I did not find the equivalent table for SPIR-V, but it has the nice property of tagging each operation with the different components of fast-math.
 We should probably measure how costly forbidding fast-math would be, since NotNaN and NotInf introduce undefined behavior.
-<a class="reference external" href="https://github.com/gpuweb/WHLSL/issues/335">https://github.com/gpuweb/WHLSL/issues/335</a></p>
+<a class="reference external" href="https://github.com/gpuweb/WSL/issues/335">https://github.com/gpuweb/WSL/issues/335</a></p>
 </div>
 </div>
 <div class="section" id="fences-and-atomic-operations">
@@ -2600,17 +2629,33 @@ Please see <a class="reference internal" href="#memory-model-label"><span class=
 <div class="section" id="cast-operators">
 <h4>Cast operators<a class="headerlink" href="#cast-operators" title="Permalink to this headline">¶</a></h4>
 <p>Also include the <code class="docutils literal notranslate"><span class="pre">as</span></code> function.</p>
+<div class="admonition-todo admonition" id="index-19">
+<p class="first admonition-title">Todo</p>
+<p class="last">fill this section</p>
+</div>
 </div>
 <div class="section" id="comparison-operators">
 <h4>Comparison operators<a class="headerlink" href="#comparison-operators" title="Permalink to this headline">¶</a></h4>
+<div class="admonition-todo admonition" id="index-20">
+<p class="first admonition-title">Todo</p>
+<p class="last">fill this section</p>
+</div>
 </div>
 <div class="section" id="vector-and-matrix-operations">
 <h4>Vector and matrix operations<a class="headerlink" href="#vector-and-matrix-operations" title="Permalink to this headline">¶</a></h4>
-<p>Includes arithmetic operators (per-element), various swizzles, length, getDimensions, operator[] and operator[]=, determinant</p>
+<div class="admonition-todo admonition" id="index-21">
+<p class="first admonition-title">Todo</p>
+<p class="last">fill this section
+Includes arithmetic operators (per-element), various swizzles, length, getDimensions, operator[] and operator[]=, determinant</p>
+</div>
 </div>
 <div class="section" id="sampler-and-texture-operations">
 <h4>Sampler and texture operations<a class="headerlink" href="#sampler-and-texture-operations" title="Permalink to this headline">¶</a></h4>
-<p>Sample, Load, Gather, etc..</p>
+<div class="admonition-todo admonition" id="index-22">
+<p class="first admonition-title">Todo</p>
+<p class="last">fill this section
+Sample, Load, Gather, etc..</p>
+</div>
 </div>
 </div>
 </div>
@@ -2650,7 +2695,7 @@ which is understood to be of type ‘DOMString’.</p>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="index.html#document-index">WHLSL  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html#document-index">WSL  documentation</a> &#187;</li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
