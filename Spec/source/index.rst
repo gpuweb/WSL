@@ -381,7 +381,7 @@ The following strings are reserved keywords of the language:
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Top level                     | struct typedef enum operator vertex fragment compute numthreads                         |
 +-------------------------------+-----------------------------------------------------------------------------------------+
-| Control flow                  | if else switch case default while do for break continue fallthrough return              |
+| Control flow                  | if else switch case default while do for break continue discard fallthrough return      |
 +-------------------------------+-----------------------------------------------------------------------------------------+
 | Literals                      | true false                                                                              |
 +-------------------------------+-----------------------------------------------------------------------------------------+
@@ -500,11 +500,15 @@ Statements
         : | `terminatorStmt` ";" 
         : | `maybeEffectfulExpr` ";"
     compoundStmt: `ifStmt` | `ifElseStmt` | `whileStmt` | `doWhileStmt` | `forStmt` | `switchStmt`
-    terminatorStmt: "break" | "continue" | "fallthrough" | "return" `expr`?
+    terminatorStmt: "break" | "continue" | "discard" | "fallthrough" | "return" `expr`?
 
 .. note::
     The ``fallthrough`` statement is used at the end of switch cases to fallthrough to the next case.
     It is not valid to have it anywhere else, or to have a switch case where control-flow reaches the end without a fallthrough (see section :ref:`typing_statements_label`).
+
+.. note::
+    The ``discard`` statement can only be used in fragment shaders and kills execution in the current thread.
+    It corresponds to OpKill in SPIRV.
 
 .. productionlist::
     ifStmt: "if" "(" `expr` ")" `stmt`
@@ -830,11 +834,16 @@ To check that a function is well-typed:
 #. Make a new copy of the global environment (built above)
 #. For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type
 #. Check that the function body is well-typed in this typing environment (treating it as a block of statement)
-#. If the return type of the function is ``void``, then the set of behaviours of the function body must be included in ``{Nothing, Return Void}``
-#. Else if the return type of the function is a type T, then the set of behaviours of the function body must be ``{Return T}``
+#. The set of behaviors of the function body must not include ``Break``, ``Continue`` or ``Fallthrough``.
+#. The set of behaviors of the function body must not include ``Return T`` for a type ``T`` that is not the function return type.
+#. If the return type of the funciton is not ``void``, then the set of behaviors of the function body must not include ``Nothing``.
+#. If the function is a vertex or compute entry point, then the set of behaviors of the function body must not include ``Discard``.
 
 In this section we define the terms above, and in particular, what it means for a statement or an expression to be well-typed.
-More formally we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau".
+More formally we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau and that may/may not discard".
+
+.. note::
+    We track which expression include calls to function that include ``discard;`` because a it can only be used from a fragment entry point, not from a compute or vertex one.
 
 A type can either be:
 
@@ -859,9 +868,11 @@ A behaviour is any of the following:
 - Break
 - Continue
 - Fallthrough
+- Discard
 - Nothing
 
 We use these "behaviours" to check the effect of statements on the control flow. 
+"Nothing" simply means that the control-flow can reach the end of this statement normally (and flow into the next one).
 
 .. _typing_statements_label:
 
@@ -873,7 +884,9 @@ To check an if-then-else statement:
 #. Check that the condition is a well-typed expression of type bool
 #. Check that the then and else branches are well-typed statements whose behaviours we will respectively call ``B`` and ``B'``
 #. Check that neither ``B`` nor ``B'`` contain a return of a pointer type, or of an array reference type
-#. Then the if-then-else statement is well-typed, and its behaviours is the union of ``B`` and ``B'``
+#. Let ``B''`` be the union of ``B`` and ``B'``
+#. If the condition may discard, then add Discard to ``B''``
+#. The if-then-else statement is well-typed, and its behaviours is ``B''``
 
 .. math::
     :nowrap:
@@ -890,7 +903,9 @@ To check a do-while or for statement:
 #. Check that ``B`` does not contain a return of a pointer type, or of an array reference type
 #. If Continue is in ``B``, remove it
 #. If Break is in ``B``, remove it and add Nothing to ``B``
-#. Then the do-while statement is well-typed, and its behaviours is ``B``
+#. If the condition may discard, add Discard to ``B``
+#. If the loop is a for loop, and the expression which is executed at the end of each iteration may discard, add Discard to ``B``
+#. The do-while statement is well-typed, and its behaviours is ``B``
 
 .. math::
     :nowrap:
@@ -919,7 +934,8 @@ To check a switch statement:
 #. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
 #. If Fallthrough is in this set, remove it
 #. If Break is in this set, remove it and add Nothing
-#. Then the switch statement is well-typed, and its behaviours is this last set
+#. If the expression being switched on may discard, add Discard to this set.
+#. The switch statement is well-typed, and its behaviours is this last set
 
 .. math::
     :nowrap:
@@ -932,7 +948,7 @@ To check a switch statement:
        \ottdruleswitchXXblock{}
     \end{align*}
 
-The ``break;``, ``fallthrough;``, ``continue;`` and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue} and {Return void}.
+The ``break;``, ``fallthrough;``, ``continue;``, ``discard;``, and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue}, {Discard}, and {Return void}.
 
 The statement ``return e;`` is well-typed if ``e`` is a well-typed expression with a right-value type T and its behaviours is then {Return T}.
 
@@ -957,18 +973,19 @@ To check a block:
     #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space
     #. If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.
     #. Else if there is an initializing expression, check that it is well-typed in this new environment and that its type match the type of the variable
-    #. Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours B.
-    #. Then the block is well-typed and has the same set of behaviours B.
+    #. Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours ``B``.
+    #. If there is an initializing expression and it may discard, then add Discard to ``B``.
+    #. The block is well-typed and has the same set of behaviours ``B``.
 
 #. Else if this block contains a single statement, check that this statement is well-typed. If it is, then so is this block, and it has the same set of behaviours
 #. Else
    
     #. Check that this block's first statement is well-typed
-    #. Check that its set of behaviours B contains Nothing.
+    #. Check that its set of behaviours ``B`` contains Nothing.
     #. Remove Nothing from it.
     #. Check that it does not contain Fallthrough
-    #. Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours B'.
-    #. Then the whole block is well-typed, and its set of behaviour is the union of B and B'.
+    #. Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours ``B'``.
+    #. Then the whole block is well-typed, and its set of behaviour is the union of ``B`` and ``B'``.
 
 .. math::
     :nowrap:
@@ -985,7 +1002,8 @@ To check a block:
     Change the variable declaration ott rules to support threadgroup local variables
     https://github.com/gpuweb/WHLSL/issues/63
 
-Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed. Its set of behaviours is then {Nothing}.
+Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed.
+Its set of behaviours is either {Nothing} if the expression cannot discard, or {Nothing, Discard} otherwise.
 
 .. math::
     :nowrap:
@@ -999,7 +1017,9 @@ Finally a statement that consists of a single expression (followed by a semicolo
 Typing expressions
 """"""""""""""""""
 
-Literals always have right-value types:
+Expressions that are not calls may discard if and only if at least one of their sub-expressions may discard (expressions that are not calls and have no sub-expressions such as literals and variables may not discard).
+
+Literals always have right-value types.
 
 - ``true`` and ``false`` are always well-typed and of type ``bool``.
 - float literals are always well-typed and of type ``float``.
@@ -1013,7 +1033,7 @@ Literals always have right-value types:
 .. note::
     integer literals are the only cases of implicit coercions in the language. See the rule for function calls for details.
 
-The type of an expression in parentheses, is the type of the expression in the parentheses
+Parentheses around an expression have no effect on its type or whether it discards.
 
 A comma expression is well-typed if both of its operands are well-typed. In that case, its type is the right-value type of its second operand.
 
@@ -1069,14 +1089,12 @@ If an expression is well-typed and its type is an abstract left-value type, it c
 If an expression is well-typed and its type is a left-value type, and its address space is not constant, it can also be treated as if it were of the associated abstract left-value type.
 If an expression is well-typed and its type is a left-value type, it can also be treated as if it were of the associated right-value type.
 
-A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment,
+A variable name is well-typed if it is in the typing environment. In that case, its type is whatever it is mapped to in the typing environment.
 
 An expression ``&e`` is well-typed and with a pointer type if ``e`` is well-typed with a left-value type.
 An expression ``*e`` is well-typed and with a left-value type if ``e`` is well-typed with a pointer type.
-The associated right-value types and address spaces are left unchanged by these two operators.
-
 An expression ``@e`` is well-typed and with an array reference type if ``e`` is well-typed with a left-value type.
-The associated right-value types and address spaces are left unchanged by this operator.
+The associated right-value types and address spaces are left unchanged by these operators.
 
 .. note::
     The dynamic behaviour depends on whether the expression is a left-value array type or not, but it makes no difference during validation.
@@ -1190,6 +1208,11 @@ To check that a function call is well-typed:
     Entry points cannot be called from within a shader. A function is an entry point if and only if it is marked with one of ``vertex``, ``fragment`` or ``compute``.
 
 .. Writing a formal rule for this would be somewhat painful/unreadable, and I don't think it would clarify anything compared to the english description.
+
+A function call may discard if:
+
+- at least one of its arguments is an expression that may discard
+- or the callee has a body whose behaviors include Discard (this definition is not circular because we forbid recursion).
 
 Annotations for execution
 -------------------------
@@ -1416,11 +1439,16 @@ Here is how to reduce a ``Loop(s, s')`` statement by one step:
         \ottdruleloopXXreduce{}
     \end{align*}
 
-Barriers and uniform control flow
-"""""""""""""""""""""""""""""""""
+Barriers and discard
+"""""""""""""""""""""
 
 There is no rule in the per-thread semantics for *control barriers*.
 Instead, there is a rule in the global semantics, saying that if all threads are at the same control barrier instruction then they may all advance atomically, replacing the barrier by an empty block.
+
+``discard;`` ends a thread, preventing it from having any further side-effect, and discards its part of the fragment output.
+Side-effects made before ``discard`` are not affected.
+
+.. ott rules? A bit of a pain since I would have to pipe it through most kinds of statements and expressions (wrapped in a Call in the later case).
 
 Other
 """""
