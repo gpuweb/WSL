@@ -1,9 +1,9 @@
-.. WHLSL documentation master file, created by
+.. WSL documentation master file, created by
    sphinx-quickstart on Thu Jun  7 15:53:54 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-WHLSL Specification
+WSL Specification
 ###################
 
 General
@@ -18,12 +18,12 @@ the scope of this specification.
 . Note:: The WebGPU Shading Language is designed to target other high-level shading
    languages as compilation targets.
 
-WHLSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
+WSL shaders are used with the WebGPU API. Specific WebGPU API entry points to compile
 and manipulate shaders are specified in the WebGPU specification, not this document.
 This document describes which programs are well-formed; the exact form of error
 reporting is not discussed in this specification.
 
-WHLSL does not support extensions or optional behavior.
+WSL does not support extensions or optional behavior.
 
 Terms in this document such as *must*, *must not*, *required*, *shall*, *shall not*,
 *should*, *should not*, *recommended*, *may*, and *optional* in normative parts of
@@ -42,12 +42,12 @@ specification.
    errors in dead code must cause a compilation failure. However, optimizations may,
    in general, be observable, such as fusing a multiply followed by an add into a
    single operation which has higher intermediate precision than the distinct operations.
-   This means that the same WHLSL program run on different machines, browsers, or operating
+   This means that the same WSL program run on different machines, browsers, or operating
    systems may not produce the exact same results bit-for-bit.
 
 A shader is a compilation unit which includes type definitions and function definitions.
 
-WHLSL is used to describe different types of shaders:
+WSL is used to describe different types of shaders:
 
 #. Vertex shaders
 #. Fragment shaders
@@ -57,14 +57,14 @@ Each shader type represents software which may execute on a specialized processo
 draw calls, different shader types, or different invocations of the same shader, may execute
 on independent processors.
 
-A WHLSL string passes through the following stages of processing before it is executed:
+A WSL string passes through the following stages of processing before it is executed:
 
 #. Tokenization
 #. Parsing
 #. Validation
 
-Once a WHLSL string passes all the validation checks, it is then available to be used in a
-draw call or dispatch call. A WHLSL string contains zero or more shaders, and each shader is
+Once a WSL string passes all the validation checks, it is then available to be used in a
+draw call or dispatch call. A WSL string contains zero or more shaders, and each shader is
 of a specific shader type. Compute shaders must only be used for dispatch calls, and vertex
 and fragment shaders must only be used in draw calls.
 
@@ -117,7 +117,7 @@ Because vertex shaders may have write-access to resources, they are not "pure" i
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
 Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
 units at the entire shader level or the instruction level (or any level in between). Therefore,
-when using simple loads and stores, load tearing may occur, or any such artifacts. WHLSL authors must
+when using simple loads and stores, load tearing may occur, or any such artifacts. WSL authors must
 take care to create shaders which are portable. See below for advice on how to accomplish this.
 
 .. Note:: Specific GPU instructions are not within scope of this document; therefore, races may
@@ -174,7 +174,7 @@ Because vertex shaders may have write-access to resources, they are not "pure" i
 sense. The order of execution of multiple invocations of the vertex shader may be observable.
 Execution of multiple invocations of the vertex shader may be multiplexed across multiple processing
 units at the entire shader level or the instruction level (or any level in between). Therefore,
-WHLSL authors must take care to create shaders which are portable. See below for advice on how to
+WSL authors must take care to create shaders which are portable. See below for advice on how to
 accomplish this.
 
 .. Note:: Specific GPU instructions are not within scope of this document; therefore, races may
@@ -236,13 +236,13 @@ The input to a compute shader may be any assortment of information, arranged int
 Entry Points
 ------------
 
-All functions in WHLSL are either "entry points" or "non-entry points." An entry point is a function
+All functions in WSL are either "entry points" or "non-entry points." An entry point is a function
 that may be associated with a particular programmable stage in a pipeline. Entry points may call
 non-entry points, non-entry points may call non-entry points, but entry points may not be called
-by any WHLSL function. When execution of a particular shader stage begins, the entry point associated
+by any WSL function. When execution of a particular shader stage begins, the entry point associated
 with that shader stage begins, and when that entry point returns, the associated shader stage ends.
 
-Exactly one WHLSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
+Exactly one WSL shader occupies one stage in the WebGPU pipeline at a time. Two shaders
 of the same shader type must not be used together in the same draw call or dispatch call.
 Every stage of the appropriate WebGPU pipeline must be occupied by a shader in order to
 execute a draw call or dispatch call.
@@ -251,7 +251,7 @@ All entry points must begin with the keyword "vertex", "fragment", or "compute",
 describes which pipeline stage that shader is appropriate for. An entry point is only valid for one
 type of shader stage.
 
-Built-ins are identified by name. WHLSL does not include annotations for identifying built-ins. If
+Built-ins are identified by name. WSL does not include annotations for identifying built-ins. If
 the return of a shader should be assigned to a built-in, the author should create a struct with
 a variable named according to to the built-in, and the shader should return that struct.
 
@@ -260,7 +260,7 @@ Vertex and fragment entry points must transitively never refer to the ``threadgr
 Arguments and Return Types
 """"""""""""""""""""""""""
 
-Argument and return types of an entry point are more restricted than arguments to an arbitrary WHLSL function.
+Argument and return types of an entry point are more restricted than arguments to an arbitrary WSL function.
 They are flattened through structs - that is, each member of any struct appearing in an argument to an entry
 point or return type is considered independently, recursively. Arguments to entry points are not
 distinguished by position or order.
@@ -314,7 +314,7 @@ one vertex shader invocation per primitive, known as the "provoking vertex." Whe
 provoking vertex is the vertex associated with that point (since points only have a single vertex).
 When drawing lines, the provoking vertex is the initial vertex (rather than the final vertex). When
 drawing triangles, the provoking vertex is also the initial vertex. Strips and fans are not supported
-by WHLSL.
+by WSL.
 
 When not in the context of arguments or return values of entry points, semantics are ignored.
 
@@ -327,18 +327,18 @@ Lexical analysis
 Shaders exist as a Unicode string, and therefore support all the code points
 Unicode supports.
 
-WHLSL does not include any digraphs or trigraphs. WHLSL is case-sensitive. It does not include any
+WSL does not include any digraphs or trigraphs. WSL is case-sensitive. It does not include any
 escape sequences.
 
-.. Note:: WHLSL does not include a string type, so escape characters are not present in the
+.. Note:: WSL does not include a string type, so escape characters are not present in the
    language.
 
-WHLSL does not include a preprocessor step.
+WSL does not include a preprocessor step.
 
 .. Note:: Because there is no processor step, tokens such as '#if' are generally considered
    parse errors.
 
-Before parsing, the text of a WHLSL program is first turned into a list of tokens, removing comments and whitespace along the way.
+Before parsing, the text of a WSL program is first turned into a list of tokens, removing comments and whitespace along the way.
 Tokens are built greedily, in other words each token is as long as possible.
 If the program cannot be transformed into a list of tokens by following these rules, the program is invalid and must be rejected.
 
@@ -434,7 +434,7 @@ Whitespace and comments
 
 Any of the following characters are considered whitespace, and ignored after this phase: space, tabulation (``\t``), carriage return (``\r``), new line(``\n``).
 
-WHLSL also allows two kinds of comments. These are treated like whitespace (i.e. ignored during parsing).
+WSL also allows two kinds of comments. These are treated like whitespace (i.e. ignored during parsing).
 The first kind is a line comment, that starts with the string ``//`` and continues until the next end of line character.
 The second kind is a multi-line comment, that starts with the string ``/*`` and ends as soon as the string ``*/`` is read.
 
@@ -445,7 +445,7 @@ The second kind is a multi-line comment, that starts with the string ``/*`` and 
 Parsing
 -------
 
-In this section we will describe the grammar of WHLSL programs, using the usual BNF metalanguage (`https://en.wikipedia.org/wiki/Backus–Naur_form <https://en.wikipedia.org/wiki/Backus–Naur_form>`_).
+In this section we will describe the grammar of WSL programs, using the usual BNF metalanguage (`https://en.wikipedia.org/wiki/Backus–Naur_form <https://en.wikipedia.org/wiki/Backus–Naur_form>`_).
 We use names starting with an upper case letter to refer to lexical tokens defined in the previous section, and names starting with a lower case letter to refer to non-terminals. These are linked (at least in the HTML version of this document).
 We use non-bold text surrounded by quotes for text terminals (keywords, punctuation, etc..).
 
@@ -459,7 +459,7 @@ A valid compilation unit is made of a sequence of 0 or more top-level declaratio
 
 .. todo:: We may want to also allow variable declarations at the top-level if it can easily be supported by all of our targets. (Myles: We can emulate it an all the targets, but the targets themselves only allow constant variables
     at global scope. We should follow suit.)
-    https://github.com/gpuweb/WHLSL/issues/310
+    https://github.com/gpuweb/WSL/issues/310
 
 .. productionlist::
     typedef: "typedef" `Identifier` "=" `type` ";"
@@ -578,7 +578,7 @@ The first production rule for typeArguments is a way to say that `>>` can be par
 Expressions
 """""""""""
 
-WHLSL accepts three different kinds of expressions, in different places in the grammar.
+WSL accepts three different kinds of expressions, in different places in the grammar.
 
 - ``expr`` is the most generic, and includes all expressions.
 - ``maybeEffectfulExpr`` is used in places where a variable declaration would also be allowed. It forbids some expressions that are normally effect-free, such as ``x * y`` or ``x < y``, to make parsing non-ambiguous.
@@ -608,7 +608,7 @@ WHLSL accepts three different kinds of expressions, in different places in the g
     callExpression: `Identifier` "(" (`ternaryConditional` ("," `ternaryConditional`)*)? ")"
     term: `Literal` | `Identifier` | "(" `expr` ")"
 
-WHLSL matches the precedence and associativity of operators from C++, with one exception: relational operators are non-associative,
+WSL matches the precedence and associativity of operators from C++, with one exception: relational operators are non-associative,
 so that they cannot be chained. Chaining them has sufficiently surprising results that it is not a clear
 reduction in usability, and it should make it a lot easier to extend the syntax in the future to accept
 generics.
@@ -846,7 +846,7 @@ In this section we define the terms above, and in particular, what it means for 
 More formally we define two mutually recursive judgments: "In typing environment Gamma, s is a well-typed statement whose set of behaviours is B" and "In typing environment Gamma, e is a well-typed expression whose type is Tau and that may/may not discard".
 
 .. note::
-    We track which expression include calls to function that include ``discard;`` because a it can only be used from a fragment entry point, not from a compute or vertex one.
+    We track which expression include calls to function that include ``discard;`` because it can only be used from a fragment entry point, not from a compute or vertex one.
 
 A type can either be:
 
@@ -854,11 +854,11 @@ A type can either be:
 - An abstract left-value type with an associated right-value type
 - A right-value type, which can be any of the following:
     
-    - A basic type such as ``bool`` or ``uint``
+    - A basic type such as ``bool`` or ``uint`` (see :ref:`builtin_types_label`)
     - A structure type, defined by its name
     - An enum type, defined by its name
     - ``void``
-    - An array with an associated right-value type and a size (a number of elements). The size must be a positive integer that fits in 32 bits
+    - An array with an associated right-value type and a size (a number of elements). The size must be a positive integer (at least 1) that fits in 32 bits (as an unsigned number).
     - A pointer with an associated right-value type and an address space
     - An array reference with an associated right-value type and an address space
 
@@ -882,6 +882,21 @@ We use these "behaviours" to check the effect of statements on the control flow.
 Typing statements
 """""""""""""""""
 
+The ``break;``, ``fallthrough;``, ``continue;``, ``discard;``, and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue}, {Discard}, and {Return void}.
+
+The statement ``return e;`` is well-typed if ``e`` is a well-typed expression with a right-value type T and its behaviours is then {Return T}.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+       \ottdrulebreak{}\\
+       \ottdrulecontinue{}\\
+       \ottdrulefallthrough{}\\
+       \ottdrulereturnXXvoid{}\\
+       \ottdrulereturn{}\\
+    \end{align*}
+
 To check an if-then-else statement:
 
 #. Check that the condition is a well-typed expression of type bool
@@ -900,24 +915,23 @@ To check an if-then-else statement:
 
 To check a do-while or for statement:
 
-#. Check that the condition is well-typed, of type ``bool``
+#. Check that the condition is a well-typed expression of type ``bool``
 #. If it is a for statement, check that the expression that is executed at the end of each iteration is well-typed
 #. Check that the body of the loop is a well-typed statement whose behaviours we will call ``B``
 #. Check that ``B`` does not contain a return of a pointer type, or of an array reference type
 #. If Continue is in ``B``, remove it
-#. If Break is in ``B``, remove it and add Nothing to ``B``
+#. If Break is in ``B``, remove it
 #. If the condition may discard, add Discard to ``B``
 #. If the loop is a for loop, and the expression which is executed at the end of each iteration may discard, add Discard to ``B``
+#. Add Nothing to ``B``
 #. The do-while statement is well-typed, and its behaviours is ``B``
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \ottdruledoXXwhileXXbreak{}\\
-        \ottdruledoXXwhileXXnoXXbreak{}\\
-        \ottdruleforXXbreak{}\\
-        \ottdruleforXXnoXXbreak{}\\
+        \ottdruledoXXwhile{}\\
+        \ottdrulefor{}\\
     \end{align*}
 
 .. note::
@@ -951,21 +965,6 @@ To check a switch statement:
        \ottdruleswitchXXblock{}
     \end{align*}
 
-The ``break;``, ``fallthrough;``, ``continue;``, ``discard;``, and ``return;`` statements are always well-typed, and their behaviours are respectively {Break}, {Fallthrough}, {Continue}, {Discard}, and {Return void}.
-
-The statement ``return e;`` is well-typed if ``e`` is a well-typed expression with a right-value type T and its behaviours is then {Return T}.
-
-.. math::
-    :nowrap:
-
-    \begin{align*}
-       \ottdrulebreak{}\\
-       \ottdrulecontinue{}\\
-       \ottdrulefallthrough{}\\
-       \ottdrulereturnXXvoid{}\\
-       \ottdrulereturn{}\\
-    \end{align*}
-
 To check a block:
 
 #. If it is empty, it is well-typed and its behaviours is always {Nothing}
@@ -986,7 +985,7 @@ To check a block:
     #. Check that this block's first statement is well-typed
     #. Check that its set of behaviours ``B`` contains Nothing.
     #. Remove Nothing from it.
-    #. Check that it does not contain Fallthrough
+    #. Check that it does not contain Fallthrough.
     #. Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours ``B'``.
     #. Then the whole block is well-typed, and its set of behaviour is the union of ``B`` and ``B'``.
 
@@ -1003,7 +1002,7 @@ To check a block:
 
 .. todo::
     Change the variable declaration ott rules to support threadgroup local variables
-    https://github.com/gpuweb/WHLSL/issues/63
+    https://github.com/gpuweb/WSL/issues/63
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed.
 Its set of behaviours is either {Nothing} if the expression cannot discard, or {Nothing, Discard} otherwise.
@@ -1050,7 +1049,7 @@ A comma expression is well-typed if both of its operands are well-typed. In that
         \ottdrulecomma{}
     \end{align*}
 
-To check that a boolean or, or a boolean and is well-typed, check that both of its operands are well-typed and of type bool.
+To check that a "boolean or" (``||``), or a "boolean and" (``&&``) is well-typed, check that both of its operands are well-typed and of type bool.
 
 To check that a ternary conditional is well-typed:
 
@@ -1259,7 +1258,7 @@ If the first operand is either an array or a left-value type associated with an 
 Verifying the absence of recursion
 ----------------------------------
 
-WHLSL does not support recursion (for efficient compilation to GPUs).
+WSL does not support recursion (for efficient compilation to GPUs).
 So once all overloaded function calls have been resolved, we must do one last check.
 
 We create a relationship "may call" that connects two function declarations ``f`` and ``g`` if there is a call to ``g`` in the body of ``f`` (after resolving overloading).
@@ -1657,7 +1656,7 @@ To reduce an assignment ``e1 = e2``:
 Pointers and references
 """""""""""""""""""""""
 
-WHLSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
+WSL has both pointers and array references. Pointers let the programmer access a specific memory location, but do not allow any pointer arithmetic.
 Array references are actually bounds-checked fat-pointers.
 
 The ``&`` and ``*`` operators simply convert between left-values and pointers.
@@ -1921,7 +1920,7 @@ That memory model is under Creative Commons Attribution 4.0 International Licens
 The main difference between the two models is that we avoid undefined behaviour by making races merely make reads return unspecified results.
 This is in turn safe, as our execution semantics for loads (see above) clamp any enum value to a valid value of that type, and there can be no race on pointers or array references as they are limited to the ``thread`` address space. 
 
-Apart from that, we only removed parts of the model, since some operations supported by Vulkhan are not supported by WHLSL, and renamed some elements for consistency with the rest of this specification.
+Apart from that, we only removed parts of the model, since some operations supported by Vulkhan are not supported by WSL, and renamed some elements for consistency with the rest of this specification.
 
 Memory locations
 """"""""""""""""
@@ -1972,6 +1971,8 @@ are ordered by ``po`` in the order of the corresponding parameters (as written i
 Standard library
 ================
 
+.. _builtin_types_label:
+
 Built-in Types
 --------------
 
@@ -1992,7 +1993,7 @@ Built-in Scalars
 | float     | An IEEE 32-bit floating-point number.                                          | All values of a IEEE 754 single-precision binary floating-point number            |
 +-----------+--------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 
-.. Note:: The following types are not present in WHLSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
+.. Note:: The following types are not present in WSL: dword, min16float, min10float, min16int, min12int, min16uint, string, size_t, ptrdiff_t, double, float64, int64, uint64
 
 Built-in Atomic Types
 """""""""""""""""""""
@@ -2048,17 +2049,17 @@ Samplers
 
 Samplers must only be passed into an entry point inside an argument. All samplers are immutable and must be
 declared in the "constant" address space. There is no constructor for samplers; it is impossible to create
-or destory one in WHLSL. The type is defined as ``native typedef sampler;``. Samplers are impossible to
+or destory one in WSL. The type is defined as ``native typedef sampler;``. Samplers are impossible to
 introspect. Arrays must not contain samplers anywhere inside them. Functions that return samplers must only
 have one return point. Ternary expressions must not return references.
 
 .. todo::
     The last sentence does not seem related to samplers. Or should we s/references/samplers/g in it?
-    https://github.com/gpuweb/WHLSL/issues/332
+    https://github.com/gpuweb/WSL/issues/332
 
 .. todo::
     Robin: I have not put the ``native typedef`` syntax in the grammar or the semantics so far, should I?
-    https://github.com/gpuweb/WHLSL/issues/332
+    https://github.com/gpuweb/WSL/issues/332
 
 Textures
 """"""""
@@ -2084,7 +2085,7 @@ The following types represent textures:
 
 .. todo::
     Texture2DMS<T>, TextureDepth2DMS<float>
-    https://github.com/gpuweb/WHLSL/issues/333
+    https://github.com/gpuweb/WSL/issues/333
 
 Each of the above types accepts a "type argument". The "T" types above may be any scalar or vector integral or floating point type.
 
@@ -2092,7 +2093,7 @@ If the type argument, including the ``<>`` characters is missing, is is assumed 
 
 Textures must only be passed into an entry point inside an argument. Therefore, textures must only be declared
 in either the ``constant`` or ``device`` address space. A texture declared in the ``constant`` address space
-must never be modified. There is no constructor for textures; it is impossible to create or destroy one in WHLSL.
+must never be modified. There is no constructor for textures; it is impossible to create or destroy one in WSL.
 Arrays must not contain textures anywhere inside them. Functions that return textures must only have one return
 point. Ternary expressions must not return references.
 
@@ -2102,7 +2103,7 @@ point. Ternary expressions must not return references.
     Similarily, most of these constraints should probably be either duplicated in or moved to the validation section, I will take care of it.
 
     They are not copyable, ie they are references.
-    https://github.com/gpuweb/WHLSL/issues/334
+    https://github.com/gpuweb/WSL/issues/334
 
 Built-in Variables
 ------------------
@@ -2199,7 +2200,7 @@ They return the addition or substraction (respectively) of ``1`` to their argume
 .. todo::
     Decide whether we want to have operator++ at all, or whether it should just be sugar for +1.
     We are currently not consistent, not only between spec and implementation, but between sections of this spec.
-    https://github.com/gpuweb/WHLSL/issues/336
+    https://github.com/gpuweb/WSL/issues/336
 
 ``operator/`` and ``operator%`` are defined as binary functions on integers, both signed and unsigned.
 Their return type is the same as the type of their arguments.
@@ -2238,7 +2239,7 @@ Otherwise ``clamp(x, min, max)`` is equivalent to ``min(max(x, min), max)``.
 
 .. note::
     In the HLSL documentation, ``abs``, ``sign``, ``min``, ``max`` and ``clamp`` are not defined on unsigned integers.
-    But we found them defined on unsigned integers in the actual implementation, so they are supported in WHLSL on unsigned integers for portability.
+    But we found them defined on unsigned integers in the actual implementation, so they are supported in WSL on unsigned integers for portability.
 
 Bit manipulation
 """"""""""""""""
@@ -2277,7 +2278,7 @@ Their return type is also ``unsigned int``.
 
 .. todo::
     That semantic for firstbithigh is insane, I'd like to get rid of it:
-    https://github.com/gpuweb/WHLSL/issues/337
+    https://github.com/gpuweb/WSL/issues/337
 
 Floating point arithmetic
 """""""""""""""""""""""""
@@ -2296,7 +2297,7 @@ The result of ``operator/`` is an undefined value if its second argument is eith
 
 .. todo::
     Decide on what to do about NaN, Inf, Denormals, etc..
-    See https://github.com/gpuweb/WHLSL/issues/335
+    See https://github.com/gpuweb/WSL/issues/335
 
 ``operator-`` is also defined as an unary function on floats.
 Its return type is also ``float``, and it simply returns the negation of its argument.
@@ -2379,12 +2380,12 @@ saturate
 .. todo::
     The range of results for atan on every platform but SPIR-V.GLSL.std.450 is [-Pi/2;Pi/2], but on SPIR-V.GLSL.std.450 it is [-Pi;Pi].
     We should verify that we are not introducing a portability hazard by using the sane/common/restrictive specification.
-    https://github.com/gpuweb/WHLSL/issues/340
+    https://github.com/gpuweb/WSL/issues/340
 
 .. todo::
     Decide whether we want to support acosh/asinh/atanh.
     They are not in HLSL, but are in GLSL, MSL and Vulkan.
-    https://github.com/gpuweb/WHLSL/issues/338
+    https://github.com/gpuweb/WSL/issues/338
 
 .. todo::
     ddx, ddy, ddx_fine, ddx_coarse, ddy_fine, ddy_coarse, fwidth
@@ -2444,7 +2445,7 @@ atan2
     In Metal, SPIR-V and GLSL, the second argument of ldexp must be an integer.
     We currently follow HLSL documentation in allowing it to be a float.
     We should double-check whether it is useful, and whether ldexp is even actually sane on floats in HLSL.
-    https://github.com/gpuweb/WHLSL/issues/339
+    https://github.com/gpuweb/WSL/issues/339
 
 .. note::
     Our definition of fmod follows those of HLSL and Metal.
@@ -2490,7 +2491,7 @@ Numerical Compliance
     MSL got two different tables, depending on whether it is running in fast-math mode or not.
     I did not find the equivalent table for SPIR-V, but it has the nice property of tagging each operation with the different components of fast-math.
     We should probably measure how costly forbidding fast-math would be, since NotNaN and NotInf introduce undefined behavior.
-    https://github.com/gpuweb/WHLSL/issues/335
+    https://github.com/gpuweb/WSL/issues/335
 
 Fences and atomic operations
 """"""""""""""""""""""""""""

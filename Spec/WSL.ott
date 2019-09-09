@@ -120,6 +120,7 @@ B :: behaviour_ ::= {{com statement behaviour}}
     | B \ B' :: :: difference {{tex [[B]] \backslash [[B']]}}
     | U B0 .. Bn :: :: big_union
     | ( B ) :: :: parens
+    | mayDiscard ( e ) ? B' : B'' :: :: may_discard_ternary
 
 b :: single_behaviour_ ::=
     | Return tval :: :: return
@@ -127,6 +128,7 @@ b :: single_behaviour_ ::=
     | Continue :: :: continue
     | Fallthrough :: :: fallthrough
     | Nothing :: :: Nothing
+    | Discard :: :: Discard
 
 t {{tex \tau}} :: type_ ::= {{com type}}
     | LVal ( tval , addressSpace ) :: :: lval {{com left value}}
@@ -194,6 +196,7 @@ terminals :: terminals_ ::=
 } }}
     | += :: :: plus_equal {{tex \,{+}{=}\, }}
     | freshAddress() :: :: fresh_address {{tex \mbox{freshAddress}()}}
+    | mayDiscard :: :: may_discard {{tex \mbox{mayDiscard} }}
 
 formula :: formula_ ::=
     | judgement :: :: judgement
@@ -239,6 +242,9 @@ formula :: formula_ ::=
     | e does not have an array reference type :: :: has_not_array_reference_type
     | addr = freshAddress() :: :: make_fresh_address
 
+parsing
+behaviour_union left behaviour_union
+
 defns
 desugaring :: '' ::=
 defn
@@ -280,45 +286,30 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- e : bool
     G |- s : B
     G |- s' : B'
-    B'' = (B + B')
-    Return Ptr(tval, as) not in B''
-    Return Ref(tval, as) not in B''
+    B'' = mayDiscard(e) ? {Discard} : {}
+    B''' = B + B' + B''
+    Return Ptr(tval, as) not in B'''
+    Return Ref(tval, as) not in B'''
     -------------------------------- :: if
-    G |- if (e) s else s' : B''
+    G |- if (e) s else s' : B'''
 
     G |- e : bool
     G |- s : B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
-    Break in B
-    --------------------------------------------------------------- :: do_while_break
-    G |- do s while (e); : (B \ {Break, Continue}) + {Nothing}
-
-    G |- e : bool
-    G |- e' : t
-    G |- s : B
-    Return Ptr(tval, as) not in B
-    Return Ref(tval, as) not in B
-    Break in B
-    --------------------------------------------------------------- :: for_break
-    G |- for (;e;e') s : (B \ {Break, Continue}) + {Nothing}
-
-    G |- e : bool
-    G |- s : B
-    Return Ptr(tval, as) not in B
-    Return Ref(tval, as) not in B
-    Break not in B
-    ------------------------------------------ :: do_while_no_break
-    G |- do s while (e); : B \ {Continue}
+    B' = mayDiscard(e) ? {Discard} : {}
+    --------------------------------------------------------------- :: do_while
+    G |- do s while (e); : (B \ {Break, Continue}) + {Nothing} + B'
 
     G |- e : bool
     G |- e' : t
     G |- s : B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
-    Break not in B
-    ------------------------------------------ :: for_no_break
-    G |- for (;e;e') s : B \ {Continue}
+    B' = mayDiscard(e) ? {Discard} : {}
+    B'' = mayDiscard(e') ? {Discard} : {}
+    ------------------------------------------------------------------- :: for
+    G |- for (;e;e') s : (B \ {Break, Continue}) + {Nothing} + B' + B''
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -331,8 +322,9 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     Break in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
+    B' = mayDiscard(e) ? {Discard} : {}
     ---------------------------------------------------------------------------------------------- :: switch_break
-    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Nothing}
+    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Nothing} + B'
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -345,8 +337,9 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     Break not in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
-    ------------------------------------------------------------------------- :: switch_no_break
-    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : B \ {Fallthrough}
+    B' = mayDiscard(e) ? {Discard} : {}
+    --------------------------------------------------------------------------- :: switch_no_break
+    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Fallthrough}) + B'
 
     --------------------- :: break
     G |- break; : {Break}
@@ -358,8 +351,9 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- fallthrough; : {Fallthrough}
 
     G |- e : tval
-    ------------------------------ :: return
-    G |- return e; : {Return tval}
+    B = mayDiscard(e) ? {Discard} : {}
+    ---------------------------------- :: return
+    G |- return e; : {Return tval} + B
 
     ----------------------------- :: return_void
     G |- return ; : {Return void}
@@ -381,8 +375,9 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G[x -> LVal(tval, thread)] |- {s0 .. sn} : B
     s0 != tval' x; /\../\ sn != tval' x;
     s0 != tval' x = e'; /\../\ sn != tval' x = e';
-    -------------------------------------------- :: variable_decl_init
-    G |- {tval x = e; s0 .. sn} : B
+    B' = mayDiscard(e) ? {Discard} : {}
+    ---------------------------------------------- :: variable_decl_init
+    G |- {tval x = e; s0 .. sn} : B + B'
     % TODO: add support for threadgroup variables (here and in the other rules related to variable declarations)
 
     G |- s : B
@@ -398,8 +393,9 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- {s s1 .. sn} : (B \ {Nothing}) + B'
 
     G |- e : t
-    ------------------- :: expr
-    G |- e; : {Nothing}
+    B = mayDiscard(e) ? {Discard} : {}
+    ---------------------------------- :: expr
+    G |- e; : {Nothing} + B
 
 defn
 G |- sc : tval :: :: typing_switch_case :: '' by

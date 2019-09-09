@@ -1,4 +1,4 @@
-grammar WHLSL;
+grammar WSL;
 
 /*
  * Lexer

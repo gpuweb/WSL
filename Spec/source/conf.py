@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u'WHLSL'
+project = u'WSL'
 copyright = u'2018, Robin Morisset, Filip Pizlo, Myles C. Maxfield'
 author = u'Robin Morisset, Filip Pizlo, Myles C. Maxfield'
 
@@ -106,7 +106,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'WHLSLdoc'
+htmlhelp_basename = 'WSLdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -133,7 +133,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'WHLSL.tex', u'WHLSL Documentation',
+    (master_doc, 'WSL.tex', u'WSL Documentation',
      u'Robin Morisset, Filip Pizlo, Myles C. Maxfield', 'manual'),
 ]
 
@@ -142,7 +142,7 @@ try:
     imgmath_latex_preamble  # check whether this is already defined
 except NameError:
     imgmath_latex_preamble = ""
-with open('WHLSL_macros.tex') as f:
+with open('WSL_macros.tex') as f:
     macros = f.read()
 # The following horror is for aligning inference rules and their names..
 macros = macros.replace('%\n', '')
@@ -163,7 +163,7 @@ imgmath_latex_preamble += macros
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'wsl', u'WHLSL Documentation',
+    (master_doc, 'wsl', u'WSL Documentation',
      [author], 1)
 ]
 
@@ -174,8 +174,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'WHLSL', u'WHLSL Documentation',
-     author, 'WHLSL', 'One line description of project.',
+    (master_doc, 'WSL', u'WSL Documentation',
+     author, 'WSL', 'One line description of project.',
      'Miscellaneous'),
 ]
 
