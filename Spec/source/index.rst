@@ -43,7 +43,7 @@ specification.
    in general, be observable, such as fusing a multiply followed by an add into a
    single operation which has higher intermediate precision than the distinct operations.
    This means that the same WHLSL program run on different machines, browsers, or operating
-   systems may might not produce the exact same results bit-for-bit.
+   systems may not produce the exact same results bit-for-bit.
 
 A shader is a compilation unit which includes type definitions and function definitions.
 
@@ -260,14 +260,14 @@ Vertex and fragment entry points must transitively never refer to the ``threadgr
 Arguments and Return Types
 """"""""""""""""""""""""""
 
-Arguments return types of an entry point are more restricted than arguments to an arbitrary WHLSL function.
+Argument and return types of an entry point are more restricted than arguments to an arbitrary WHLSL function.
 They are flattened through structs - that is, each member of any struct appearing in an argument to an entry
 point or return type is considered independently, recursively. Arguments to entry points are not
 distinguished by position or order.
 
 Multiple members with the same name may appear inside the flattened collection of arguments. However,
 if multiple members with the same name appear, the entire variable (type, qualifiers, etc.) must be
-identical. Otherwise, the entire program is in error.
+identical. Otherwise, the program is invalid.
 
 The items of the flattened structs can be partitioned into a number of buckets:
 
@@ -671,7 +671,7 @@ For each top-level declaration:
 #. If it is a variable declaration
 
    #. If there is already a variable of the same name in the environment, the program is invalid
-   #. Add it to the mapping with a type Left-value of its declared type in the Constant address space (see :ref:`typing_expressions_label` for details on types of values)
+   #. Add it to the mapping with a type Left-value of its declared type in the Constant address space (see :ref:`typing_label` for details on types of values)
 
 #. If it is a typedef
 
@@ -694,7 +694,7 @@ For each top-level declaration:
 
         #. If it has an explicit value, then this is its value
         #. Else if it is the first element of the enum, its value is 0
-        #. Else its value is the value of the precedent element increased by one.
+        #. Else its value is the value of the preceding element increased by one.
 
    #. If no element of the enum has the value 0, the program is invalid
    #. If two or more element of the enum have the same value, the program is invalid
@@ -763,7 +763,7 @@ Void type
 """""""""
 
 The void type is a special type that can only appear as the return type of functions.
-It must not be part of a composite type (i.e. there is no pointer to void, no array reference to void, no array of void)
+It must not be part of a composite type (i.e. there is no pointer to void, no array reference to void, no array of void).
 It must not be the type of a variable (either at the top-level or in a function), the type of a field of a struct, the type of a function parameter, or the definition of a typedef.
 
 ..
@@ -789,10 +789,12 @@ Then each typedef must be resolved, meaning that each mention of it in the progr
 .. note::
     This last step is guaranteed to terminate thanks to the acyclicity check before it.
 
-No pointers or array references in structs
-""""""""""""""""""""""""""""""""""""""""""
+No pointers or array references in structs and arrays
+"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 If any field of any structure has a type that is either a pointer or an array reference (after resolving typedefs), then the program is invalid.
+
+Similarly, if any type in the program after resolving typedef is an array whose elements are pointers or array references, then the program is invalid.
 
 .. note::
     This rule is to let us have a default value with which to initalize all local variables without having to deal with null pointers.
@@ -831,8 +833,9 @@ Each function must be well-typed following the rules in this section.
 
 To check that a function is well-typed:
 
+#. Check that all parameters have distinct names
 #. Make a new copy of the global environment (built above)
-#. For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type
+#. For each parameter of the function, add a mapping to this typing environment, associating this parameter name to the corresponding type (if there is already a mapping for that name it is overwritten).
 #. Check that the function body is well-typed in this typing environment (treating it as a block of statement)
 #. The set of behaviors of the function body must not include ``Break``, ``Continue`` or ``Fallthrough``.
 #. The set of behaviors of the function body must not include ``Return T`` for a type ``T`` that is not the function return type.
@@ -970,7 +973,7 @@ To check a block:
 
     #. Check that there is no other variable declaration in that block sharing the same name.
     #. Check that the given address space is either ``thread`` or ``threadgroup``
-    #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space
+    #. Make a new typing environment from the current one, in which the variable name is mapped to a left-value type of its given type and address-space (if there was already a mapping for that variable name it is overwritten).
     #. If there is no initializing expression, check that the type of this variable is neither a pointer type nor an array reference type.
     #. Else if there is an initializing expression, check that it is well-typed in this new environment and that its type match the type of the variable
     #. Check that the rest of the block, removing this first statement is well-typed in this new typing environment and has a set of behaviours ``B``.
