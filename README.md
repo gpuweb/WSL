@@ -1,14 +1,13 @@
-# WHLSL
+# WSL
 
-The *Web High-level Shading Language* provides a human-writable, safe programming language
+The *Web Shading Language* provides a human-writable, safe programming language
 for the WebGPU API.
 
-Link to spec: [https://gpuweb.github.io/WHLSL/index.html](https://gpuweb.github.io/WHLSL/index.html)
+Link to spec: [https://gpuweb.github.io/WSL/](https://gpuweb.github.io/WSL/)
 
 ## Goals
 
 - Formally proven as safe for Web use e.g. the language forbids reading or writing to memory that shouldn't be accessible.
-- C-like syntax that is similar to Microsoft's HLSL, and thus compatible with the majority of the world's existing shaders.
 - Supports a restricted form of pointers.
 
 ## Implementation
@@ -17,7 +16,7 @@ The current implementation can be found in WebKit [Source Code](https://github.c
 
 ## Examples
 
-The Examples directory has some WHLSL sample code.
+The Examples directory has some WSL sample code.
 
 ## Building the spec
 
