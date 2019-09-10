@@ -6,6 +6,8 @@
 WSL Specification
 ###################
 
+.. contents::
+
 General
 =======
 *This section is non-normative.*
@@ -839,7 +841,7 @@ To check that a function is well-typed:
 #. Check that the function body is well-typed in this typing environment (treating it as a block of statement)
 #. The set of behaviors of the function body must not include ``Break``, ``Continue`` or ``Fallthrough``.
 #. The set of behaviors of the function body must not include ``Return T`` for a type ``T`` that is not the function return type.
-#. If the return type of the funciton is not ``void``, then the set of behaviors of the function body must not include ``Nothing``.
+#. If the return type of the funciton is not ``void``, then the set of behaviors of the function body must not include ``Normal``.
 #. If the function is a vertex or compute entry point, then the set of behaviors of the function body must not include ``Discard``.
 
 In this section we define the terms above, and in particular, what it means for a statement or an expression to be well-typed.
@@ -872,10 +874,10 @@ A behaviour is any of the following:
 - Continue
 - Fallthrough
 - Discard
-- Nothing
+- Normal
 
 We use these "behaviours" to check the effect of statements on the control flow. 
-"Nothing" simply means that the control-flow can reach the end of this statement normally (and flow into the next one).
+"Normal" simply means that the control-flow can reach the end of this statement normally (and flow into the next one).
 
 .. _typing_statements_label:
 
@@ -923,7 +925,7 @@ To check a do-while or for statement:
 #. If Break is in ``B``, remove it
 #. If the condition may discard, add Discard to ``B``
 #. If the loop is a for loop, and the expression which is executed at the end of each iteration may discard, add Discard to ``B``
-#. Add Nothing to ``B``
+#. Add Normal to ``B``
 #. The do-while statement is well-typed, and its behaviours is ``B``
 
 .. math::
@@ -948,9 +950,9 @@ To check a switch statement:
 #. Check that the body of each case (and default) is well-typed when treating them as blocks
 #. Check that the behaviours of the last such body does not include Fallthrough
 #. Make a set of behaviours that is the union of the behaviours of all of these bodies
-#. Check that this set contains neither Nothing, nor a Return of a pointer type, nor a Return of an array reference type
+#. Check that this set contains neither Normal, nor a Return of a pointer type, nor a Return of an array reference type
 #. If Fallthrough is in this set, remove it
-#. If Break is in this set, remove it and add Nothing
+#. If Break is in this set, remove it and add Normal
 #. If the expression being switched on may discard, add Discard to this set.
 #. The switch statement is well-typed, and its behaviours is this last set
 
@@ -967,7 +969,7 @@ To check a switch statement:
 
 To check a block:
 
-#. If it is empty, it is well-typed and its behaviours is always {Nothing}
+#. If it is empty, it is well-typed and its behaviours is always {Normal}
 #. Else if it starts by a variable declaration:
 
     #. Check that there is no other variable declaration in that block sharing the same name.
@@ -983,8 +985,8 @@ To check a block:
 #. Else
    
     #. Check that this block's first statement is well-typed
-    #. Check that its set of behaviours ``B`` contains Nothing.
-    #. Remove Nothing from it.
+    #. Check that its set of behaviours ``B`` contains Normal.
+    #. Remove Normal from it.
     #. Check that it does not contain Fallthrough.
     #. Check that the rest of the block (after removing the first statement) is well-typed with a set of behaviours ``B'``.
     #. Then the whole block is well-typed, and its set of behaviour is the union of ``B`` and ``B'``.
@@ -1005,7 +1007,7 @@ To check a block:
     https://github.com/gpuweb/WSL/issues/63
 
 Finally a statement that consists of a single expression (followed by a semicolon) is well-typed if that expression is well-typed.
-Its set of behaviours is either {Nothing} if the expression cannot discard, or {Nothing, Discard} otherwise.
+Its set of behaviours is either {Normal} if the expression cannot discard, or {Normal, Discard} otherwise.
 
 .. math::
     :nowrap:
@@ -1828,7 +1830,7 @@ To reduce a function call by one step:
 To reduce a ``Call`` construct by one step:
 
 #. If its argument can be reduced, reduce it
-#. Else if its argument is ``return;`` or an empty block, replace it by a special ``Void`` value. Nothing can be done with such a value, except discarding it (see Effectful Expression).
+#. Else if its argument is ``return;`` or an empty block, replace it by a special ``Void`` value. Normal can be done with such a value, except discarding it (see Effectful Expression).
 #. Else if its argument is ``return val;`` for some value ``val``, then replace it by this value.
 
 .. math::

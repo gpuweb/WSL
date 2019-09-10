@@ -120,15 +120,15 @@ B :: behaviour_ ::= {{com statement behaviour}}
     | B \ B' :: :: difference {{tex [[B]] \backslash [[B']]}}
     | U B0 .. Bn :: :: big_union
     | ( B ) :: :: parens
-    | mayDiscard ( e ) ? B' : B'' :: :: may_discard_ternary
+    | mayDiscard ( e ) ? B' : B'' :: :: may_discard_ternary {{tex \mbox{mayDiscard} ([[e]])\;?\;[[B']]:[[B'']]}}
 
 b :: single_behaviour_ ::=
     | Return tval :: :: return
     | Break :: :: break
     | Continue :: :: continue
     | Fallthrough :: :: fallthrough
-    | Nothing :: :: Nothing
-    | Discard :: :: Discard
+    | Normal :: :: normal
+    | Discard :: :: discard
 
 t {{tex \tau}} :: type_ ::= {{com type}}
     | LVal ( tval , addressSpace ) :: :: lval {{com left value}}
@@ -196,7 +196,6 @@ terminals :: terminals_ ::=
 } }}
     | += :: :: plus_equal {{tex \,{+}{=}\, }}
     | freshAddress() :: :: fresh_address {{tex \mbox{freshAddress}()}}
-    | mayDiscard :: :: may_discard {{tex \mbox{mayDiscard} }}
 
 formula :: formula_ ::=
     | judgement :: :: judgement
@@ -299,7 +298,7 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     Return Ref(tval, as) not in B
     B' = mayDiscard(e) ? {Discard} : {}
     --------------------------------------------------------------- :: do_while
-    G |- do s while (e); : (B \ {Break, Continue}) + {Nothing} + B'
+    G |- do s while (e); : (B \ {Break, Continue}) + {Normal} + B'
 
     G |- e : bool
     G |- e' : t
@@ -309,7 +308,7 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     B' = mayDiscard(e) ? {Discard} : {}
     B'' = mayDiscard(e') ? {Discard} : {}
     ------------------------------------------------------------------- :: for
-    G |- for (;e;e') s : (B \ {Break, Continue}) + {Nothing} + B' + B''
+    G |- for (;e;e') s : (B \ {Break, Continue}) + {Normal} + B' + B''
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -318,13 +317,13 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |-- sblock0: B0 /\ .. /\ G |-- sblockn: Bn
     B = U B0 .. Bn
     Fallthrough not in Bn
-    Nothing not in B
+    Normal not in B
     Break in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
     B' = mayDiscard(e) ? {Discard} : {}
     ---------------------------------------------------------------------------------------------- :: switch_break
-    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Nothing} + B'
+    G |- switch (e) {sc0: sblock0 .. scn : sblockn } : (B \ {Break, Fallthrough}) + {Normal} + B'
 
     G |- e : tval
     G |- isIntegerOrEnum(tval)
@@ -333,7 +332,7 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |-- sblock0: B0 /\ .. /\ G |-- sblockn: Bn
     B = U B0 .. Bn
     Fallthrough not in Bn
-    Nothing not in B
+    Normal not in B
     Break not in B
     Return Ptr(tval, as) not in B
     Return Ref(tval, as) not in B
@@ -359,7 +358,7 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- return ; : {Return void}
 
     ------------------ :: empty_block
-    G |- {} : {Nothing}
+    G |- {} : {Normal}
 
     tval != Ptr(tval', as)
     tval != Ref(tval', as)
@@ -388,14 +387,14 @@ G |- s : B :: :: typing_statement :: '' {{com Validating statements' behaviours}
     G |- {s1 .. sn} : B'
     n > 0
     Fallthrough not in B
-    Nothing in B
+    Normal in B
     -------------------------------------- :: block
-    G |- {s s1 .. sn} : (B \ {Nothing}) + B'
+    G |- {s s1 .. sn} : (B \ {Normal}) + B'
 
     G |- e : t
     B = mayDiscard(e) ? {Discard} : {}
     ---------------------------------- :: expr
-    G |- e; : {Nothing} + B
+    G |- e; : {Normal} + B
 
 defn
 G |- sc : tval :: :: typing_switch_case :: '' by
