@@ -1270,6 +1270,24 @@ If this relationship is cyclic, then the program is invalid.
     This check is done on function declarations, not on function names, so if for example foo(int) calls foo(float), it is not considered recursion, as they are different functions
     after resolution of overloading.
 
+.. _fragment_validation_label:
+
+Fragment-only functions
+-----------------------
+
+Derivatives (see :ref:`derivatives_label`) are only well-defined in a fragment shader.
+Similarly, the ``discard;`` statement is only well-defined in a fragment shader.
+
+So we check that no function definition that calls a derivatives function or contain a discard statement is in the transitive closure of any vertex or compute entry point by the "may call" relationship (see previous section). If that check fails, the program is invalid.
+
+.. _uniformity_label:
+
+Uniformity verification
+-----------------------
+
+.. todo::
+    Fill this section, based on https://lists.w3.org/Archives/Public/public-gpu/2019Jul/0000.html and https://bugs.webkit.org/show_bug.cgi?id=201240
+
 Dynamic rules
 =============
 
@@ -1910,6 +1928,8 @@ For each declaration of the form ``address-space T2* operator&[](thread T1* a, u
     For example you could have a struct Foo, with a getter for the field bar, returning a struct Bar, with an ander for the field baz.
     When using foo.bar.baz, it is not possible to use the ander for Bar, as foo.bar is not a left-value. So we instead use the generated getter (that behind the scene copies foo.bar into its parameter, and then uses the ander).
 
+.. todo:: .length getter
+
 .. _memory_model_label:
 
 Memory model
@@ -2211,6 +2231,8 @@ If the second operand is ``0``, both return an unspecified value.
 If there is an underflow (e.g. from ``INT_MIN / (-1)``), they follow 2-complement semantics. 
 In other terms, they behave as if they computed the result as integers with a large enough width for avoiding both overflow and underflow, then truncated to the 32 low-bits of the result.
 
+.. todo:: operator% seems to be missing in the current implementation?
+
 ``abs`` is defined as an unary function on integers, both signed and unsigned.
 Its return type is the same as its argument type.
 It returns its argument if it is non-negative, and the opposite of its argument otherwise.
@@ -2292,6 +2314,7 @@ The result of ``operator/`` is an undefined value if its second argument is eith
 .. todo::
     HLSL has an operator% on floats, which is equivalent to fmod, except for emitting different bit patterns for NaN..
     I should probably specify them as dupes of each other.
+    See https://bugs.webkit.org/show_bug.cgi?id=201834
 
 .. note::
     Our treatment of division by 0 here is based on the SPIR-V specification for OpFDiv.
@@ -2389,9 +2412,6 @@ saturate
     They are not in HLSL, but are in GLSL, MSL and Vulkan.
     https://github.com/gpuweb/WSL/issues/338
 
-.. todo::
-    ddx, ddy, ddx_fine, ddx_coarse, ddy_fine, ddy_coarse, fwidth
-
 The following functions are all binary functions on floats, and their return type is also float:
 
 min
@@ -2472,6 +2492,17 @@ mad
     ``mad(a, b, c)`` computes ``a*b + c``, but with potentially different precision.
     See the section :ref:`numerical_compliance_label` for details.
 
+``modf`` is a binary function, its first argument is ``float`` and its second argument is a pointer to a ``float`` (in any non-constant address space).
+Its return type is ``float``.
+It returns the fractional part of its first argument, and stores the integer part of it at the address pointed to by its second argument.
+Both the integer and the fractional part are guaranteed to be of the same sign as the first argument.
+
+``sincos`` is a ternary function, its first argument is ``float`` and its other two arguments are pointers to ``float`` (in any non-constant address space, not necessarily the same).
+Its return type is void.
+It stores the sine of its first argument at the address pointed at by its second argument, and the cosine of its first argument at the address pointed at by its third argument.
+
+.. consider merging these definitions with those in vectors/matrices.
+
 .. I removed fma following https://bugs.webkit.org/show_bug.cgi?id=199531
 
 The following functions are all unary functions on floats, and their return type is bool:
@@ -2482,6 +2513,8 @@ isinf
     Returns true if and only if its argument is an infinity.
 isnan
     Returns true if and only if its argument is a NaN.
+
+.. I also removed isordered and isunordered, can easily be brought back.
 
 .. _numerical_compliance_label:
 
@@ -2494,6 +2527,191 @@ Numerical Compliance
     I did not find the equivalent table for SPIR-V, but it has the nice property of tagging each operation with the different components of fast-math.
     We should probably measure how costly forbidding fast-math would be, since NotNaN and NotInf introduce undefined behavior.
     https://github.com/gpuweb/WSL/issues/335
+
+Cast operators
+""""""""""""""
+
+.. todo:: fill this section
+    we have the asuint/asint/asfloat functions as well as the casts.
+
+Comparison operators
+""""""""""""""""""""
+
+The following operators are binary operators defined on pairs of ``int``, pairs of ``uint``, and pairs of ``float`` and returning ``bool``:
+
+- ``operator==``: equality
+- ``operator!=``: inequality
+- ``operator>=``: greater-or-equal
+- ``operator>``: greater
+- ``operator<``: lesser
+- ``operator<=``: lesser-or-equal
+
+Their definition on integers (signed or not) is straightforward.
+
+.. todo::
+    Find out what they should do for corner cases of floats, e.g. NaN == NaN, +0 > -0, subnormals, etc..
+    It probably depends on whether we must deal with -ffast-math in our backends or not.
+
+``operator==`` and ``operator!=`` are also binary operators on pairs of ``bool`` (still returning ``bool``) with the obvious definition.
+
+Vector and matrix operations
+""""""""""""""""""""""""""""
+
+The various binary operators defined in the previous sections (``+``, ``-``, ``*``, ``/``, ``>``, ``<``, ``>=``, ``<=``, ``==``, ``!=``) are defined on more types than just scalar ones. If the two parameters are:
+
+- two matrices: they are only defined if the parameters are of the same dimensions and element types and they are defined on the element type. In that case they return a matrix of the same dimension, with an element type matching the return type of the scalar version of the operator, computed by applying the corresponding operator element-wise.
+- two vectors: they are only defined if the parameters are of the same size and element types and they are defined on the element type. In that case they return a vector of the same size, with an element type matching the return type of the scalar version of the operator, computed by applying the corresponding operator element-wise.
+- a vector and a scalar, or a scalar and a vector: they are defined if the element type of the vector matches the type of the scalar, and the operator is defined on that type. In that case they return a vector of the same size, as if the scalar parameter were a vector of the right size with the same value repeated throughout.
+- a matrix and a scalar, or a scalar and a matrix: they are defined if the element type of the matrix matches the type of the scalar, and the operator is defined on that type. In that case they return a matrix of the same dimensions, as if the scalar parameter were a matrix of the right dimensions with the same value repeated throughout.
+
+So for example ``float2x3(1.0, 2.0, 3.0, 4.0, 5.0, 6.0) * 2.0`` results in ``float2x3(2.0, 4.0, 6.0, 8.0, 10.0, 12.0)``.
+
+For another example, ``float4(0.3, 0.6, 0.9, 1.2) >= 0.5`` results in ``bool4(false, true, true, true)``.
+
+The following unary functions are defined on vectors and matrices when they are defined for the element type. In that case they return a vector or matrix of the same size/dimension, computed by applying them element-wise:
+
+- ``cos``
+- ``sin``
+- ``tan``
+- ``acos``
+- ``asin``
+- ``atan``
+- ``cosh``
+- ``sinh``
+- ``tanh``
+- ``log``
+- ``log2``
+- ``log10``
+- ``exp``
+- ``exp2``
+- ``sqrt``
+- ``rsqrt``
+- ``rcp``
+- ``asint``
+- ``asuint``
+- ``asfloat``
+- ``abs``
+- ``ceil``
+- ``floor``
+- ``round``
+- ``trunc``
+- ``degrees``
+- ``radians``
+- ``frac``
+- ``saturate``
+- ``ddx``
+- ``ddx_fine``
+- ``ddx_coarse``
+- ``ddy``
+- ``ddy_fine``
+- ``ddy_coarse``
+- ``fwidth``
+- ``operator+`` (unary)
+- ``operator-`` (unary)
+- ``firstbitlow``
+- ``firstbithigh``
+- ``reversebits``
+
+Similarly, the following binary functions are defined on vectors and matrices when they are defined for the element type. In that case they return a vector or matrix of the same size/dimension, computed by applying them element-wise:
+
+- ``ldexp``
+- ``pow``
+- ``fmod``
+- ``min``
+- ``max``
+
+Similarly, the following ternary functions are defined on vectors and matrices when they are defined for the element type. In that case they return a vector or matrix of the same size/dimension, computed by applying them element-wise:
+
+- ``mad``
+- ``clamp``
+- ``lerp``
+- ``smoothstep``
+
+.. I removed fma from here since I removed it from the list of functions defined on scalar floats above.
+
+``modf`` is a binary function; its first argument can be a vector or matrix of ``float``, while its second argument is a pointer (in any non-constant address space) to a vector or matrix of ``float`` of the same size.
+Its return type is the same as the type of its first argument.
+For each element of its first argument, it puts the fractional part of it in the corresponding element of the vector or matrix it returns, and it stores the integer part at the corresponding element reached from its second argument.
+Both the integer and the fractional part are guaranteed to be of the same sign as the float they come from..
+
+``sincos`` is a ternary function; its first argument is a vector or matrix of ``float``, while its other two arguments are pointers (in any non-constant address space) to vectors or matrices of ``float`` of the same size.
+It always has a return type of void.
+It stores the sine of each element of its first argument into the corresponding element reached from its second argument, and it stores the cosine of each element of its first argument into the corresponding element reached from its third argument.
+
+``any`` and ``all`` are defined as unary functions on ``bool``, ``int``, ``uint``, ``float`` and all vectors and matrices with these element types. In all cases they have a return type of ``bool`` (scalar). Here are the different case:
+
+- On ``bool`` they behave as the identity
+- On ``int``, ``uint``, ``any(x)`` and ``all(x)`` are the same as ``x != 0``
+- On ``float``, ``any(x)`` and ``all(x)`` are the same as ``x != 0.0``
+- On vectors and matrices, they are applied element-wise, then
+
+    - the result of ``any`` is true if any of the elements are true and false otherwise
+    - the result of ``all`` is true if all of the elements are true and false otherwise
+
+``transpose`` is defined as an unary function on all matrix types.
+It returns a matrix with the same number of rows as the number of columns of its argument, and the same number of columns as the number of rows of its argument.
+``transpose(matrix)[x][y]`` is defined as ``matrix[y][x]``.
+
+``dot`` is a binary function.
+It is defined on pairs of ``float``, of ``uint`` and of ``int`` as an alias of ``operator*``.
+It is also defined on pairs of vectors of these base types, as long as both parameters have the same element type and size.
+In that case, the return value is the sum of the elementwise products.
+
+``mul`` is a binary function.
+It is defined on pairs of ``float``, of ``uint``, of ``int``, and of same-sized vectors of these element types as an alias of ``dot``.
+It is also defined on pairs of a ``float`` and a matrix of ``float`` (in either order) as an alias of ``operator*``.
+It is also defined on the following types of parameters as the multiplication of linear algebra:
+
+- on ``floatM`` and ``floatNxM`` for ``N`` and ``M`` between 2 and 4, it returns a ``floatN`` vector
+- on ``floatNxM`` and ``floatN`` for ``N`` and ``M`` between 2 and 4, it returns a ``floatM`` vector
+- on ``floatNxM`` and ``floatOxN`` for ``M``, ``N``, and ``O`` between 2 and 4, it returns a ``floatOxM``
+
+``length`` is defined as an unary function on vectors of ``float`` returning a single float: the square root of the sum of the squares of the elements.
+
+.. should we also have length as the identity on float ? We have it in the implementation but I can see no use for it.
+
+``normalize`` is defined as an unary function on vectors of ``float``.
+It returns an vector of ``float`` of the same size, computed by dividing each element by the ``length`` (see above) of the vector.
+
+``distance`` is a binary function on same-sized vectors of ``float``.
+It returns a single ``float``, and ``distance(x, y)`` is computed by ``length(x - y)``.
+
+.. similarly I don't see a point in having normalize and distance defined for scalars, as they would be respectively sign and operator-
+
+``dst`` is a binary function defined on ``uint4, uint4``, on ``int4, int4`` and on ``float4, float4``.
+It returns another vector of size 4, of the same type as its arguments, computed as follows:
+
+- the first element is always ``1`` (or ``1.0``)
+- the second element is the product of the second element of both arguments
+- the third element is the third element of the first argument
+- the fourth element is the fourth element of the second argument.
+
+``cross`` is a binary function defined for parameters both of type ``float3``, and has a return type of ``float3``.
+For ``cross(u, v)``, the three elements of the result are defined by:
+
+- ``u.y * v.z - u.z * v.y``
+- ``u.z * v.x - u.x * v.z``
+- ``u.x * v.y - u.y * v.x``
+
+``lit`` is a ternary function, it takes as arguments three ``float``.
+Its return type is ``float4``.
+Its return value is computed as follows:
+
+- the first element is always ``1.0``
+- the second element is always the max of ``0.0`` and the first argument
+- if the first or the second argument are negative, then the third element is ``0.0``, otherwise it is the product of the second and third argument.
+- the fourth element is always ``1.0``
+
+``determinant`` is an unary function defined on square matrices of element type ``float`` (so ``floatNxN`` for ``N`` between 2 and 4 included).
+Its return type is always ``float``. It computes the determinant of linear algebra.
+
+.. todo::
+    Finish filling this section:
+    - casts and constructors
+    - operator++/operator--: only defined on scalars for now
+    - isordered/isunordered: on floatN/floatN in the implementation, do we want to support them?
+    - operator[]/[]=: should probably remove all getters/setters instead
+    - Finally all of the swizzles: same deal, I must first change all property accesses..
 
 Fences and atomic operations
 """"""""""""""""""""""""""""
@@ -2554,29 +2772,41 @@ Please see :ref:`memory_model_label` for the effect of that event.
 .. This notion of instance is a bit fuzzy, I should probably more formally define it (something like the nth time we reach that function call).
     For now I don't consider it high priority, since SPIRV only refers to instances of instructions at this level of formality.
 
-Cast operators
-""""""""""""""
+.. note::
+    These three functions can only be called in provably uniform control-flow, see :ref:`uniformity_label` for the details of how we verify this.
 
-Also include the ``as`` function.
+.. _derivatives_label:
 
-.. todo:: fill this section
+Derivatives
+"""""""""""
 
-Comparison operators
-""""""""""""""""""""
+The following functions compute derivatives, as such they are only valid to call in provably uniform control-flow (see :ref:`uniformity_label`).
+Furthermore they can only be called in a fragment shader (see :ref:`fragment_validation_label`).
+They all are unary functions on ``float`` and return a ``float`` as well.
 
-.. todo:: fill this section
+ddx_fine
+   Return a high precision partial derivative of the specified value with respect to the screen space x coordinate.
+ddx_coarse
+   Return a low precision partial derivative of the specified value with respect to the screen space x coordinate.
+ddx
+    Either an alias for ddx_fine or for ddx_coarse, which one is not specified.
+ddy_fine
+   Return a high precision partial derivative of the specified value with respect to the screen space y coordinate.
+ddy_coarse
+   Return a low precision partial derivative of the specified value with respect to the screen space y coordinate.
+ddy
+    Either an alias for ddx_fine or for ddx_coarse, which one is not specified.
+fwidth
+    ``fwidth(x)`` is the same as ``abs(ddx(x)) + abs(ddy(x))``.
 
-Vector and matrix operations
-""""""""""""""""""""""""""""
-
-.. todo:: fill this section
-    Includes arithmetic operators (per-element), various swizzles, length, getDimensions, operator[] and operator[]=, determinant
+All of these functions may create helper threads to compute the derivatives. Such helper threads execute the same code as the non-helper thread, but have no side-effect.
+In particular all stores to non-thread memory from them are ignored, and they are discarded after execution without updating the render target.
 
 Sampler and texture operations
 """"""""""""""""""""""""""""""
 
 .. todo:: fill this section
-    Sample, Load, Gather, etc..
+    Sample, SampleLevel, SampleBias, SampleGrad, GetDimensions, Load, Gather, etc..
 
 Interface with JavaScript
 =========================
@@ -2587,9 +2817,12 @@ which is understood to be of type 'DOMString'.
 Resource Limits
 ===============
 
-#. How many inputs
-#. How many outputs
-#. How many intermediate variables
+.. todo:: fill this section
+
+    #. How many inputs
+    #. How many outputs
+    #. How many intermediate variables
+    #. identifier length, file length, stack depth, expression depth, statement depth, anything more?
 
 Indices and tables
 ##################
