@@ -841,7 +841,7 @@ To check that a function is well-typed:
 #. Check that the function body is well-typed in this typing environment (treating it as a block of statement)
 #. The set of behaviors of the function body must not include ``Break``, ``Continue`` or ``Fallthrough``.
 #. The set of behaviors of the function body must not include ``Return T`` for a type ``T`` that is not the function return type.
-#. If the return type of the funciton is not ``void``, then the set of behaviors of the function body must not include ``Normal``.
+#. If the return type of the function is not ``void``, then the set of behaviors of the function body must not include ``Normal``.
 #. If the function is a vertex or compute entry point, then the set of behaviors of the function body must not include ``Discard``.
 
 In this section we define the terms above, and in particular, what it means for a statement or an expression to be well-typed.
